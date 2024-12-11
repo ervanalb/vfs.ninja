@@ -83,10 +83,10 @@ const engineeringH: Record<string, Engineering> = {
   alternateInface: { start: ["HDO", "HDO", "HU", "HU"], pools: ["core", "coreMinusExotic"], priority: 2 },
   primaryOutface: { start: ["HUO", "HUO", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 3 },
   alternateOutface: { start: ["HD", "HD", "HUO", "HUO"], pools: ["core", "coreMinusExotic"], priority: 4 },
-  primaryExoticV1: { start: ["HU", "HD", "HUO", "HDO"], pools: ["core"], priority: 5 },
-  primaryExoticV2: { start: ["HUO", "HDO", "HU", "HD"], pools: ["core"], priority: 6 },
-  alternateExoticV1: { start: ["HD", "HU", "HDO", "HUO"], pools: ["core"], priority: 7 },
-  alternateExoticV2: { start: ["HDO", "HUO", "HD", "HU"], pools: ["core"], priority: 8 },
+  primaryExoticV1: { start: ["HU", "HD", "HUO", "HD"], pools: ["core"], priority: 5 },
+  primaryExoticV2: { start: ["HUO", "HD", "HU", "HD"], pools: ["core"], priority: 6 },
+  alternateExoticV1: { start: ["HD", "HUO", "HD", "HU"], pools: ["core"], priority: 7 },
+  alternateExoticV2: { start: ["HD", "HU", "HD", "HUO"], pools: ["core"], priority: 8 },
 } as const;
 const engineeringJ: Record<string, Engineering> = {
   primary: { start: ["HD2", "HD2", "HDO", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1 },
@@ -308,6 +308,7 @@ const App = () => {
   const [engineeringPool, setEngineeringPool] = useState<EngineeringPoolId>("core");
   const [filterRest, setFilterRest] = useState<boolean>(false);
   const [output, setOutput] = useState<string>("");
+  const [pattern, setPattern] = useState<Pattern>([]);
 
   const compClassOptions = Object.entries(compClasses).map(([id, { name }]) =>
     <option value={id}>{name}</option>
@@ -436,10 +437,15 @@ const App = () => {
     const draw = randomDraw(includedFormations, 3);
     const [pattern, analysis] = optimizeEngineering(draw);
 
+    setPattern(pattern);
+
     const text = "DRAW: " + draw + ", ENG: " + pattern + ", COST: " + analysis.cost + ", PRIO: " + analysis.priority;
 
     setOutput(output + text + "\n");
   };
+
+  const patternPictures = pattern.map(([formationId, formationEngId]) => <img src={"/"
+    + formationId + "_" + formationEngId + ".svg"} />);
 
   return (
     <div className="container">
@@ -454,6 +460,7 @@ const App = () => {
       <pre>
         {output}
       </pre>
+      {patternPictures}
     </div >
   )
 }
