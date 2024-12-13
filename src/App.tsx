@@ -1,187 +1,13 @@
 import { useState } from 'react';
-import './App.css'
 
-type CompClass = {
-  name: string;
-};
+import { formations, costMatrix, FormationId, Position, CompClassId, compClasses, EngineeringId, EngineeringPoolId, engineeringPools } from './data.ts';
+import Form from 'react-bootstrap/Form';
+import Collapse from 'react-bootstrap/Collapse';
 
-const compClasses: Record<string, CompClass> = { "open": { name: "Open" }, "advanced": { name: "Advanced" } } as const;
-
-type CompClassId = keyof typeof compClasses;
-
-type EngineeringPool = {
-  name: string;
-};
-
-const engineeringPools: Record<string, EngineeringPool> = { "core": { name: "Core" }, "coreMinusExotic": { name: "Core minus exotics" } } as const;
-
-type EngineeringPoolId = keyof typeof compClasses;
-
-type Formation = {
-  name: string;
-  longName: string;
-  compClasses: Array<CompClassId>;
-  engineeringStrategies: Record<string, Engineering>;
-  points: number;
-};
-
-type Position = "HU" // Head up
-  | "HD" // Head down, first piece to build
-  | "HD2" // Head down, second piece to build
-  | "HDO" // Head down, outface
-  | "HUO"; // Head up, outface
-
-const costMatrix: Record<Position, Record<Position, number>> = {
-  "HU": { "HU": 0, "HD": 10, "HD2": 3, "HDO": 5, "HUO": 3 },
-  "HD": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 1, "HUO": 5 },
-  "HD2": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 1, "HUO": 5 },
-  "HDO": { "HU": 5, "HD": 1, "HD2": 0, "HDO": 0, "HUO": 10 },
-  "HUO": { "HU": 2, "HD": 5, "HD2": 3, "HDO": 10, "HUO": 0 },
-} as const;
-
-type Engineering = {
-  start: [Position, Position, Position, Position];
-  end?: [Position, Position, Position, Position];
-  pools: Array<EngineeringPoolId>;
-  priority: number;
-};
-
-// COLORS: [K  R  G  B]
-//          HU HD HU HD
-const engineeringA: Record<string, Engineering> = {
-  primary: { start: ["HD2", "HD", "HD2", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HD", "HD2", "HD", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-const engineeringB: Record<string, Engineering> = {
-  primary: { start: ["HD2", "HD", "HD2", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HD", "HD2", "HD", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-const engineeringC: Record<string, Engineering> = {
-  primaryV1: { start: ["HU", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  primaryV2: { start: ["HD", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 2 },
-  alternateV1: { start: ["HD", "HU", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 3 },
-  alternateV2: { start: ["HD", "HD", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 4 },
-} as const;
-const engineeringD: Record<string, Engineering> = {
-  primary: { start: ["HUO", "HD", "HUO", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HD", "HUO", "HD", "HUO"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-const engineeringE: Record<string, Engineering> = {
-  primary: { start: ["HD2", "HD", "HD2", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HD", "HD2", "HD", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-const engineeringF: Record<string, Engineering> = {
-  primary: { start: ["HUO", "HUO", "HDO", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HDO", "HDO", "HUO", "HUO"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-const engineeringG: Record<string, Engineering> = {
-  primary: { start: ["HU", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HD", "HU", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-const engineeringH: Record<string, Engineering> = {
-  primaryInface: { start: ["HU", "HU", "HDO", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternateInface: { start: ["HDO", "HDO", "HU", "HU"], pools: ["core", "coreMinusExotic"], priority: 2 },
-  primaryOutface: { start: ["HUO", "HUO", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 3 },
-  alternateOutface: { start: ["HD", "HD", "HUO", "HUO"], pools: ["core", "coreMinusExotic"], priority: 4 },
-  primaryExoticV1: { start: ["HU", "HD", "HUO", "HD"], pools: ["core"], priority: 5 },
-  primaryExoticV2: { start: ["HUO", "HD", "HU", "HD"], pools: ["core"], priority: 6 },
-  alternateExoticV1: { start: ["HD", "HUO", "HD", "HU"], pools: ["core"], priority: 7 },
-  alternateExoticV2: { start: ["HD", "HU", "HD", "HUO"], pools: ["core"], priority: 8 },
-} as const;
-const engineeringJ: Record<string, Engineering> = {
-  primary: { start: ["HD2", "HD2", "HDO", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HDO", "HDO", "HD2", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-const engineeringK: Record<string, Engineering> = {
-  primaryV1: { start: ["HU", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  primaryV2: { start: ["HD", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 2 },
-  alternateV1: { start: ["HD", "HU", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 3 },
-  alternateV2: { start: ["HD", "HD", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 4 },
-} as const;
-const engineeringL: Record<string, Engineering> = {
-  primaryV1: { start: ["HD", "HD", "HD", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  primaryV2: { start: ["HDO", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 2 },
-  alternateV1: { start: ["HD", "HD", "HDO", "HD"], pools: ["core", "coreMinusExotic"], priority: 3 },
-  alternateV2: { start: ["HD", "HDO", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 4 },
-} as const;
-const engineeringM: Record<string, Engineering> = {
-  primary: { start: ["HU", "HU", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HD", "HD", "HU", "HU"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-const engineeringN: Record<string, Engineering> = {
-  primary: { start: ["HD", "HD", "HDO", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HDO", "HDO", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-const engineeringO: Record<string, Engineering> = {
-  primaryPieceV1: { start: ["HU", "HU", "HD2", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  primaryPieceV2: { start: ["HU", "HU", "HD", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2 },
-  primaryCrossV1: { start: ["HU", "HDO", "HU", "HD2"], pools: ["core", "coreMinusExotic"], priority: 3 },
-  primaryCrossV2: { start: ["HU", "HD2", "HU", "HDO"], pools: ["core", "coreMinusExotic"], priority: 4 },
-  alternatePieceV1: { start: ["HD", "HD2", "HU", "HU"], pools: ["core", "coreMinusExotic"], priority: 5 },
-  alternatePieceV2: { start: ["HD2", "HD", "HU", "HU"], pools: ["core", "coreMinusExotic"], priority: 6 },
-  alternateCrossV1: { start: ["HD2", "HU", "HDO", "HU"], pools: ["core", "coreMinusExotic"], priority: 7 },
-  alternateCrossV2: { start: ["HDO", "HU", "HD2", "HU"], pools: ["core", "coreMinusExotic"], priority: 8 },
-} as const;
-const engineeringP: Record<string, Engineering> = {
-  primaryV1: { start: ["HU", "HD", "HUO", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  primaryV2: { start: ["HUO", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 2 },
-  alternateV1: { start: ["HD", "HU", "HD", "HUO"], pools: ["core", "coreMinusExotic"], priority: 3 },
-  alternateV2: { start: ["HD", "HUO", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 4 },
-} as const;
-const engineeringQ: Record<string, Engineering> = {
-  primary: { start: ["HU", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 1 },
-  alternate: { start: ["HD", "HU", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 2 },
-} as const;
-
-const formations: Record<string, Formation> = {
-  "a": { name: "A", longName: "Cross", compClasses: ["open", "advanced"], points: 1, engineeringStrategies: engineeringA },
-  "b": { name: "B", longName: "Gulley", compClasses: ["open", "advanced"], points: 1, engineeringStrategies: engineeringB },
-  "c": { name: "C", longName: "Shoeshine", compClasses: ["open", "advanced"], points: 1, engineeringStrategies: engineeringC },
-  "d": { name: "D", longName: "Box", compClasses: ["open"], points: 1, engineeringStrategies: engineeringD },
-  "e": { name: "E", longName: "Wave", compClasses: ["open", "advanced"], points: 1, engineeringStrategies: engineeringE },
-  "f": { name: "F", longName: "Double Joker", compClasses: ["open"], points: 1, engineeringStrategies: engineeringF },
-  "g": { name: "G", longName: "Mixed Star", compClasses: ["open"], points: 1, engineeringStrategies: engineeringG },
-  "h": { name: "H", longName: "T-Bird", compClasses: ["open"], points: 1, engineeringStrategies: engineeringH },
-  "j": { name: "J", longName: "Flock", compClasses: ["open", "advanced"], points: 1, engineeringStrategies: engineeringJ },
-  "k": { name: "K", longName: "Anchor", compClasses: ["open", "advanced"], points: 1, engineeringStrategies: engineeringK },
-  "l": { name: "L", longName: "Rebel", compClasses: ["open", "advanced"], points: 1, engineeringStrategies: engineeringL },
-  "m": { name: "M", longName: "Chemtrails", compClasses: ["open"], points: 1, engineeringStrategies: engineeringM },
-  "n": { name: "N", longName: "Double Rebel", compClasses: ["open"], points: 1, engineeringStrategies: engineeringN },
-  "o": { name: "O", longName: "Trident", compClasses: ["open"], points: 1, engineeringStrategies: engineeringO },
-  "p": { name: "P", longName: "Cortex", compClasses: ["open"], points: 1, engineeringStrategies: engineeringP },
-  "q": { name: "Q", longName: "Mixed Wave", compClasses: ["open"], points: 1, engineeringStrategies: engineeringQ },
-
-  //"1": { name: "1", longName: "Arrowhead", compClasses: ["open", "advanced"] },
-  //"2": { name: "2", longName: "Claw", compClasses: ["open", "advanced"] },
-  //"3": { name: "3", longName: "HD Accordion", compClasses: ["open", "advanced"] },
-  //"4": { name: "4", longName: "Chain Gang", compClasses: ["open", "advanced"] },
-  //"5": { name: "5", longName: "Mixed Accordion", compClasses: ["open"] },
-  //"6": { name: "6", longName: "Snowflake", compClasses: ["open"] },
-  //"7": { name: "7", longName: "Flower", compClasses: ["open", "advanced"] },
-  //"8": { name: "8", longName: "Buddy", compClasses: ["open", "advanced"] },
-  //"9": { name: "9", longName: "Shorty", compClasses: ["open", "advanced"] },
-  //"10": { name: "10", longName: "Mixed Anthem", compClasses: ["open"] },
-  //"11": { name: "11", longName: "Fun Buddies", compClasses: ["open", "advanced"] },
-  //"12": { name: "12", longName: "Pinwheel", compClasses: ["open", "advanced"] },
-  //"13": { name: "13", longName: "HD Star", compClasses: ["open", "advanced"] },
-  //"14": { name: "14", longName: "Satellite", compClasses: ["open", "advanced"] },
-  //"15": { name: "15", longName: "Bipole", compClasses: ["open"] },
-  //"16": { name: "16", longName: "Chimmy", compClasses: ["open", "advanced"] },
-  //"17": { name: "17", longName: "Zins", compClasses: ["open"] },
-  //"18": { name: "18", longName: "Ding", compClasses: ["open"] },
-  //"19": { name: "19", longName: "Angry Pelican", compClasses: ["open"] },
-  //"20": { name: "20", longName: "Focus Buddies", compClasses: ["open"] },
-  //"21": { name: "21", longName: "Top Spot", compClasses: ["open", "advanced"] },
-  //"22": { name: "22", longName: "Core Buddies", compClasses: ["open", "advanced"] },
-} as const;
-
-type FormationId = keyof typeof formations;
 
 const formationsInCompClass: (compClass: CompClassId) => Array<FormationId> = (compClass) =>
   (Object.entries(formations).filter(([_, { compClasses }]) => compClasses.includes(compClass)).map(([id, _]) => id))
   ;
-
-type EngineeringId = string;
 
 type Pattern = Array<[FormationId, EngineeringId]>;
 
@@ -201,13 +27,24 @@ const analyzePattern = (pat: Pattern, loop: boolean): PatternAnalysis => {
     const [fromFormationId, fromEngId] = patToAnalyze[i];
     const [toFormationId, toEngId] = patToAnalyze[i + 1];
 
-    const e = formations[fromFormationId].engineeringStrategies[fromEngId];
-    const fromEng = e.end || e.start;
+    const f = formations[fromFormationId];
+    let fromEng: [Position, Position, Position, Position];
+    let priority: number;
+    if (f.type == "block") {
+      const e = f.engineeringStrategies[fromEngId];
+      fromEng = e.end;
+      priority = e.priority;
+    } else {
+      const e = f.engineeringStrategies[fromEngId];
+      fromEng = e.start;
+      priority = e.priority;
+    }
+
     const toEng = formations[toFormationId].engineeringStrategies[toEngId].start;
 
     const cost = Math.max(...([0, 1, 2, 3].map((i) => costMatrix[fromEng[i]][toEng[i]])));
     totalCost += cost;
-    totalPriority += e.priority;
+    totalPriority += priority;
   }
 
   if (!loop) {
@@ -222,6 +59,16 @@ const analyzePattern = (pat: Pattern, loop: boolean): PatternAnalysis => {
 };
 
 (window as any).analyzePattern = analyzePattern;
+
+const defaultEngineering = (formationId: FormationId): EngineeringId => {
+  const { engineeringStrategies } = formations[formationId];
+  const keys = Object.keys(engineeringStrategies);
+  if (keys.length < 1) throw "Must contain at least 1 engineering option";
+
+  return keys.reduce((min, cur) =>
+    engineeringStrategies[cur].priority < engineeringStrategies[min].priority ? cur : min
+  );
+};
 
 const argmin = (a: Array<PatternAnalysis>) => {
   if (a.length < 1) throw "Must contain at least 1 entry";
@@ -296,10 +143,42 @@ const randomDraw = (includedFormations: Array<FormationId>, minPoints: number): 
     const randomI = Math.floor(Math.random() * pool.length);
     const formationId = pool.splice(randomI, 1)[0];
     draw.push(formationId);
-    points += formations[formationId].points;
+    points += formations[formationId].type == "block" ? 2 : 1;
   }
   return draw;
 }
+
+type PicProps = {
+  formationId: FormationId,
+  formationEngId?: EngineeringId,
+  className?: string,
+};
+
+const Pic: React.FC<PicProps> = ({ formationId, formationEngId, className }) => {
+  if (formationEngId === undefined) {
+    formationEngId = defaultEngineering(formationId);
+  }
+  className = className ? "pic-container " + className : "pic-container";
+  const f = formations[formationId];
+
+  if (f.type === "block") {
+    const e = f.engineeringStrategies[formationEngId];
+    return <div className={className}>
+      <div className="pic-overlay">{f.name}</div>
+      <img src={e.startPic} className="pic-start" />
+      <div className="pic-sep" />
+      <img src={e.interPic} className="pic-inter" />
+      <div className="pic-sep" />
+      <img src={e.endPic} className="pic-end" />
+    </div>;
+  } else {
+    const e = f.engineeringStrategies[formationEngId];
+    return <div className={className}>
+      <div className="pic-overlay">{f.name}</div>
+      <img src={e.pic} className="pic" />
+    </div>;
+  }
+};
 
 const App = () => {
   const [customPoolVisible, setCustomPoolVisible] = useState<boolean>(false);
@@ -318,23 +197,11 @@ const App = () => {
     const value = e.target.value;
     setCompClass(value);
     if (value == "custom") {
-      if (!customPoolVisible) {
-        setCustomPoolVisible(true);
-      }
+      setCustomPoolVisible(true);
     } else {
       setIncludedFormations(formationsInCompClass(value));
     }
   };
-
-  const compClassSelector = <>
-    <label htmlFor="poolSelector" className="form-label">
-      Class:
-    </label>
-    <select className="form-select" id="classSelector" aria-label="Class Selector" value={compClass} onChange={handleCompClassChange}>
-      {compClassOptions}
-      <option value="custom">Custom</option>
-    </select>
-  </>;
 
   const formationOptions = Object.entries(formations).map(([id, { name, longName }]) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -355,43 +222,48 @@ const App = () => {
 
     const htmlName = "include" + id + "Check";
 
-    return (
-      <div className="form-check">
+    const checked = includedFormations.includes(id);
+
+    return <div className={"form-check" + (checked ? "" : " disabled")}>
         <input
           className="form-check-input"
           type="checkbox"
-          checked={includedFormations.includes(id)}
+          checked={checked}
           onChange={handleChange}
           id={htmlName}
         />
-        <label className="form-check-label" htmlFor={htmlName}>
-          {name}: {longName}
+        <label htmlFor={htmlName}>
+          <Pic formationId={id} />
         </label>
-      </div>);
+      </div>;
   });
 
-  const handleToggleCustomPool = () => { setCustomPoolVisible(!customPoolVisible); };
-  const formationSelector =
-    <div className="accordion">
-      <div className="accordion-item" id="customPoolAccordiion">
-        <h2 className="accordion-header" id="customPoolHeading">
-          <button className="accordion-button" type="button"
-            onClick={handleToggleCustomPool}
-            data-bs-toggle="collapse" data-bs-target="#collapseCustomPool" aria-controls="collapseCustomPool"
-            aria-expanded={customPoolVisible ? "true" : "false"}
-          >
-            Custom Pool
-          </button>
-        </h2>
-        <div id="collapseCustomPool" className={`accordion-collapse collapse ${customPoolVisible ? "show" : ""}`}
-          aria-labelledby="customPoolHeading" data-bs-parent="#customPoolAccordion">
-          <div className="accordion-body">
-            {formationOptions}
-          </div>
+  const handleToggleCustomPool = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => { event.preventDefault(); setCustomPoolVisible(!customPoolVisible); };
+
+  const compClassSelector = <Form.Group className="mb-3">
+    <label htmlFor="poolSelector">
+      Class:
+    </label>
+    <select className="form-select" id="classSelector" aria-label="Class Selector" value={compClass} onChange={handleCompClassChange}>
+      {compClassOptions}
+      <option value="custom">Custom</option>
+    </select>
+    <a href=""
+      onClick={handleToggleCustomPool}
+      className={"custom-collapse-header" + (customPoolVisible ? "" : " collapsed")}
+      aria-controls="collapseCustomPool"
+      aria-expanded={customPoolVisible}
+    >
+      Customize
+    </a>
+    <Collapse in={customPoolVisible}>
+      <div className="custom-card">
+        <div className="include-container">
+          {formationOptions}
         </div>
       </div>
-    </div>
-    ;
+    </Collapse>
+  </Form.Group>;
 
   const engineeringPoolOptions = Object.entries(engineeringPools).map(([id, { name }]) =>
     <option value={id}>{name}</option>
@@ -402,17 +274,18 @@ const App = () => {
     setEngineeringPool(value);
   };
 
-  const engineeringPoolSelector = <>
-    <label htmlFor="poolSelector" className="form-label">
+  const engineeringPoolSelector = <Form.Group className="mb-3">
+    <label htmlFor="poolSelector">
       Engineering (beta):
     </label>
     <select className="form-select" id="classSelector" aria-label="Engineering Selector" value={engineeringPool} onChange={handleEngineeringPoolChange}>
       {engineeringPoolOptions}
     </select>
-  </>;
+  </Form.Group>;
 
 
-  const filters = <>
+  const filters = <Form.Group className="mb-3">
+    <div>Modifiers:</div>
     <div className="form-check">
       <input
         className="form-check-input"
@@ -425,7 +298,7 @@ const App = () => {
         Everybody gets rest (at least 1 HU point)
       </label>
     </div>
-  </>;
+  </Form.Group>;
 
   const submitButton =
     <button type="submit" className="btn btn-primary">Generate</button>
@@ -444,19 +317,35 @@ const App = () => {
     setOutput(output + text + "\n");
   };
 
-  const patternPictures = pattern.map(([formationId, formationEngId]) => <img src={"/"
-    + formationId + "_" + formationEngId + ".svg"} />);
+  const patternPictures = pattern.map(([formationId, formationEngId]) => {
+    const f = formations[formationId];
+    if (f.type === "block") {
+      const e = f.engineeringStrategies[formationEngId];
+      return <>
+        <img src={e.startPic} />
+        <div className="pic-sep" />
+        <img src={e.interPic} />
+        <div className="pic-sep" />
+        <img src={e.endPic} />
+      </>;
+    } else {
+      const e = f.engineeringStrategies[formationEngId];
+      return <img src={e.pic} />;
+    }
+  }
+  );
 
   return (
     <div className="container">
       <h1 className="text-center my-5">4-way VFS draw generator</h1>
-      <form onSubmit={handleSubmit}>
-        {compClassSelector}
-        {formationSelector}
-        {engineeringPoolSelector}
-        {filters}
-        {submitButton}
-      </form>
+      <div className="form-container">
+        <form onSubmit={handleSubmit}>
+          {compClassSelector}
+          {engineeringPoolSelector}
+          {filters}
+          {submitButton}
+        </form>
+      </div>
       <pre>
         {output}
       </pre>
