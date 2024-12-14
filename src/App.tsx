@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { formations, costMatrix, FormationId, Position, CompClassId, compClasses, EngineeringId, EngineeringPoolId, engineeringPools } from './data.ts';
 import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
-
+import rerun from './icons/rerun.svg';
 
 const formationsInCompClass: (compClass: CompClassId) => Array<FormationId> = (compClass) =>
   (Object.entries(formations).filter(([_, { compClasses }]) => compClasses.includes(compClass)).map(([id, _]) => id))
@@ -15,6 +15,16 @@ type PatternAnalysis = {
   cost: number,
   priority: number,
 };
+
+type Round = {
+  draw: Array<FormationId>,
+  pattern: Pattern,
+  analysis: PatternAnalysis,
+};
+
+type RoundError = {
+  error: string;
+}
 
 const analyzePattern = (pat: Pattern, loop: boolean): PatternAnalysis => {
   if (!loop && pat.length < 1) { throw "Must contain at least 2 formations"; }
@@ -110,19 +120,20 @@ const optimizeEngineering = (draw: Array<FormationId>): [Pattern, PatternAnalysi
         .map((nextFormationEngId) => analyzePattern([[prevFormationId, prevFormationEngId], [nextFormationId, nextFormationEngId]], false));
       const nextFormationEngId = Object.keys(nextFormationEngStrategies)[argmin(strategyAnalyses)];
 
-      // See if we're done--
-      // we will always do at least 2 pages
-      // since our guess at the first formation's engineering may be bad
-      if (pattern.length > draw.length && pattern.length % draw.length == 0 && nextFormationEngId == pattern[draw.length][1]) {
-        break;
+      // See if we're done--if we have a cycle
+      if (pattern.length > draw.length && pattern.length % draw.length == 0) {
+        for (let pages = 1; pages < pattern.length / draw.length; pages++) {
+          const start = pattern.length - pages * draw.length;
+          if (nextFormationEngId == pattern[start][1]) {
+            return pattern.slice(start);
+          }
+        }
       }
 
       pattern.push([nextFormationId, nextFormationEngId]);
       prevFormationId = nextFormationId;
       prevFormationEngId = nextFormationEngId;
     }
-
-    return pattern.slice(draw.length); // Remove the first page
   });
 
   const patternAnalyses = patternOptions.map((pattern) => analyzePattern(pattern, true));
@@ -138,7 +149,7 @@ const randomDraw = (includedFormations: Array<FormationId>, minPoints: number): 
   const pool = Object.keys(formations).filter((f) => includedFormations.includes(f));
   while (points < minPoints) {
     if (pool.length == 0) {
-      throw "Empty dive pool!";
+      throw "Not enough formations in dive pool";
     }
     const randomI = Math.floor(Math.random() * pool.length);
     const formationId = pool.splice(randomI, 1)[0];
@@ -180,14 +191,38 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, className }) => 
   }
 };
 
-const App = () => {
+const initialCompClass: CompClassId = "open";
+
+type SetupProps = {
+  compClass: CompClassId,
+  setCompClass: (compClass: CompClassId) => void,
+  roundLength: number,
+  setRoundLength: (roundLength: number) => void,
+  includedFormations: Array<FormationId>,
+  setIncludedFormations: (includedFormations: Array<FormationId>) => void,
+  engineeringPool: EngineeringPoolId,
+  setEngineeringPool: (engineeringPool: EngineeringPoolId) => void,
+  filterRest: boolean,
+  setFilterRest: (filterRest: boolean) => void,
+  numRounds: number,
+  setNumRounds: (numRounds: number) => void,
+};
+
+const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, setRoundLength, includedFormations, setIncludedFormations, engineeringPool, setEngineeringPool, filterRest, setFilterRest, numRounds, setNumRounds }) => {
   const [customPoolVisible, setCustomPoolVisible] = useState<boolean>(false);
-  const [compClass, setCompClass] = useState<CompClassId | "custom">("open");
-  const [includedFormations, setIncludedFormations] = useState<Array<FormationId>>(formationsInCompClass(compClass));
-  const [engineeringPool, setEngineeringPool] = useState<EngineeringPoolId>("core");
-  const [filterRest, setFilterRest] = useState<boolean>(false);
-  const [output, setOutput] = useState<string>("");
-  const [pattern, setPattern] = useState<Pattern>([]);
+
+  useEffect(() => {
+    let computedCompClass: CompClassId | "custom" = "custom";
+
+    for (const compClassId in compClasses) {
+      if (compClasses[compClassId].roundLength == roundLength
+        && Object.entries(formations).every(([id, { compClasses }]) => compClasses.includes(compClassId) == includedFormations.includes(id))) {
+        computedCompClass = compClassId;
+        break;
+      }
+    }
+    setCompClass(computedCompClass);
+  }, [roundLength, includedFormations]);
 
   const compClassOptions = Object.entries(compClasses).map(([id, { name }]) =>
     <option value={id}>{name}</option>
@@ -195,29 +230,23 @@ const App = () => {
 
   const handleCompClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    setCompClass(value);
     if (value == "custom") {
+      setCompClass(value);
       setCustomPoolVisible(true);
     } else {
+      // Setting both of these should trigger an effect
+      // that sets the comp class
+      setRoundLength(compClasses[value].roundLength);
       setIncludedFormations(formationsInCompClass(value));
     }
   };
 
-  const formationOptions = Object.entries(formations).map(([id, { name, longName }]) => {
+  const formationOptions = Object.keys(formations).map((id) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { checked } = e.target;
       // Add or remove from list, based on the checked state
       const newIncludedFormations = checked ? [...includedFormations, id] : includedFormations.filter((f) => f != id);
       setIncludedFormations(newIncludedFormations);
-
-      let computedCompClass: CompClassId | "custom" = "custom";
-      for (const compClassId in compClasses) {
-        if (Object.entries(formations).every(([id, { compClasses }]) => compClasses.includes(compClassId) == newIncludedFormations.includes(id))) {
-          computedCompClass = compClassId;
-          break;
-        }
-      }
-      setCompClass(computedCompClass);
     };
 
     const htmlName = "include" + id + "Check";
@@ -225,18 +254,23 @@ const App = () => {
     const checked = includedFormations.includes(id);
 
     return <div className={"form-check" + (checked ? "" : " disabled")}>
-        <input
-          className="form-check-input"
-          type="checkbox"
-          checked={checked}
-          onChange={handleChange}
-          id={htmlName}
-        />
-        <label htmlFor={htmlName}>
-          <Pic formationId={id} />
-        </label>
-      </div>;
+      <input
+        className="form-check-input"
+        type="checkbox"
+        checked={checked}
+        onChange={handleChange}
+        id={htmlName}
+      />
+      <label htmlFor={htmlName}>
+        <Pic formationId={id} />
+      </label>
+    </div>;
   });
+
+  const handleRoundLengthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setRoundLength(parseInt(value));
+  };
 
   const handleToggleCustomPool = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => { event.preventDefault(); setCustomPoolVisible(!customPoolVisible); };
 
@@ -258,12 +292,25 @@ const App = () => {
     </a>
     <Collapse in={customPoolVisible}>
       <div className="custom-card">
-        <div className="include-container">
+        <Form.Group className="mb-3">
+          <label htmlFor="roundLengthSelector">
+            Round length:
+          </label>
+          <select className="form-select" id="roundLengthSelector" aria-label="Round Length Selector" value={roundLength} onChange={handleRoundLengthChange}>
+            <option value="1">1-2</option>
+            <option value="2">2-3</option>
+            <option value="3">3-4</option>
+            <option value="4">4-5</option>
+            <option value="5">5-6</option>
+            <option value="6">6-7</option>
+          </select>
+        </Form.Group>
+        <Form.Group className="include-container mb-3">
           {formationOptions}
-        </div>
-      </div>
-    </Collapse>
-  </Form.Group>;
+        </Form.Group>
+      </div >
+    </Collapse >
+  </Form.Group >;
 
   const engineeringPoolOptions = Object.entries(engineeringPools).map(([id, { name }]) =>
     <option value={id}>{name}</option>
@@ -275,10 +322,10 @@ const App = () => {
   };
 
   const engineeringPoolSelector = <Form.Group className="mb-3">
-    <label htmlFor="poolSelector">
+    <label htmlFor="engineeringPoolSelector">
       Engineering (beta):
     </label>
-    <select className="form-select" id="classSelector" aria-label="Engineering Selector" value={engineeringPool} onChange={handleEngineeringPoolChange}>
+    <select className="form-select" id="engineeringPoolSelector" aria-label="Engineering Selector" value={engineeringPool} onChange={handleEngineeringPoolChange}>
       {engineeringPoolOptions}
     </select>
   </Form.Group>;
@@ -300,58 +347,150 @@ const App = () => {
     </div>
   </Form.Group>;
 
-  const submitButton =
-    <button type="submit" className="btn btn-primary">Generate</button>
-    ;
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const draw = randomDraw(includedFormations, 3);
-    const [pattern, analysis] = optimizeEngineering(draw);
-
-    setPattern(pattern);
-
-    const text = "DRAW: " + draw + ", ENG: " + pattern + ", COST: " + analysis.cost + ", PRIO: " + analysis.priority;
-
-    setOutput(output + text + "\n");
+  const handleNumRoundsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setNumRounds(parseInt(value));
   };
 
-  const patternPictures = pattern.map(([formationId, formationEngId]) => {
-    const f = formations[formationId];
-    if (f.type === "block") {
-      const e = f.engineeringStrategies[formationEngId];
-      return <>
-        <img src={e.startPic} />
-        <div className="pic-sep" />
-        <img src={e.interPic} />
-        <div className="pic-sep" />
-        <img src={e.endPic} />
-      </>;
-    } else {
-      const e = f.engineeringStrategies[formationEngId];
-      return <img src={e.pic} />;
-    }
-  }
+  const numRoundsSelector =
+    <Form.Group className="mb-3">
+      <label htmlFor="numRoundsSelector">
+        Rounds:
+      </label>
+      <select className="form-select" id="numRoundsSelector" aria-label="Round Length Selector" value={numRounds} onChange={handleNumRoundsChange}>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+      </select>
+    </Form.Group>;
+
+  return (
+    <form>
+      {compClassSelector}
+      {engineeringPoolSelector}
+      {filters}
+      {numRoundsSelector}
+    </form>
   );
+};
+
+type DrawProps = {
+  draw: Array<Round | RoundError>,
+};
+
+const Draw: React.FC<DrawProps> = ({ draw }) => draw.map((round: Round | RoundError, roundNum: number) => {
+
+  const header = (errorOrDrawString: JSX.Element) => <h3>Round {roundNum + 1}: {errorOrDrawString}</h3>;
+
+  if ((round as RoundError).error) {
+    return header(<strong className="error">{(round as RoundError).error}</strong>);
+  }
+
+  const { draw, pattern } = round as Round;
+  const roundPics = pattern.map(([formationId, formationEngId]) => {
+    return <Pic formationId={formationId} formationEngId={formationEngId} />
+  });
+  const drawString = draw.map((formationId: FormationId): string => formations[formationId].name).join(" - ");
+  return <>
+    {header(<strong>{drawString}</strong>)}
+    <div className="round">
+      {roundPics}
+    </div>
+  </>;
+});
+
+type RerunButtonProps = {
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+const RerunButton: React.FC<RerunButtonProps> = ({ onClick }) => {
+  const [spinning, setSpinning] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (spinning) {
+      const timeoutHandle = setTimeout(() => {
+        setSpinning(false);
+      }, 500);
+
+      return () => clearTimeout(timeoutHandle);
+    }
+  }, [spinning, setSpinning]);
+
+  return <button className="rerun-button" onClick={(event) => {
+    setSpinning(true);
+    onClick(event);
+  }}><img className={spinning ? "spin" : ""} src={rerun} /></button>
+};
+
+const App = () => {
+  // Setup
+  const [compClass, setCompClass] = useState<CompClassId | "custom">(initialCompClass);
+  const [roundLength, setRoundLength] = useState<number>(compClasses[initialCompClass].roundLength);
+  const [includedFormations, setIncludedFormations] = useState<Array<FormationId>>(formationsInCompClass(initialCompClass));
+  const [engineeringPool, setEngineeringPool] = useState<EngineeringPoolId>("core");
+  const [filterRest, setFilterRest] = useState<boolean>(false);
+  const [numRounds, setNumRounds] = useState<number>(10);
+
+  const [draw, setDraw] = useState<Array<Round | RoundError>>([]);
+
+  const rerunOne = (): Round | RoundError => {
+    try {
+      const draw = randomDraw(includedFormations, roundLength);
+      const [pattern, analysis] = optimizeEngineering(draw);
+      return { draw, pattern, analysis };
+    } catch (e) {
+      return { error: e as string };
+    }
+  };
+
+  const rerunSome = () => {
+    // The number of rounds has changed--shorten the list, or rerun the missing rounds
+    if (numRounds < draw.length) {
+      setDraw(draw.slice(0, numRounds));
+    } else {
+      setDraw([...draw, ...Array.from({ length: numRounds - draw.length }, rerunOne)])
+    }
+  };
+
+  const rerunAll = () => {
+    setDraw(Array.from({ length: numRounds }, rerunOne));
+  };
+
+  useEffect(() => {
+    rerunAll();
+  }, [roundLength, includedFormations, engineeringPool, filterRest]);
+
+  useEffect(() => {
+    rerunSome();
+  }, [numRounds]);
 
   return (
     <div className="container">
-      <h1 className="text-center my-5">4-way VFS draw generator</h1>
-      <div className="form-container">
-        <form onSubmit={handleSubmit}>
-          {compClassSelector}
-          {engineeringPoolSelector}
-          {filters}
-          {submitButton}
-        </form>
+      <h1 className="text-center my-3">4-way VFS draw generator</h1>
+      <div className="form-container mb-5">
+        <h2>Setup</h2>
+        <Setup compClass={compClass} setCompClass={setCompClass}
+          roundLength={roundLength} setRoundLength={setRoundLength}
+          includedFormations={includedFormations} setIncludedFormations={setIncludedFormations}
+          engineeringPool={engineeringPool} setEngineeringPool={setEngineeringPool}
+          filterRest={filterRest} setFilterRest={setFilterRest}
+          numRounds={numRounds} setNumRounds={setNumRounds}
+        />
+        <div className="rerunContainer">
+          <h2>Results</h2>
+          <RerunButton onClick={rerunAll} />
+        </div>
+        <Draw draw={draw} />
       </div>
-      <pre>
-        {output}
-      </pre>
-      {patternPictures}
-    </div >
+    </div>
   )
-}
+};
 
 export default App

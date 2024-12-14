@@ -142,8 +142,8 @@ const engineeringH: Record<string, RandomEngineering> = {
   alternateExoticV2: { start: ["HD", "HU", "HD", "HUO"], pools: ["core"], priority: 8, pic: picHAlternateExoticV4 },
 } as const;
 const engineeringJ: Record<string, RandomEngineering> = {
-  primary: { start: ["HD2", "HD2", "HDO", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picJPrimary },
-  alternate: { start: ["HDO", "HDO", "HD2", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picJAlternate },
+  primary: { start: ["HD2", "HD2", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picJPrimary },
+  alternate: { start: ["HD", "HD", "HD2", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picJAlternate },
 } as const;
 const engineeringK: Record<string, RandomEngineering> = {
   primaryV1: { start: ["HU", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picKPrimaryV1 },
@@ -261,9 +261,10 @@ export const costMatrix: Record<Position, Record<Position, number>> = {
 
 export type CompClass = {
   name: string;
+  roundLength: number;
 };
 
-export const compClasses: Record<string, CompClass> = { "open": { name: "Open" }, "advanced": { name: "Advanced" } } as const;
+export const compClasses: Record<string, CompClass> = { "open": { name: "Open", roundLength: 5 }, "advanced": { name: "Advanced", roundLength: 4 } } as const;
 
 export type CompClassId = keyof typeof compClasses;
 
