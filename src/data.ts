@@ -116,8 +116,8 @@ const engineeringC: Record<string, RandomEngineering> = {
   alternateV2: { start: ["HD", "HD", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 4, pic: picCAlternateV2 },
 } as const;
 const engineeringD: Record<string, RandomEngineering> = {
-  primary: { start: ["HUO", "HD", "HUO", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picDPrimary },
-  alternate: { start: ["HD", "HUO", "HD", "HUO"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picDAlternate },
+  primary: { start: ["HUO", "HUO", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picDPrimary },
+  alternate: { start: ["HD", "HD", "HUO", "HUO"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picDAlternate },
 } as const;
 const engineeringE: Record<string, RandomEngineering> = {
   primary: { start: ["HD2", "HD", "HD2", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picEPrimary },

@@ -58,17 +58,33 @@ body {
   flex-direction: column;
   border: 1px solid black;
   border-radius: var(--bs-border-radius);
+  position: relative;
 }
 
-.pic-overlay {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 32px;
-  height: 32px;
+.pic-fname-overlay {
+  padding: 0 8px;
   position: absolute;
   font-size: 24px;
   font-weight: bold;
+}
+
+.pic-ename-overlay {
+  padding: 8px;
+  position: absolute;
+  font-size: 12px;
+  right: 0;
+  bottom: 0;
+}
+
+.pic-delete-overlay {
+  padding: 8px;
+  position: absolute;
+  font-size: 12px;
+  right: 0;
+}
+
+.pic-delete-overlay::after {
+  content: 'X';
 }
 
 .pic-sep {
@@ -107,9 +123,8 @@ body {
   pointer-events: none;
 }
 
-.round {
+.page {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-items: center;
   gap: 16px;
@@ -164,4 +179,28 @@ body {
 
 .error {
   color: var(--bs-red);
+}
+
+.formation-picker {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  gap: 16px;
+}
+
+.formation-picker-entry {
+  color: var(--bs-body-color);
+}
+
+.formation-picker-entry.selected  .pic-container {
+  border-width: 3px;
+}
+
+.extend-round {
+}
+
+.extend-round::after {
+  content: '+';
 }
