@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="8mm"
-   height="8mm"
-   viewBox="0 0 8 8"
+   width="4mm"
+   height="4mm"
+   viewBox="0 0 4 4"
    version="1.1"
    id="svg1"
    inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
-   sodipodi:docname="rerun.svg"
+   sodipodi:docname="plus.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="11.313708"
-     inkscape:cx="3.800699"
-     inkscape:cy="20.85965"
+     inkscape:zoom="16.51882"
+     inkscape:cx="14.195929"
+     inkscape:cy="9.5043106"
      inkscape:window-width="1916"
      inkscape:window-height="1023"
      inkscape:window-x="0"
@@ -39,14 +39,12 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       id="path1"
-       style="fill:none;stroke:#0d6efd;stroke-width:0.68;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 5.12501,1.768368 C 4.91259,1.707468 4.58235,1.500455 4.000014,1.500038 2.619321,1.500051 1.500051,2.619321 1.500038,4.000014 1.500051,5.380708 2.619321,6.499978 4.000014,6.499991 5.380708,6.499978 6.499978,5.380708 6.499991,4.000014"
-       sodipodi:nodetypes="ccccc" />
+       style="fill:none;stroke:#0d6efd;stroke-width:0.68;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+       d="M 2,0.50240273 V 3.4975973"
+       id="path1" />
     <path
-       style="fill:none;stroke:#0d6efd;stroke-width:0.68;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 4.493074,0.500867 5.185449,1.782498 4.02167,2.460142"
-       id="path9"
-       sodipodi:nodetypes="ccc" />
+       style="fill:none;stroke:#0d6efd;stroke-width:0.68;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+       d="M 0.50240275,2 H 3.4975973"
+       id="path1-2" />
   </g>
 </svg>

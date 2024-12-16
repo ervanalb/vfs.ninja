@@ -79,12 +79,11 @@ body {
 .pic-delete-overlay {
   padding: 8px;
   position: absolute;
-  font-size: 12px;
   right: 0;
 }
 
-.pic-delete-overlay::after {
-  content: 'X';
+.pic-delete-overlay img {
+  display: block;
 }
 
 .pic-sep {
@@ -181,7 +180,7 @@ body {
   color: var(--bs-red);
 }
 
-.formation-picker {
+.formation-picker,.engineering-picker {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -190,17 +189,19 @@ body {
   gap: 16px;
 }
 
-.formation-picker-entry {
+.formation-picker-entry,.engineering-picker-entry {
   color: var(--bs-body-color);
 }
 
-.formation-picker-entry.selected  .pic-container {
+.formation-picker-entry.selected,.engineering-picker-entry.selected .pic-container {
   border-width: 3px;
 }
 
 .extend-round {
+  border: 1px solid black;
+  border-radius: var(--bs-border-radius);
 }
-
-.extend-round::after {
-  content: '+';
+.extend-round img {
+  display: block;
+  padding: 8px;
 }
