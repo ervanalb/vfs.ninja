@@ -59,7 +59,7 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
 
     const toEng = formations[toFormationId].engineeringStrategies[toEngId].start;
 
-    const cost = Math.max(...([0, 1, 2, 3].map((i) => costMatrix[fromEng[i]][toEng[i]])));
+    const cost = [0, 1, 2, 3].map((i) => costMatrix[fromEng[i]][toEng[i]]).reduce((acc, x) => acc + x);
     totalCost += cost;
     totalPriority += priority;
   }
@@ -71,8 +71,8 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
   }
 
   return {
-    cost: totalCost / pat.length,
-    priority: totalPriority / pat.length,
+    cost: totalCost / (pat.length / round.length),
+    priority: totalPriority / (pat.length / round.length),
   };
 };
 
@@ -178,10 +178,10 @@ const findAlternatives = (round: Round, pattern: Pattern): {
 
     const argsort = strategyAnalyses
       .map((value, index) => ({ value, index }))
-      .sort((a, b) => a.index - b.index)
+      .sort((a, b) => a.value.cost - b.value.cost)
       .map(({ index }) => index);
 
-    const minCost = argsort[0];
+    const minCost = strategyAnalyses[argsort[0]].cost;
     return argsort.map((i) => [Object.keys(engStrategies)[i], strategyAnalyses[i].cost - minCost]);
   });
 
@@ -213,21 +213,19 @@ type PicProps = {
   formationId: FormationId,
   formationEngId?: EngineeringId,
   showEngName?: boolean,
-  onClickFormationName?: () => void,
   onClickDelete?: () => void,
-  onClickEngineeringName?: () => void,
 };
 
-const Pic: React.FC<PicProps> = ({ formationId, formationEngId, showEngName, onClickFormationName, onClickDelete, onClickEngineeringName }) => {
+const Pic: React.FC<PicProps> = ({ formationId, formationEngId, showEngName, onClickDelete }) => {
   if (formationEngId === undefined) {
     formationEngId = defaultEngineering(formationId);
   }
   const f = formations[formationId];
 
-  const fName = onClickFormationName !== undefined ? <a href="" onClick={(event) => { event.preventDefault(); onClickFormationName(); }}>{f.name}</a> : f.name;
-  const eName = onClickEngineeringName !== undefined ? <a href="" onClick={(event) => { event.preventDefault(); onClickEngineeringName(); }}>{formationEngId}</a> : formationEngId;
+  const fName = f.name;
+  const eName = formationEngId;
 
-  const deleteButton = onClickDelete ? <a href="" onClick={(event) => { event.preventDefault(); onClickDelete(); }} className="pic-delete-overlay">
+  const deleteButton = onClickDelete ? <a href="" onClick={(event) => { event.preventDefault(); event.stopPropagation(); onClickDelete(); }} className="pic-delete-overlay">
     <img src={close} />
   </a> : null;
 
@@ -335,7 +333,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
     setRoundLength(parseInt(value));
   };
 
-  const handleToggleCustomPool = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => { event.preventDefault(); setCustomPoolVisible(!customPoolVisible); };
+  const handleToggleCustomPool = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => { event.preventDefault(); event.stopPropagation(); setCustomPoolVisible(!customPoolVisible); };
 
   const compClassSelector = <Form.Group className="mb-3">
     <label htmlFor="poolSelector">
@@ -451,69 +449,79 @@ type DrawProps = {
   deleteFormation: (roundNum: number, formationNum: number) => void,
   extendRound: (roundNum: number) => void,
   changeEngineering: (roundNum: number, patternIndex: number, newEngineeringId: EngineeringId) => void,
+  includedFormations: Array<FormationId>,
 };
 
-const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteFormation, extendRound, changeEngineering }) => {
+const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteFormation, extendRound, changeEngineering, includedFormations }) => {
   // Formation picker
   const [formationPickerShown, setFormationPickerShown] = useState<boolean>(false);
-  const [formationPickerOptions, setFormationPickerOptions] = useState<Array<[FormationId, EngineeringId]>>([]);
   const [formationPickerRoundNum, setFormationPickerRoundNum] = useState<number>(0);
-  const [formationPickerFormationNum, setFormationPickerFormationNum] = useState<number>(0);
+  const [formationPickerPatternIndex, setFormationPickerPatternIndex] = useState<number>(0);
 
-  const formationPickerShow = (options: Array<[FormationId, EngineeringId]>, roundNum: number, formationNum: number) => {
+  const formationPickerShow = (
+    roundNum: number,
+    patternIndex: number,
+  ) => {
     setFormationPickerShown(true);
-    setFormationPickerOptions(options);
     setFormationPickerRoundNum(roundNum);
-    setFormationPickerFormationNum(formationNum);
+    setFormationPickerPatternIndex(patternIndex);
   };
   const formationPickerHide = () => {
     setFormationPickerShown(false);
   };
 
-  const selectedFormationId = (draw[formationPickerRoundNum] as EngineeredRound)?.round[formationPickerFormationNum];
-  const formationPicker = formationPickerOptions.map(([formationId, engId]) => {
-    return <a href="" onClick={(event) => {
-      event.preventDefault();
-      formationPickerHide();
-      if (selectedFormationId != formationId) {
-        changeFormation(formationPickerRoundNum, formationPickerFormationNum, formationId)
+  const engRound = draw[formationPickerRoundNum] as EngineeredRound;
+  const round = engRound?.round;
+  const selectedEngineeringId = engRound?.pattern[formationPickerPatternIndex];
+
+  let formationPicker = null;
+  let engineeringPicker = null;
+
+  if (engRound !== undefined && round !== undefined && selectedEngineeringId !== undefined) {
+    const formationNum = formationPickerPatternIndex % round.length;
+    const selectedFormationId = round[formationNum];
+    const { alternateFormations, alternateEngineering } = engRound;
+
+    formationPicker = alternateFormations[formationNum].map(([formationId, engId]) => {
+      let className = "formation-picker-entry";
+      if (selectedFormationId == formationId) {
+        className += " selected";
       }
-    }} className={"formation-picker-entry" + (selectedFormationId == formationId ? " selected" : "")}>
-      <Pic formationId={formationId} formationEngId={engId} />
-    </a>;
-  });
-
-  // Engineering picker
-  const [engineeringPickerShown, setEngineeringPickerShown] = useState<boolean>(false);
-  const [engineeringPickerOptions, setEngineeringPickerOptions] = useState<Array<[EngineeringId, number]>>([]);
-  const [engineeringPickerRoundNum, setEngineeringPickerRoundNum] = useState<number>(0);
-  const [engineeringPickerPatternIndex, setEngineeringPickerPatternIndex] = useState<number>(0);
-
-  const engineeringPickerShow = (options: Array<[EngineeringId, number]>, roundNum: number, patternIndex: number) => {
-    setEngineeringPickerShown(true);
-    setEngineeringPickerOptions(options);
-    setEngineeringPickerRoundNum(roundNum);
-    setEngineeringPickerPatternIndex(patternIndex);
-  };
-  const engineeringPickerHide = () => {
-    setEngineeringPickerShown(false);
-  };
-
-  const engRound = draw[engineeringPickerRoundNum] as EngineeredRound;
-  const selectedEngineeringId = engRound?.pattern[engineeringPickerPatternIndex];
-  const formationId = engRound?.round[engineeringPickerPatternIndex % engRound?.round.length];
-  const engineeringPicker = engineeringPickerOptions.map(([engineeringId, relCost]) => {
-    return <a href="" onClick={(event) => {
-      event.preventDefault();
-      engineeringPickerHide();
-      if (selectedEngineeringId != engineeringId) {
-        changeEngineering(engineeringPickerRoundNum, engineeringPickerPatternIndex, engineeringId)
+      if (!includedFormations.includes(formationId)) {
+        className += " not-preferred";
       }
-    }} className={"engineering-picker-entry" + (selectedEngineeringId == engineeringId ? " selected" : "")}>
-      <Pic formationId={formationId} formationEngId={engineeringId} showEngName={true} />
-    </a>;
-  });
+      return <a href="" onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        formationPickerHide();
+        if (selectedFormationId != formationId) {
+          changeFormation(formationPickerRoundNum, formationNum, formationId)
+        }
+      }} className={className}>
+        <Pic formationId={formationId} formationEngId={engId} />
+      </a>;
+    });
 
+    engineeringPicker = alternateEngineering[formationPickerPatternIndex].map(([engineeringId, relCost]) => {
+      let className = "formation-picker-entry";
+      if (selectedEngineeringId == engineeringId) {
+        className += " selected";
+      }
+      if (relCost > 0) {
+        className += " not-preferred";
+      }
+      return <a href="" onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        formationPickerHide();
+        if (selectedEngineeringId != engineeringId) {
+          changeEngineering(formationPickerRoundNum, formationPickerPatternIndex, engineeringId)
+        }
+      }} className={className}>
+        <Pic formationId={selectedFormationId} formationEngId={engineeringId} showEngName={true} />
+      </a>;
+    });
+  }
 
   const drawElements = draw.map((engRound: EngineeredRound | RoundError, roundNum: number) => {
 
@@ -527,7 +535,7 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
       return header(<strong className="error">{(engRound as RoundError).error}</strong>);
     }
 
-    const { round, pattern, alternateFormations, alternateEngineering } = engRound as EngineeredRound;
+    const { round, pattern } = engRound as EngineeredRound;
 
     const numPages = pattern.length / round.length;
 
@@ -535,18 +543,22 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
       <div className="page">
         {round.map((formationId, formationNum) => {
           const i = page * round.length + formationNum;
-          return <Pic
-            formationId={formationId}
-            formationEngId={pattern[i]}
-            showEngName={true}
-            onClickFormationName={() => formationPickerShow(alternateFormations[i], roundNum, formationNum)}
-            onClickDelete={round.length > 1 ? () => deleteFormation(roundNum, formationNum) : undefined}
-            onClickEngineeringName={() => engineeringPickerShow(alternateEngineering[i], roundNum, i)}
-          />;
+          return <a href="" onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            formationPickerShow(roundNum, i);
+          }}>
+            <Pic
+              formationId={formationId}
+              formationEngId={pattern[i]}
+              showEngName={true}
+              onClickDelete={round.length > 1 ? () => deleteFormation(roundNum, formationNum) : undefined}
+            />
+          </a>;
         }
         )}
 
-        {page == 0 ? <a href="" onClick={(event) => { event.preventDefault(); extendRound(roundNum); }} className="extend-round">
+        {page == 0 ? <a href="" onClick={(event) => { event.preventDefault(); event.stopPropagation(); extendRound(roundNum); }} className="extend-round">
           <img src={plus} />
         </a> : null}
       </div>
@@ -562,13 +574,15 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
   });
   return <>
     <Modal show={formationPickerShown} onHide={formationPickerHide}>
-      <Modal.Body className="formation-picker">
-        {formationPicker}
-      </Modal.Body>
-    </Modal>
-    <Modal show={engineeringPickerShown} onHide={engineeringPickerHide}>
-      <Modal.Body className="engineering-picker">
-        {engineeringPicker}
+      <Modal.Body>
+        <h2>Change Engineering</h2>
+        <div className="formation-picker">
+          {engineeringPicker}
+        </div>
+        <h2>Change Formation</h2>
+        <div className="formation-picker">
+          {formationPicker}
+        </div>
       </Modal.Body>
     </Modal>
     {drawElements}
@@ -655,6 +669,35 @@ const App = () => {
     }));
 
   const changeEngineering = (roundNum: number, patternIndex: number, newEngineeringId: EngineeringId) => {
+    setDraw(draw.map((engRound, i) => {
+      if (i == roundNum) {
+        let { round, pattern } = (engRound as EngineeredRound);
+        pattern = pattern.map(
+          (engId, j) => j == patternIndex ? newEngineeringId : engId
+        );
+
+        // See if we can remove pages
+        const firstRep = pattern.slice(0, round.length);
+        while (pattern.length / round.length > 1) {
+          const lastRep = pattern.slice(-round.length);
+          if (firstRep.every((v, i) => v == lastRep[i])) {
+            pattern = pattern.slice(0, -round.length);
+          } else {
+            break;
+          }
+        }
+
+        const { alternateFormations, alternateEngineering } = findAlternatives(round, pattern);
+        return {
+          ...engRound,
+          pattern,
+          alternateFormations,
+          alternateEngineering,
+        };
+      } else {
+        return engRound;
+      }
+    }));
   };
 
   const rerunSome = () => {
@@ -703,6 +746,7 @@ const App = () => {
           deleteFormation={deleteFormation}
           extendRound={extendRound}
           changeEngineering={changeEngineering}
+          includedFormations={includedFormations}
         />
       </div>
     </div>
