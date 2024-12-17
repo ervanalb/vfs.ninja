@@ -1,33 +1,33 @@
-import picAPrimary from './pics/a_primary.svg';
-import picAAlternate from './pics/a_alternate.svg';
-import picBPrimary from './pics/b_primary.svg';
-import picBAlternate from './pics/b_alternate.svg';
-import picCPrimaryV1 from './pics/c_primaryV1.svg';
-import picCPrimaryV2 from './pics/c_primaryV2.svg';
-import picCAlternateV1 from './pics/c_alternateV1.svg';
-import picCAlternateV2 from './pics/c_alternateV2.svg';
-import picDPrimary from './pics/d_primary.svg';
-import picDAlternate from './pics/d_alternate.svg';
-import picEPrimary from './pics/e_primary.svg';
-import picEAlternate from './pics/e_alternate.svg';
-import picFPrimary from './pics/f_primary.svg';
-import picFAlternate from './pics/f_alternate.svg';
-import picGPrimary from './pics/g_primary.svg';
-import picGAlternate from './pics/g_alternate.svg';
-import picHPrimaryInface from './pics/h_primaryInface.svg';
-import picHAlternateInface from './pics/h_alternateInface.svg';
-import picHPrimaryOutface from './pics/h_primaryOutface.svg';
-import picHAlternateOutface from './pics/h_alternateOutface.svg';
-import picHPrimaryExoticV1 from './pics/h_primaryExoticV1.svg';
-import picHPrimaryExoticV2 from './pics/h_primaryExoticV2.svg';
-import picHAlternateExoticV3 from './pics/h_alternateExoticV1.svg';
-import picHAlternateExoticV4 from './pics/h_alternateExoticV2.svg';
-import picJPrimary from './pics/j_primary.svg';
-import picJAlternate from './pics/j_alternate.svg';
-import picKPrimaryV1 from './pics/k_primaryV1.svg';
-import picKPrimaryV2 from './pics/k_primaryV2.svg';
-import picKAlternateV1 from './pics/k_alternateV1.svg';
-import picKAlternateV2 from './pics/k_alternateV2.svg';
+import picAV1 from './pics/a_v1.svg';
+import picAV2 from './pics/a_v2.svg';
+import picBV1 from './pics/b_v1.svg';
+import picBV2 from './pics/b_v2.svg';
+import picCV1 from './pics/c_v1.svg';
+import picCV2 from './pics/c_v2.svg';
+import picCV3 from './pics/c_v3.svg';
+import picCV4 from './pics/c_v4.svg';
+import picDV1 from './pics/d_v1.svg';
+import picDV2 from './pics/d_v2.svg';
+import picEV1 from './pics/e_v1.svg';
+import picEV2 from './pics/e_v2.svg';
+import picFV1 from './pics/f_v1.svg';
+import picFV2 from './pics/f_v2.svg';
+import picGV1 from './pics/g_v1.svg';
+import picGV2 from './pics/g_v2.svg';
+import picHP1 from './pics/h_p1.svg';
+import picHP2 from './pics/h_p2.svg';
+import picHP3 from './pics/h_p3.svg';
+import picHP4 from './pics/h_p4.svg';
+import picHX1 from './pics/h_x1.svg';
+import picHX2 from './pics/h_x2.svg';
+import picHX3 from './pics/h_x3.svg';
+import picHX4 from './pics/h_x4.svg';
+import picJV1 from './pics/j_v1.svg';
+import picJV2 from './pics/j_v2.svg';
+import picKV1 from './pics/k_v1.svg';
+import picKV2 from './pics/k_v2.svg';
+import picKV3 from './pics/k_v3.svg';
+import picKV4 from './pics/k_v4.svg';
 import picLPrimaryV1 from './pics/l_primaryV1.svg';
 import picLPrimaryV2 from './pics/l_primaryV2.svg';
 import picLAlternateV1 from './pics/l_alternateV1.svg';
@@ -100,54 +100,54 @@ export type BlockEngineering = {
 // COLORS: [K  R  G  B]
 //          HU HD HU HD
 const engineeringA: Record<string, RandomEngineering> = {
-  primary: { start: ["HD2", "HD", "HD2", "HD"], priority: 1, pic: picAPrimary },
-  alternate: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picAAlternate },
+  v1: { start: ["HD2", "HD", "HD2", "HD"], priority: 1, pic: picAV1 },
+  v2: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picAV2 },
 } as const;
 const engineeringB: Record<string, RandomEngineering> = {
-  primary: { start: ["HD2", "HD", "HD2", "HD"], priority: 1, pic: picBPrimary },
-  alternate: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picBAlternate },
+  v1: { start: ["HD2", "HD", "HD2", "HD"], priority: 1, pic: picBV1 },
+  v2: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picBV2 },
 } as const;
 const engineeringC: Record<string, RandomEngineering> = {
-  primaryV1: { start: ["HU", "HD", "HD", "HD"], priority: 1, pic: picCPrimaryV1 },
-  primaryV2: { start: ["HD", "HD", "HU", "HD"], priority: 2, pic: picCPrimaryV2 },
-  alternateV1: { start: ["HD", "HU", "HD", "HD"], priority: 3, pic: picCAlternateV1 },
-  alternateV2: { start: ["HD", "HD", "HD", "HU"], priority: 4, pic: picCAlternateV2 },
+  v1: { start: ["HU", "HD", "HD", "HD"], priority: 1, pic: picCV1 },
+  v2: { start: ["HD", "HD", "HU", "HD"], priority: 2, pic: picCV2 },
+  v3: { start: ["HD", "HU", "HD", "HD"], priority: 3, pic: picCV3 },
+  v4: { start: ["HD", "HD", "HD", "HU"], priority: 4, pic: picCV4 },
 } as const;
 const engineeringD: Record<string, RandomEngineering> = {
-  primary: { start: ["HUO", "HUO", "HD", "HD"], priority: 1, pic: picDPrimary },
-  alternate: { start: ["HD", "HD", "HUO", "HUO"], priority: 2, pic: picDAlternate },
+  v1: { start: ["HUO", "HUO", "HD", "HD"], priority: 1, pic: picDV1 },
+  v2: { start: ["HD", "HD", "HUO", "HUO"], priority: 2, pic: picDV2 },
 } as const;
 const engineeringE: Record<string, RandomEngineering> = {
-  primary: { start: ["HD2", "HD", "HD2", "HD"], priority: 1, pic: picEPrimary },
-  alternate: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picEAlternate },
+  v1: { start: ["HD2", "HD", "HD2", "HD"], priority: 1, pic: picEV1 },
+  v2: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picEV2 },
 } as const;
 const engineeringF: Record<string, RandomEngineering> = {
-  primary: { start: ["HUO", "HUO", "HDO", "HDO"], priority: 1, pic: picFPrimary },
-  alternate: { start: ["HDO", "HDO", "HUO", "HUO"], priority: 2, pic: picFAlternate },
+  v1: { start: ["HUO", "HUO", "HDO", "HDO"], priority: 1, pic: picFV1 },
+  v2: { start: ["HDO", "HDO", "HUO", "HUO"], priority: 2, pic: picFV2 },
 } as const;
 const engineeringG: Record<string, RandomEngineering> = {
-  primary: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picGPrimary },
-  alternate: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picGAlternate },
+  v1: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picGV1 },
+  v2: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picGV2 },
 } as const;
 const engineeringH: Record<string, RandomEngineering> = {
-  primaryInface: { start: ["HU", "HU", "HDO", "HDO"], priority: 1, pic: picHPrimaryInface },
-  alternateInface: { start: ["HDO", "HDO", "HU", "HU"], priority: 2, pic: picHAlternateInface },
-  primaryOutface: { start: ["HUO", "HUO", "HD", "HD"], priority: 3, pic: picHPrimaryOutface },
-  alternateOutface: { start: ["HD", "HD", "HUO", "HUO"], priority: 4, pic: picHAlternateOutface },
-  primaryExoticV1: { start: ["HU", "HD", "HUO", "HD"], priority: 5, pic: picHPrimaryExoticV1 },
-  primaryExoticV2: { start: ["HUO", "HD", "HU", "HD"], priority: 6, pic: picHPrimaryExoticV2 },
-  alternateExoticV1: { start: ["HD", "HUO", "HD", "HU"], priority: 7, pic: picHAlternateExoticV3 },
-  alternateExoticV2: { start: ["HD", "HU", "HD", "HUO"], priority: 8, pic: picHAlternateExoticV4 },
+  p1: { start: ["HU", "HU", "HDO", "HDO"], priority: 1, pic: picHP1 },
+  p2: { start: ["HDO", "HDO", "HU", "HU"], priority: 2, pic: picHP2 },
+  p3: { start: ["HUO", "HUO", "HD", "HD"], priority: 3, pic: picHP3 },
+  p4: { start: ["HD", "HD", "HUO", "HUO"], priority: 4, pic: picHP4 },
+  x1: { start: ["HU", "HD", "HUO", "HD"], priority: 5, pic: picHX1 },
+  x2: { start: ["HUO", "HD", "HU", "HD"], priority: 6, pic: picHX2 },
+  x3: { start: ["HD", "HUO", "HD", "HU"], priority: 7, pic: picHX3 },
+  x4: { start: ["HD", "HU", "HD", "HUO"], priority: 8, pic: picHX4 },
 } as const;
 const engineeringJ: Record<string, RandomEngineering> = {
-  primary: { start: ["HD2", "HD2", "HD", "HD"], priority: 1, pic: picJPrimary },
-  alternate: { start: ["HD", "HD", "HD2", "HD2"], priority: 2, pic: picJAlternate },
+  v1: { start: ["HD2", "HD2", "HD", "HD"], priority: 1, pic: picJV1 },
+  v2: { start: ["HD", "HD", "HD2", "HD2"], priority: 2, pic: picJV2 },
 } as const;
 const engineeringK: Record<string, RandomEngineering> = {
-  primaryV1: { start: ["HU", "HD", "HD", "HD"], priority: 1, pic: picKPrimaryV1 },
-  primaryV2: { start: ["HD", "HD", "HU", "HD"], priority: 2, pic: picKPrimaryV2 },
-  alternateV1: { start: ["HD", "HU", "HD", "HD"], priority: 3, pic: picKAlternateV1 },
-  alternateV2: { start: ["HD", "HD", "HD", "HU"], priority: 4, pic: picKAlternateV2 },
+  v1: { start: ["HU", "HD", "HD", "HD"], priority: 1, pic: picKV1 },
+  v2: { start: ["HD", "HD", "HU", "HD"], priority: 2, pic: picKV2 },
+  v3: { start: ["HD", "HU", "HD", "HD"], priority: 3, pic: picKV3 },
+  v4: { start: ["HD", "HD", "HD", "HU"], priority: 4, pic: picKV4 },
 } as const;
 const engineeringL: Record<string, RandomEngineering> = {
   primaryV1: { start: ["HD", "HD", "HD", "HDO"], priority: 1, pic: picLPrimaryV1 },
