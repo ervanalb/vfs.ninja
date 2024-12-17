@@ -54,12 +54,16 @@ body {
 }
 
 .pic-container {
-  display: flex;
-  flex-direction: column;
   border: 1px solid black;
   border-radius: var(--bs-border-radius);
   position: relative;
   color: var(--bs-body-color);
+  overflow: hidden;
+}
+
+.pic-inner-container {
+  display: flex;
+  flex-direction: column;
 }
 
 .pic-fname-overlay {
@@ -67,6 +71,7 @@ body {
   position: absolute;
   font-size: 24px;
   font-weight: bold;
+  pointer-events: none;
 }
 
 .pic-ename-overlay {
@@ -75,6 +80,7 @@ body {
   font-size: 12px;
   right: 0;
   bottom: 0;
+  pointer-events: none;
 }
 
 .pic-delete-overlay {
@@ -131,7 +137,7 @@ body {
   margin-bottom: 1rem;
 }
 
-.round .pic-container {
+.round .pic-inner-container {
   flex-direction: row;
 }
 
@@ -190,15 +196,11 @@ body {
   gap: 16px;
 }
 
-.formation-picker-entry {
-  color: var(--bs-body-color);
-}
-
-.formation-picker-entry.selected .pic-container {
+.formation-picker .pic-container.selected {
   border-width: 3px;
 }
 
-.formation-picker-entry.not-preferred .pic-container::after {
+.formation-picker .pic-container.not-preferred .pic-inner-container::after {
   content: '';
   width: 100%;
   height: 100%;
@@ -215,4 +217,8 @@ body {
 .extend-round img {
   display: block;
   padding: 8px;
+}
+
+.modal-dialog {
+	max-width: 80vw;
 }

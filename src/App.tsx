@@ -238,12 +238,20 @@ type PicProps = {
   formationId: FormationId,
   formationEngId?: EngineeringId,
   showEngName?: boolean,
+  onClick?: () => void,
   onClickDelete?: () => void,
+  className?: string,
 };
 
-const Pic: React.FC<PicProps> = ({ formationId, formationEngId, showEngName, onClickDelete }) => {
+const Pic: React.FC<PicProps> = ({ formationId, formationEngId, showEngName, onClick, onClickDelete, className }) => {
   if (formationEngId === undefined) {
     formationEngId = defaultEngineering(formationId);
+  }
+
+  if (!className) {
+    className = "pic-container";
+  } else {
+    className = "pic-container " + className;
   }
   const f = formations[formationId];
 
@@ -254,25 +262,35 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, showEngName, onC
     <img src={close} />
   </a> : null;
 
+  const wrapOnClick = (pics: JSX.Element): JSX.Element => (
+    onClick
+      ? <a href="" className="pic-inner-container" onClick={(event) => { event.preventDefault(); event.stopPropagation(); onClick(); }}>{pics}</a>
+      : <div className="pic-inner-container">pics</div>
+  );
+
   if (f.type === "block") {
     const e = f.engineeringStrategies[formationEngId];
-    return <div className="pic-container">
-      <div className="pic-fname-overlay">{fName}</div>
-      {showEngName ? <div className="pic-ename-overlay">{eName}</div> : null}
-      {deleteButton}
+    let pics = wrapOnClick(<>
       <img src={e.startPic} className="pic-start" />
       <div className="pic-sep" />
       <img src={e.interPic} className="pic-inter" />
       <div className="pic-sep" />
       <img src={e.endPic} className="pic-end" />
-    </div>;
-  } else {
-    const e = f.engineeringStrategies[formationEngId];
-    return <div className="pic-container">
+    </>);
+    return <div className={className}>
       <div className="pic-fname-overlay">{fName}</div>
       {showEngName ? <div className="pic-ename-overlay">{eName}</div> : null}
       {deleteButton}
-      <img src={e.pic} className="pic" />
+      {pics}
+    </div>;
+  } else {
+    const e = f.engineeringStrategies[formationEngId];
+    const pic = wrapOnClick(<img src={e.pic} className="pic" />);
+    return <div className={className}>
+      <div className="pic-fname-overlay">{fName}</div>
+      {showEngName ? <div className="pic-ename-overlay">{eName}</div> : null}
+      {deleteButton}
+      {pic}
     </div>;
   }
 };
@@ -309,7 +327,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
   }, [roundLength, includedFormations]);
 
   const compClassOptions = Object.entries(compClasses).map(([id, { name }]) =>
-    <option value={id}>{name}</option>
+    <option value={id} key={id}>{name}</option>
   );
 
   const handleCompClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -337,7 +355,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
 
     const checked = includedFormations.includes(id);
 
-    return <div className={"form-check" + (checked ? "" : " disabled")}>
+    return <div className={"form-check" + (checked ? "" : " disabled")} key={id}>
       <input
         className="form-check-input"
         type="checkbox"
@@ -359,7 +377,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
   const handleToggleCustomPool = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => { event.preventDefault(); event.stopPropagation(); setCustomPoolVisible(!customPoolVisible); };
 
   const compClassSelector = <Form.Group className="mb-3">
-    <label htmlFor="poolSelector">
+    <label htmlFor="classSelector">
       Class:
     </label>
     <select className="form-select" id="classSelector" aria-label="Class Selector" value={compClass} onChange={handleCompClassChange}>
@@ -486,43 +504,35 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
     const { alternateFormations, alternateEngineering } = engRound;
 
     formationPicker = alternateFormations[formationNum].map(([formationId, engId]) => {
-      let className = "formation-picker-entry";
+      const classes = [];
       if (selectedFormationId == formationId) {
-        className += " selected";
+        classes.push("selected");
       }
       if (!includedFormations.includes(formationId)) {
-        className += " not-preferred";
+        classes.push("not-preferred");
       }
-      return <a href="" onClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
+      return <Pic key={formationId} formationId={formationId} formationEngId={engId} onClick={() => {
         formationPickerHide();
         if (selectedFormationId != formationId) {
           changeFormation(formationPickerRoundNum, formationNum, formationId)
         }
-      }} className={className}>
-        <Pic formationId={formationId} formationEngId={engId} />
-      </a>;
+      }} className={classes ? classes.join(" ") : undefined} />;
     });
 
     engineeringPicker = alternateEngineering[formationPickerPatternIndex].map(([engineeringId, relCost]) => {
-      let className = "formation-picker-entry";
+      const classes = [];
       if (selectedEngineeringId == engineeringId) {
-        className += " selected";
+        classes.push("selected");
       }
       if (relCost > 0) {
-        className += " not-preferred";
+        classes.push("not-preferred");
       }
-      return <a href="" onClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
+      return <Pic key={engineeringId} formationId={selectedFormationId} formationEngId={engineeringId} showEngName={true} onClick={() => {
         formationPickerHide();
         if (selectedEngineeringId != engineeringId) {
           changeEngineering(formationPickerRoundNum, formationPickerPatternIndex, engineeringId)
         }
-      }} className={className}>
-        <Pic formationId={selectedFormationId} formationEngId={engineeringId} showEngName={true} />
-      </a>;
+      }} className={classes ? classes.join(" ") : undefined} />;
     });
   }
 
@@ -535,7 +545,9 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
       </div>;
 
     if ((engRound as RoundError).error) {
-      return header(<strong className="error">{(engRound as RoundError).error}</strong>);
+      return <div key={roundNum}>
+        {header(<strong className="error">{(engRound as RoundError).error}</strong>)}
+      </div>;
     }
 
     const { round, pattern } = engRound as EngineeredRound;
@@ -543,21 +555,17 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
     const numPages = pattern.length / round.length;
 
     const roundPics = Array.from({ length: numPages }, (_, page) =>
-      <div className="page">
+      <div className="page" key={page}>
         {round.map((formationId, formationNum) => {
           const i = page * round.length + formationNum;
-          return <a href="" onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            formationPickerShow(roundNum, i);
-          }}>
-            <Pic
-              formationId={formationId}
-              formationEngId={pattern[i]}
-              showEngName={true}
-              onClickDelete={round.length > 1 ? () => deleteFormation(roundNum, formationNum) : undefined}
-            />
-          </a>;
+          return <Pic
+            key={formationId}
+            onClick={() => formationPickerShow(roundNum, i)}
+            formationId={formationId}
+            formationEngId={pattern[i]}
+            showEngName={true}
+            onClickDelete={round.length > 1 ? () => deleteFormation(roundNum, formationNum) : undefined}
+          />;
         }
         )}
 
@@ -568,12 +576,12 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
     );
     const roundString = round.map((formationId: FormationId): string => formations[formationId].name).join(" - ");
 
-    return <>
+    return <div key={roundNum}>
       {header(<strong>{roundString}</strong>)}
       <div className="round">
         {roundPics}
       </div>
-    </>;
+    </div>;
   });
   return <>
     <Modal show={formationPickerShown} onHide={formationPickerHide}>
@@ -615,15 +623,202 @@ const RerunButton: React.FC<RerunButtonProps> = ({ onClick }) => {
   }}><img className={spinning ? "spin" : ""} src={rerun} /></button>
 };
 
+const serialize = ({ compClass, includedFormations, roundLength, filterRest, draw }: {
+  compClass: CompClassId | "custom",
+  includedFormations: Array<FormationId>,
+  roundLength: number,
+  filterRest: boolean,
+  draw: Array<EngineeredRound | RoundError>,
+}): string => {
+
+  const compClassString = compClass == "custom" ? "custom(" + roundLength + "," + includedFormations.join(",") + ")" : compClass;
+  const filterRestString = filterRest ? "r" : "";
+
+  const drawString = draw.map((engRound) => {
+    if ((engRound as RoundError).error !== undefined) {
+      return "e" + btoa("" + (engRound as RoundError).error);
+    } else {
+      const { round, pattern } = engRound as EngineeredRound;
+      const rString = "r(" + round.join(",") + ")";
+      const pString = "p(" + pattern.join(",") + ")";
+      const [defaultPattern] = optimizeEngineering(round);
+      if (pattern.length == defaultPattern.length && pattern.every((e, i) => e == defaultPattern[i])) {
+        return rString;
+      } else {
+        return rString + pString;
+      }
+    }
+  }).join(",");
+
+  return "v1," + compClassString + "," + filterRestString + "," + drawString;
+};
+
+const deserialize = (
+  str: string,
+  { setIncludedFormationsNoRerun: setIncludedFormationsNoRerun, setRoundLengthNoRerun: setRoundLength, setFilterRestNoRerun: setFilterRest, setNumRoundsNoRerun: setNumRounds, setDraw }: {
+    setIncludedFormationsNoRerun: (includedFormations: Array<FormationId>) => void,
+    setRoundLengthNoRerun: (roundLength: number) => void,
+    setFilterRestNoRerun: (filterRest: boolean) => void,
+    setNumRoundsNoRerun: (numRounds: number) => void,
+    setDraw: (draw: Array<EngineeredRound | RoundError>) => void,
+  }) => {
+
+  let remainingStr = str;
+  let curChar = 0;
+
+  const parseUntil = (char: string): string => {
+    let index = remainingStr.indexOf(char);
+    if (index < 0) {
+      index = remainingStr.length;
+    }
+    const prefix = remainingStr.slice(0, index);
+    remainingStr = remainingStr.slice(index);
+    curChar += index;
+    return prefix;
+  };
+
+  const popOff = (char: string) => {
+    if (!remainingStr.startsWith(char)) {
+      throw "Parse error: expected " + JSON.stringify(char).trim() + " (char " + curChar + ")";
+    }
+    curChar += char.length;
+    remainingStr = remainingStr.slice(char.length);
+  }
+
+  const version = parseUntil(",");
+  popOff(",");
+  if (version != "v1") {
+    throw "Incorrect version";
+  }
+
+  if (remainingStr.startsWith("custom")) {
+    popOff("custom(");
+    const customString = parseUntil(")");
+    popOff("),");
+    const [roundLengthStr, ...includedFormationStrs] = customString.split(",");
+    const roundLength = parseInt(roundLengthStr);
+    if (isNaN(roundLength)) {
+      throw "Bad round length";
+    }
+    setRoundLength(roundLength);
+
+    if (!includedFormationStrs.every((includedFormationStr) => Object.keys(formations).includes(includedFormationStr))) {
+      throw "Bad included formations list";
+    }
+    setIncludedFormationsNoRerun(includedFormationStrs);
+  } else {
+    const compClassString = parseUntil(",");
+    popOff(",");
+
+    if (!Object.keys(compClasses).includes(compClassString)) {
+      throw "Bad comp class";
+    }
+    setRoundLength(compClasses[compClassString].roundLength);
+    setIncludedFormationsNoRerun(formationsInCompClass(compClassString));
+  }
+
+  const filterRestStr = parseUntil(",");
+  popOff(",");
+  if (filterRestStr == "r") {
+    setFilterRest(true);
+  } else if (filterRestStr == "") {
+    setFilterRest(false);
+  } else {
+    throw "Bad filter rest value"
+  }
+
+  let draw: Array<EngineeredRound | RoundError> = [];
+  for (; ;) {
+    if (remainingStr.startsWith("r")) {
+      popOff("r(");
+      const roundString = parseUntil(")");
+      popOff(")");
+
+      // Parse roundString
+      const round = roundString.split(",");
+      // TODO validate round
+
+      let pattern;
+      if (remainingStr.startsWith("p")) {
+        popOff("p(");
+        const patternString = parseUntil(")");
+        popOff(")");
+        // Parse patternString
+        pattern = patternString.split(",");
+        // TODO validate pattern
+      } else {
+        // Generate pattern
+        [pattern] = optimizeEngineering(round);
+      }
+
+      const { alternateFormations, alternateEngineering } = findAlternatives(round, pattern);
+      draw.push({ round, pattern, alternateFormations, alternateEngineering });
+    } else if (remainingStr.startsWith("e")) {
+      popOff("e");
+      const errB64 = parseUntil(",");
+      try {
+        const err = atob(errB64);
+        draw.push({ error: err });
+      } catch (e) {
+        throw "Bad base64 error string";
+      }
+    } else {
+      throw "Couldn't parse round";
+    }
+
+    if (remainingStr.length > 0) {
+      popOff(",");
+    } else {
+      break;
+    }
+  }
+  if (draw.length == 0) {
+    throw "Found zero rounds";
+  }
+  setDraw(draw);
+  setNumRounds(draw.length);
+};
+
 const App = () => {
   // Setup
   const [compClass, setCompClass] = useState<CompClassId | "custom">(initialCompClass);
-  const [roundLength, setRoundLength] = useState<number>(compClasses[initialCompClass].roundLength);
-  const [includedFormations, setIncludedFormations] = useState<Array<FormationId>>(formationsInCompClass(initialCompClass));
-  const [filterRest, setFilterRest] = useState<boolean>(false);
-  const [numRounds, setNumRounds] = useState<number>(5);
-
+  const [roundLength, setRoundLengthNoRerun] = useState<number>(compClasses[initialCompClass].roundLength);
+  const [includedFormations, setIncludedFormationsNoRerun] = useState<Array<FormationId>>(formationsInCompClass(initialCompClass));
+  const [filterRest, setFilterRestNoRerun] = useState<boolean>(false);
+  const [numRounds, setNumRoundsNoRerun] = useState<number>(5);
   const [draw, setDraw] = useState<Array<EngineeredRound | RoundError>>([]);
+  const [hash, setHash] = useState<string>("");
+  const [rerunAllTrigger, setRerunAllTrigger] = useState<boolean>(false);
+  const [rerunSomeTrigger, setRerunSomeTrigger] = useState<boolean>(false);
+  const [deserializeTrigger, setDeserializeTrigger] = useState<boolean>(false);
+
+  const setRoundLength = (newRoundLength: number) => {
+    if (newRoundLength !== roundLength) {
+      setRoundLengthNoRerun(newRoundLength);
+      setRerunAllTrigger(true);
+    }
+  };
+
+  const setIncludedFormations = (newIncludedFormations: Array<FormationId>) => {
+    if (newIncludedFormations !== includedFormations) {
+      setIncludedFormationsNoRerun(newIncludedFormations);
+      setRerunAllTrigger(true);
+    }
+  };
+
+  const setFilterRest = (newFilterRest: boolean) => {
+    if (newFilterRest !== filterRest) {
+      setFilterRestNoRerun(newFilterRest);
+      setRerunAllTrigger(true);
+    }
+  };
+
+  const setNumRounds = (newNumRounds: number) => {
+    if (newNumRounds !== numRounds) {
+      setNumRoundsNoRerun(newNumRounds);
+      setRerunSomeTrigger(true);
+    }
+  };
 
   const applyFilters = (f: () => [Round, Pattern]): [Round, Pattern] => {
     for (let i = 0; i < 1000; i++) {
@@ -749,12 +944,63 @@ const App = () => {
   };
 
   useEffect(() => {
-    rerunAll();
-  }, [roundLength, includedFormations, filterRest]);
+    if (rerunAllTrigger) {
+      rerunAll();
+      setRerunAllTrigger(false);
+    }
+  }, [rerunAllTrigger, setRerunAllTrigger]);
 
   useEffect(() => {
-    rerunSome();
-  }, [numRounds]);
+    if (rerunSomeTrigger) {
+      rerunSome();
+      setRerunSomeTrigger(false);
+    }
+  }, [rerunSomeTrigger, setRerunSomeTrigger]);
+
+  useEffect(() => {
+    if (draw.length > 0) {
+      const newHash = serialize({ compClass, roundLength, includedFormations, filterRest, draw });
+      setHash(newHash); // Avoid immediate deserialize
+      window.history.pushState(null, '', '#' + newHash);
+    }
+  }, [compClass, roundLength, includedFormations, filterRest, draw]);
+
+  useEffect(() => {
+    if (deserializeTrigger && hash != "") {
+      deserialize(hash, {
+        setRoundLengthNoRerun, setIncludedFormationsNoRerun, setFilterRestNoRerun, setNumRoundsNoRerun, setDraw
+      });
+      setDeserializeTrigger(false);
+    }
+  }, [hash, deserializeTrigger, setDeserializeTrigger]);
+
+  useEffect(() => {
+    const hashChanged = () => {
+      let newHash = window.location.hash;
+      if (newHash) {
+        newHash = newHash.substring(1);
+        if (newHash !== hash) {
+          setHash(newHash);
+          setDeserializeTrigger(true);
+        }
+      } else {
+        setHash("");
+      }
+    };
+
+    if (window.location.hash.length > 1) {
+      hashChanged();
+    } else {
+      // Run all on first page load if no hash is present
+      rerunAll();
+    }
+    window.addEventListener('hashchange', hashChanged);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('hashchange', hashChanged);
+    };
+  }, []);
 
   return <>
     <div className="container">
