@@ -85,14 +85,12 @@ export type Position = "HU" // Head up
 
 export type RandomEngineering = {
   start: [Position, Position, Position, Position];
-  pools: Array<EngineeringPoolId>;
   priority: number;
   pic: string;
 };
 export type BlockEngineering = {
   start: [Position, Position, Position, Position];
   end: [Position, Position, Position, Position];
-  pools: Array<EngineeringPoolId>;
   priority: number;
   startPic: string;
   interPic: string;
@@ -102,106 +100,106 @@ export type BlockEngineering = {
 // COLORS: [K  R  G  B]
 //          HU HD HU HD
 const engineeringA: Record<string, RandomEngineering> = {
-  primary: { start: ["HD2", "HD", "HD2", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picAPrimary },
-  alternate: { start: ["HD", "HD2", "HD", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picAAlternate },
+  primary: { start: ["HD2", "HD", "HD2", "HD"], priority: 1, pic: picAPrimary },
+  alternate: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picAAlternate },
 } as const;
 const engineeringB: Record<string, RandomEngineering> = {
-  primary: { start: ["HD2", "HD", "HD2", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picBPrimary },
-  alternate: { start: ["HD", "HD2", "HD", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picBAlternate },
+  primary: { start: ["HD2", "HD", "HD2", "HD"], priority: 1, pic: picBPrimary },
+  alternate: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picBAlternate },
 } as const;
 const engineeringC: Record<string, RandomEngineering> = {
-  primaryV1: { start: ["HU", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picCPrimaryV1 },
-  primaryV2: { start: ["HD", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picCPrimaryV2 },
-  alternateV1: { start: ["HD", "HU", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 3, pic: picCAlternateV1 },
-  alternateV2: { start: ["HD", "HD", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 4, pic: picCAlternateV2 },
+  primaryV1: { start: ["HU", "HD", "HD", "HD"], priority: 1, pic: picCPrimaryV1 },
+  primaryV2: { start: ["HD", "HD", "HU", "HD"], priority: 2, pic: picCPrimaryV2 },
+  alternateV1: { start: ["HD", "HU", "HD", "HD"], priority: 3, pic: picCAlternateV1 },
+  alternateV2: { start: ["HD", "HD", "HD", "HU"], priority: 4, pic: picCAlternateV2 },
 } as const;
 const engineeringD: Record<string, RandomEngineering> = {
-  primary: { start: ["HUO", "HUO", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picDPrimary },
-  alternate: { start: ["HD", "HD", "HUO", "HUO"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picDAlternate },
+  primary: { start: ["HUO", "HUO", "HD", "HD"], priority: 1, pic: picDPrimary },
+  alternate: { start: ["HD", "HD", "HUO", "HUO"], priority: 2, pic: picDAlternate },
 } as const;
 const engineeringE: Record<string, RandomEngineering> = {
-  primary: { start: ["HD2", "HD", "HD2", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picEPrimary },
-  alternate: { start: ["HD", "HD2", "HD", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picEAlternate },
+  primary: { start: ["HD2", "HD", "HD2", "HD"], priority: 1, pic: picEPrimary },
+  alternate: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picEAlternate },
 } as const;
 const engineeringF: Record<string, RandomEngineering> = {
-  primary: { start: ["HUO", "HUO", "HDO", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picFPrimary },
-  alternate: { start: ["HDO", "HDO", "HUO", "HUO"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picFAlternate },
+  primary: { start: ["HUO", "HUO", "HDO", "HDO"], priority: 1, pic: picFPrimary },
+  alternate: { start: ["HDO", "HDO", "HUO", "HUO"], priority: 2, pic: picFAlternate },
 } as const;
 const engineeringG: Record<string, RandomEngineering> = {
-  primary: { start: ["HU", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picGPrimary },
-  alternate: { start: ["HD", "HU", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picGAlternate },
+  primary: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picGPrimary },
+  alternate: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picGAlternate },
 } as const;
 const engineeringH: Record<string, RandomEngineering> = {
-  primaryInface: { start: ["HU", "HU", "HDO", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picHPrimaryInface },
-  alternateInface: { start: ["HDO", "HDO", "HU", "HU"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picHAlternateInface },
-  primaryOutface: { start: ["HUO", "HUO", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 3, pic: picHPrimaryOutface },
-  alternateOutface: { start: ["HD", "HD", "HUO", "HUO"], pools: ["core", "coreMinusExotic"], priority: 4, pic: picHAlternateOutface },
-  primaryExoticV1: { start: ["HU", "HD", "HUO", "HD"], pools: ["core"], priority: 5, pic: picHPrimaryExoticV1 },
-  primaryExoticV2: { start: ["HUO", "HD", "HU", "HD"], pools: ["core"], priority: 6, pic: picHPrimaryExoticV2 },
-  alternateExoticV1: { start: ["HD", "HUO", "HD", "HU"], pools: ["core"], priority: 7, pic: picHAlternateExoticV3 },
-  alternateExoticV2: { start: ["HD", "HU", "HD", "HUO"], pools: ["core"], priority: 8, pic: picHAlternateExoticV4 },
+  primaryInface: { start: ["HU", "HU", "HDO", "HDO"], priority: 1, pic: picHPrimaryInface },
+  alternateInface: { start: ["HDO", "HDO", "HU", "HU"], priority: 2, pic: picHAlternateInface },
+  primaryOutface: { start: ["HUO", "HUO", "HD", "HD"], priority: 3, pic: picHPrimaryOutface },
+  alternateOutface: { start: ["HD", "HD", "HUO", "HUO"], priority: 4, pic: picHAlternateOutface },
+  primaryExoticV1: { start: ["HU", "HD", "HUO", "HD"], priority: 5, pic: picHPrimaryExoticV1 },
+  primaryExoticV2: { start: ["HUO", "HD", "HU", "HD"], priority: 6, pic: picHPrimaryExoticV2 },
+  alternateExoticV1: { start: ["HD", "HUO", "HD", "HU"], priority: 7, pic: picHAlternateExoticV3 },
+  alternateExoticV2: { start: ["HD", "HU", "HD", "HUO"], priority: 8, pic: picHAlternateExoticV4 },
 } as const;
 const engineeringJ: Record<string, RandomEngineering> = {
-  primary: { start: ["HD2", "HD2", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picJPrimary },
-  alternate: { start: ["HD", "HD", "HD2", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picJAlternate },
+  primary: { start: ["HD2", "HD2", "HD", "HD"], priority: 1, pic: picJPrimary },
+  alternate: { start: ["HD", "HD", "HD2", "HD2"], priority: 2, pic: picJAlternate },
 } as const;
 const engineeringK: Record<string, RandomEngineering> = {
-  primaryV1: { start: ["HU", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picKPrimaryV1 },
-  primaryV2: { start: ["HD", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picKPrimaryV2 },
-  alternateV1: { start: ["HD", "HU", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 3, pic: picKAlternateV1 },
-  alternateV2: { start: ["HD", "HD", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 4, pic: picKAlternateV2 },
+  primaryV1: { start: ["HU", "HD", "HD", "HD"], priority: 1, pic: picKPrimaryV1 },
+  primaryV2: { start: ["HD", "HD", "HU", "HD"], priority: 2, pic: picKPrimaryV2 },
+  alternateV1: { start: ["HD", "HU", "HD", "HD"], priority: 3, pic: picKAlternateV1 },
+  alternateV2: { start: ["HD", "HD", "HD", "HU"], priority: 4, pic: picKAlternateV2 },
 } as const;
 const engineeringL: Record<string, RandomEngineering> = {
-  primaryV1: { start: ["HD", "HD", "HD", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picLPrimaryV1 },
-  primaryV2: { start: ["HDO", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picLPrimaryV2 },
-  alternateV1: { start: ["HD", "HD", "HDO", "HD"], pools: ["core", "coreMinusExotic"], priority: 3, pic: picLAlternateV1 },
-  alternateV2: { start: ["HD", "HDO", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 4, pic: picLAlternateV2 },
+  primaryV1: { start: ["HD", "HD", "HD", "HDO"], priority: 1, pic: picLPrimaryV1 },
+  primaryV2: { start: ["HDO", "HD", "HD", "HD"], priority: 2, pic: picLPrimaryV2 },
+  alternateV1: { start: ["HD", "HD", "HDO", "HD"], priority: 3, pic: picLAlternateV1 },
+  alternateV2: { start: ["HD", "HDO", "HD", "HD"], priority: 4, pic: picLAlternateV2 },
 } as const;
 const engineeringM: Record<string, RandomEngineering> = {
-  primary: { start: ["HU", "HU", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picMPrimary },
-  alternate: { start: ["HD", "HD", "HU", "HU"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picMAlternate },
+  primary: { start: ["HU", "HU", "HD", "HD"], priority: 1, pic: picMPrimary },
+  alternate: { start: ["HD", "HD", "HU", "HU"], priority: 2, pic: picMAlternate },
 } as const;
 const engineeringN: Record<string, RandomEngineering> = {
-  primary: { start: ["HD", "HD", "HDO", "HDO"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picNPrimary },
-  alternate: { start: ["HDO", "HDO", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picNAlternate },
+  primary: { start: ["HD", "HD", "HDO", "HDO"], priority: 1, pic: picNPrimary },
+  alternate: { start: ["HDO", "HDO", "HD", "HD"], priority: 2, pic: picNAlternate },
 } as const;
 const engineeringO: Record<string, RandomEngineering> = {
-  primaryPieceV1: { start: ["HU", "HU", "HD2", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picOPrimaryPieceV1 },
-  primaryPieceV2: { start: ["HU", "HU", "HD", "HD2"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picOPrimaryPieceV2 },
-  primaryCrossV1: { start: ["HU", "HDO", "HU", "HD2"], pools: ["core", "coreMinusExotic"], priority: 3, pic: picOPrimaryCrossV1 },
-  primaryCrossV2: { start: ["HU", "HD2", "HU", "HDO"], pools: ["core", "coreMinusExotic"], priority: 4, pic: picOPrimaryCrossV2 },
-  alternatePieceV1: { start: ["HD", "HD2", "HU", "HU"], pools: ["core", "coreMinusExotic"], priority: 5, pic: picOAlternatePieceV1 },
-  alternatePieceV2: { start: ["HD2", "HD", "HU", "HU"], pools: ["core", "coreMinusExotic"], priority: 6, pic: picOAlternatePieceV2 },
-  alternateCrossV1: { start: ["HD2", "HU", "HDO", "HU"], pools: ["core", "coreMinusExotic"], priority: 7, pic: picOAlternateCrossV1 },
-  alternateCrossV2: { start: ["HDO", "HU", "HD2", "HU"], pools: ["core", "coreMinusExotic"], priority: 8, pic: picOAlternateCrossV2 },
+  primaryPieceV1: { start: ["HU", "HU", "HD2", "HD"], priority: 1, pic: picOPrimaryPieceV1 },
+  primaryPieceV2: { start: ["HU", "HU", "HD", "HD2"], priority: 2, pic: picOPrimaryPieceV2 },
+  primaryCrossV1: { start: ["HU", "HDO", "HU", "HD2"], priority: 3, pic: picOPrimaryCrossV1 },
+  primaryCrossV2: { start: ["HU", "HD2", "HU", "HDO"], priority: 4, pic: picOPrimaryCrossV2 },
+  alternatePieceV1: { start: ["HD", "HD2", "HU", "HU"], priority: 5, pic: picOAlternatePieceV1 },
+  alternatePieceV2: { start: ["HD2", "HD", "HU", "HU"], priority: 6, pic: picOAlternatePieceV2 },
+  alternateCrossV1: { start: ["HD2", "HU", "HDO", "HU"], priority: 7, pic: picOAlternateCrossV1 },
+  alternateCrossV2: { start: ["HDO", "HU", "HD2", "HU"], priority: 8, pic: picOAlternateCrossV2 },
 } as const;
 const engineeringP: Record<string, RandomEngineering> = {
-  primaryV1: { start: ["HU", "HD", "HUO", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picPPrimaryV1 },
-  primaryV2: { start: ["HUO", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picPPrimaryV2 },
-  alternateV1: { start: ["HD", "HU", "HD", "HUO"], pools: ["core", "coreMinusExotic"], priority: 3, pic: picPAlternateV1 },
-  alternateV2: { start: ["HD", "HUO", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 4, pic: picPAlternateV2 },
+  primaryV1: { start: ["HU", "HD", "HUO", "HD"], priority: 1, pic: picPPrimaryV1 },
+  primaryV2: { start: ["HUO", "HD", "HU", "HD"], priority: 2, pic: picPPrimaryV2 },
+  alternateV1: { start: ["HD", "HU", "HD", "HUO"], priority: 3, pic: picPAlternateV1 },
+  alternateV2: { start: ["HD", "HUO", "HD", "HU"], priority: 4, pic: picPAlternateV2 },
 } as const;
 // TODO: add piece partners version of Q
 const engineeringQ: Record<string, RandomEngineering> = {
-  primary: { start: ["HU", "HD", "HU", "HD"], pools: ["core", "coreMinusExotic"], priority: 1, pic: picQPrimary },
-  alternate: { start: ["HD", "HU", "HD", "HU"], pools: ["core", "coreMinusExotic"], priority: 2, pic: picQAlternate },
+  primary: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picQPrimary },
+  alternate: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picQAlternate },
 } as const;
 
 const engineering1: Record<string, BlockEngineering> = {
   primaryV1: {
-    start: ["HD2", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 1,
+    start: ["HD2", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
     startPic: pic1PrimaryV1, interPic: pic1PrimaryV1Inter, endPic: pic1PrimaryV1
   },
   primaryV2: {
-    start: ["HD", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 2,
+    start: ["HD", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
     startPic: pic1PrimaryV2, interPic: pic1PrimaryV2Inter, endPic: pic1PrimaryV2
   },
   alternateV1: {
-    start: ["HD", "HD2", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 3,
+    start: ["HD", "HD2", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 3,
     startPic: pic1AlternateV1, interPic: pic1AlternateV1Inter, endPic: pic1AlternateV1
   },
   alternateV2: {
-    start: ["HD", "HD", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], pools: ["core", "coreMinusExotic"], priority: 4,
+    start: ["HD", "HD", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 4,
     startPic: pic1AlternateV2, interPic: pic1AlternateV2Inter, endPic: pic1AlternateV2
   },
 } as const;
@@ -267,14 +265,6 @@ export type CompClass = {
 export const compClasses: Record<string, CompClass> = { "open": { name: "Open", roundLength: 5 }, "advanced": { name: "Advanced", roundLength: 4 } } as const;
 
 export type CompClassId = keyof typeof compClasses;
-
-export type EngineeringPool = {
-  name: string;
-};
-
-export const engineeringPools: Record<string, EngineeringPool> = { "core": { name: "Core" }, "coreMinusExotic": { name: "Core minus exotics" } } as const;
-
-export type EngineeringPoolId = keyof typeof compClasses;
 
 export type EngineeringId = string;
 

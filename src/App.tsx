@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { formations, costMatrix, FormationId, Position, CompClassId, compClasses, EngineeringId, EngineeringPoolId, engineeringPools } from './data.ts';
+import { formations, costMatrix, FormationId, Position, CompClassId, compClasses, EngineeringId } from './data.ts';
 import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
 import Modal from 'react-bootstrap/Modal';
@@ -9,7 +9,7 @@ import close from './icons/close.svg';
 import plus from './icons/plus.svg';
 
 const formationsInCompClass: (compClass: CompClassId) => Array<FormationId> = (compClass) =>
-  (Object.entries(formations).filter(([_, { compClasses }]) => compClasses.includes(compClass)).map(([id, _]) => id))
+  (Object.entries(formations).filter(([_, { compClasses }]) => compClasses.includes(compClass)).map(([id]) => id))
   ;
 
 type Round = Array<FormationId>;
@@ -149,6 +149,8 @@ const optimizeEngineering = (round: Round): [Pattern, PatternAnalysis] => {
   return [patternOptions[bestI], patternAnalyses[bestI]];
 };
 
+(window as any).optimizeEngineering = optimizeEngineering;
+
 const findAlternatives = (round: Round, pattern: Pattern): {
   alternateFormations: Array<Array<[FormationId, EngineeringId]>>,
   alternateEngineering: Array<Array<[EngineeringId, number]>>,
@@ -191,7 +193,30 @@ const findAlternatives = (round: Round, pattern: Pattern): {
   };
 }
 
-(window as any).optimizeEngineering = optimizeEngineering;
+const doesEveryoneGetRest = (round: Round, pattern: Pattern): boolean => {
+  let hasRest = [false, false, false, false];
+
+  const accumulateRest = (positions: [Position, Position, Position, Position]) => {
+    for (let i = 0; i < 4; i++) {
+      const position = positions[i];
+      hasRest[i] ||= position == "HU" || position == "HUO";
+    }
+  };
+
+  for (let i = 0; i < pattern.length; i++) {
+    const f = formations[round[i % round.length]];
+    if (f.type == "block") {
+      const e = f.engineeringStrategies[pattern[i]];
+      accumulateRest(e.start);
+      accumulateRest(e.end);
+    } else {
+      const e = f.engineeringStrategies[pattern[i]];
+      accumulateRest(e.start);
+    }
+  }
+
+  return hasRest.every(e => e);
+}
 
 const randomRound = (includedFormations: Array<FormationId>, minPoints: number): Array<FormationId> => {
   let points = 0;
@@ -261,15 +286,13 @@ type SetupProps = {
   setRoundLength: (roundLength: number) => void,
   includedFormations: Array<FormationId>,
   setIncludedFormations: (includedFormations: Array<FormationId>) => void,
-  engineeringPool: EngineeringPoolId,
-  setEngineeringPool: (engineeringPool: EngineeringPoolId) => void,
   filterRest: boolean,
   setFilterRest: (filterRest: boolean) => void,
   numRounds: number,
   setNumRounds: (numRounds: number) => void,
 };
 
-const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, setRoundLength, includedFormations, setIncludedFormations, engineeringPool, setEngineeringPool, filterRest, setFilterRest, numRounds, setNumRounds }) => {
+const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, setRoundLength, includedFormations, setIncludedFormations, filterRest, setFilterRest, numRounds, setNumRounds }) => {
   const [customPoolVisible, setCustomPoolVisible] = useState<boolean>(false);
 
   useEffect(() => {
@@ -373,25 +396,6 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
     </Collapse >
   </Form.Group >;
 
-  const engineeringPoolOptions = Object.entries(engineeringPools).map(([id, { name }]) =>
-    <option value={id}>{name}</option>
-  );
-
-  const handleEngineeringPoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setEngineeringPool(value);
-  };
-
-  const engineeringPoolSelector = <Form.Group className="mb-3">
-    <label htmlFor="engineeringPoolSelector">
-      Engineering (beta):
-    </label>
-    <select className="form-select" id="engineeringPoolSelector" aria-label="Engineering Selector" value={engineeringPool} onChange={handleEngineeringPoolChange}>
-      {engineeringPoolOptions}
-    </select>
-  </Form.Group>;
-
-
   const filters = <Form.Group className="mb-3">
     <div>Modifiers:</div>
     <div className="form-check">
@@ -435,7 +439,6 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
   return (
     <form>
       {compClassSelector}
-      {engineeringPoolSelector}
       {filters}
       {numRoundsSelector}
     </form>
@@ -472,7 +475,7 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
 
   const engRound = draw[formationPickerRoundNum] as EngineeredRound;
   const round = engRound?.round;
-  const selectedEngineeringId = engRound?.pattern[formationPickerPatternIndex];
+  const selectedEngineeringId = engRound?.pattern?.[formationPickerPatternIndex];
 
   let formationPicker = null;
   let engineeringPicker = null;
@@ -617,18 +620,42 @@ const App = () => {
   const [compClass, setCompClass] = useState<CompClassId | "custom">(initialCompClass);
   const [roundLength, setRoundLength] = useState<number>(compClasses[initialCompClass].roundLength);
   const [includedFormations, setIncludedFormations] = useState<Array<FormationId>>(formationsInCompClass(initialCompClass));
-  const [engineeringPool, setEngineeringPool] = useState<EngineeringPoolId>("core");
   const [filterRest, setFilterRest] = useState<boolean>(false);
   const [numRounds, setNumRounds] = useState<number>(5);
 
   const [draw, setDraw] = useState<Array<EngineeredRound | RoundError>>([]);
 
-  const rerunOne = (round?: Round): EngineeredRound | RoundError => {
-    try {
-      if (round === undefined) {
-        round = randomRound(includedFormations, roundLength);
+  const applyFilters = (f: () => [Round, Pattern]): [Round, Pattern] => {
+    for (let i = 0; i < 1000; i++) {
+      const [pattern, round] = f();
+      if (filterRest && !doesEveryoneGetRest(pattern, round)) {
+        continue;
       }
-      const [pattern, _] = optimizeEngineering(round);
+      return [pattern, round];
+    }
+    throw "Could not satisfy filters";
+  };
+
+  const rerunOne = (round?: Round | (() => Round)): EngineeredRound | RoundError => {
+    try {
+      let pattern: Pattern;
+      if (round === undefined) {
+        [round, pattern] = applyFilters(() => {
+          const genRound = randomRound(includedFormations, roundLength);
+          [pattern] = optimizeEngineering(genRound);
+          return [genRound, pattern];
+        });
+      } else if (Array.isArray(round)) {
+        // round is an array
+        [pattern] = optimizeEngineering(round);
+      } else {
+        // round is a function
+        [round, pattern] = applyFilters(() => {
+          const genRound = (round as () => Round)();
+          [pattern] = optimizeEngineering(genRound);
+          return [genRound, pattern];
+        });
+      }
       const { alternateFormations, alternateEngineering } = findAlternatives(round, pattern);
       return { round, pattern, alternateFormations, alternateEngineering };
     } catch (e) {
@@ -660,9 +687,17 @@ const App = () => {
     setDraw(draw.map((engRound, i) => {
       if (i == roundNum) {
         const round = (engRound as EngineeredRound).round;
-        return rerunOne(
-          [...(engRound as EngineeredRound).round, ...randomRound(includedFormations.filter((f) => !round.includes(f)), 1)]
-        );
+        const roundF = () =>
+          [...(engRound as EngineeredRound).round, ...randomRound(includedFormations.filter((f) => !round.includes(f)), 1)];
+        // Passing a function into rerunOne will cause it to enforce filters
+        const result = rerunOne(roundF);
+        if ((result as RoundError).error === undefined) {
+          return result;
+        } else {
+          // If there was an error (unsatisfiable filters) then pass an array,
+          // which will always succeed
+          return rerunOne(roundF());
+        }
       } else {
         return engRound;
       }
@@ -715,7 +750,7 @@ const App = () => {
 
   useEffect(() => {
     rerunAll();
-  }, [roundLength, includedFormations, engineeringPool, filterRest]);
+  }, [roundLength, includedFormations, filterRest]);
 
   useEffect(() => {
     rerunSome();
@@ -729,7 +764,6 @@ const App = () => {
         <Setup compClass={compClass} setCompClass={setCompClass}
           roundLength={roundLength} setRoundLength={setRoundLength}
           includedFormations={includedFormations} setIncludedFormations={setIncludedFormations}
-          engineeringPool={engineeringPool} setEngineeringPool={setEngineeringPool}
           filterRest={filterRest} setFilterRest={setFilterRest}
           numRounds={numRounds} setNumRounds={setNumRounds}
         />
