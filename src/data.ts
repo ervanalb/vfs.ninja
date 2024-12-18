@@ -28,37 +28,37 @@ import picKV1 from './pics/k_v1.svg';
 import picKV2 from './pics/k_v2.svg';
 import picKV3 from './pics/k_v3.svg';
 import picKV4 from './pics/k_v4.svg';
-import picLPrimaryV1 from './pics/l_primaryV1.svg';
-import picLPrimaryV2 from './pics/l_primaryV2.svg';
-import picLAlternateV1 from './pics/l_alternateV1.svg';
-import picLAlternateV2 from './pics/l_alternateV2.svg';
-import picMPrimary from './pics/m_primary.svg';
-import picMAlternate from './pics/m_alternate.svg';
-import picNPrimary from './pics/n_primary.svg';
-import picNAlternate from './pics/n_alternate.svg';
-import picOPrimaryPieceV1 from './pics/o_primaryPieceV1.svg';
-import picOPrimaryPieceV2 from './pics/o_primaryPieceV2.svg';
-import picOPrimaryCrossV1 from './pics/o_primaryCrossV1.svg';
-import picOPrimaryCrossV2 from './pics/o_primaryCrossV2.svg';
-import picOAlternatePieceV1 from './pics/o_alternatePieceV1.svg';
-import picOAlternatePieceV2 from './pics/o_alternatePieceV2.svg';
-import picOAlternateCrossV1 from './pics/o_alternateCrossV1.svg';
-import picOAlternateCrossV2 from './pics/o_alternateCrossV2.svg';
-import picPPrimaryV1 from './pics/p_primaryV1.svg';
-import picPPrimaryV2 from './pics/p_primaryV2.svg';
-import picPAlternateV1 from './pics/p_alternateV1.svg';
-import picPAlternateV2 from './pics/p_alternateV2.svg';
-import picQPrimary from './pics/q_primary.svg';
-import picQAlternate from './pics/q_alternate.svg';
+import picLV1 from './pics/l_v1.svg';
+import picLV2 from './pics/l_v2.svg';
+import picLV3 from './pics/l_v3.svg';
+import picLV4 from './pics/l_v4.svg';
+import picMV1 from './pics/m_v1.svg';
+import picMV2 from './pics/m_v2.svg';
+import picNV1 from './pics/n_v1.svg';
+import picNV2 from './pics/n_v2.svg';
+import picOP1 from './pics/o_p1.svg';
+import picOP2 from './pics/o_p2.svg';
+import picOP3 from './pics/o_p3.svg';
+import picOP4 from './pics/o_p4.svg';
+import picOX1 from './pics/o_x1.svg';
+import picOX2 from './pics/o_x2.svg';
+import picOX3 from './pics/o_x3.svg';
+import picOX4 from './pics/o_x4.svg';
+import picPV1 from './pics/p_v1.svg';
+import picPV2 from './pics/p_v2.svg';
+import picPV3 from './pics/p_v3.svg';
+import picPV4 from './pics/p_v4.svg';
+import picQX1 from './pics/q_x1.svg';
+import picQX2 from './pics/q_x2.svg';
 
-import pic1PrimaryV1 from './pics/1_primaryV1.svg';
-import pic1PrimaryV2 from './pics/1_alternateV2.svg';
-import pic1AlternateV1 from './pics/1_primaryV1.svg';
-import pic1AlternateV2 from './pics/1_alternateV2.svg';
-import pic1PrimaryV1Inter from './pics/1_primaryV1_inter.svg';
-import pic1PrimaryV2Inter from './pics/1_alternateV2_inter.svg';
-import pic1AlternateV1Inter from './pics/1_primaryV1_inter.svg';
-import pic1AlternateV2Inter from './pics/1_alternateV2_inter.svg';
+import pic1V1 from './pics/1_v1.svg';
+import pic1V2 from './pics/1_v2.svg';
+import pic1V3 from './pics/1_v3.svg';
+import pic1V4 from './pics/1_v4.svg';
+import pic1V1Inter from './pics/1_v1_inter.svg';
+import pic1V2Inter from './pics/1_v2_inter.svg';
+import pic1V3Inter from './pics/1_v3_inter.svg';
+import pic1V4Inter from './pics/1_v4_inter.svg';
 
 export type Random = {
   type: "random",
@@ -150,57 +150,57 @@ const engineeringK: Record<string, RandomEngineering> = {
   v4: { start: ["HD", "HD", "HD", "HU"], priority: 4, pic: picKV4 },
 } as const;
 const engineeringL: Record<string, RandomEngineering> = {
-  primaryV1: { start: ["HD", "HD", "HD", "HDO"], priority: 1, pic: picLPrimaryV1 },
-  primaryV2: { start: ["HDO", "HD", "HD", "HD"], priority: 2, pic: picLPrimaryV2 },
-  alternateV1: { start: ["HD", "HD", "HDO", "HD"], priority: 3, pic: picLAlternateV1 },
-  alternateV2: { start: ["HD", "HDO", "HD", "HD"], priority: 4, pic: picLAlternateV2 },
+  v1: { start: ["HD", "HD", "HD", "HDO"], priority: 1, pic: picLV1 },
+  v2: { start: ["HD", "HDO", "HD", "HD"], priority: 2, pic: picLV2 },
+  v3: { start: ["HD", "HD", "HDO", "HD"], priority: 3, pic: picLV3 },
+  v4: { start: ["HDO", "HD", "HD", "HD"], priority: 4, pic: picLV4 },
 } as const;
 const engineeringM: Record<string, RandomEngineering> = {
-  primary: { start: ["HU", "HU", "HD", "HD"], priority: 1, pic: picMPrimary },
-  alternate: { start: ["HD", "HD", "HU", "HU"], priority: 2, pic: picMAlternate },
+  v1: { start: ["HU", "HU", "HD", "HD"], priority: 1, pic: picMV1 },
+  v2: { start: ["HD", "HD", "HU", "HU"], priority: 2, pic: picMV2 },
 } as const;
 const engineeringN: Record<string, RandomEngineering> = {
-  primary: { start: ["HD", "HD", "HDO", "HDO"], priority: 1, pic: picNPrimary },
-  alternate: { start: ["HDO", "HDO", "HD", "HD"], priority: 2, pic: picNAlternate },
+  v1: { start: ["HD", "HD", "HDO", "HDO"], priority: 1, pic: picNV1 },
+  v2: { start: ["HDO", "HDO", "HD", "HD"], priority: 2, pic: picNV2 },
 } as const;
 const engineeringO: Record<string, RandomEngineering> = {
-  primaryPieceV1: { start: ["HU", "HU", "HD2", "HD"], priority: 1, pic: picOPrimaryPieceV1 },
-  primaryPieceV2: { start: ["HU", "HU", "HD", "HD2"], priority: 2, pic: picOPrimaryPieceV2 },
-  primaryCrossV1: { start: ["HU", "HDO", "HU", "HD2"], priority: 3, pic: picOPrimaryCrossV1 },
-  primaryCrossV2: { start: ["HU", "HD2", "HU", "HDO"], priority: 4, pic: picOPrimaryCrossV2 },
-  alternatePieceV1: { start: ["HD", "HD2", "HU", "HU"], priority: 5, pic: picOAlternatePieceV1 },
-  alternatePieceV2: { start: ["HD2", "HD", "HU", "HU"], priority: 6, pic: picOAlternatePieceV2 },
-  alternateCrossV1: { start: ["HD2", "HU", "HDO", "HU"], priority: 7, pic: picOAlternateCrossV1 },
-  alternateCrossV2: { start: ["HDO", "HU", "HD2", "HU"], priority: 8, pic: picOAlternateCrossV2 },
+  p1: { start: ["HU", "HU", "HD2", "HD"], priority: 1, pic: picOP1 },
+  p2: { start: ["HD2", "HD", "HU", "HU"], priority: 2, pic: picOP2 },
+  p3: { start: ["HU", "HU", "HD", "HD2"], priority: 3, pic: picOP3 },
+  p4: { start: ["HD", "HD2", "HU", "HU"], priority: 4, pic: picOP4 },
+  x1: { start: ["HU", "HDO", "HU", "HD2"], priority: 5, pic: picOX1 },
+  x2: { start: ["HU", "HD2", "HU", "HDO"], priority: 6, pic: picOX2 },
+  x3: { start: ["HDO", "HU", "HD2", "HU"], priority: 7, pic: picOX3 },
+  x4: { start: ["HD2", "HU", "HDO", "HU"], priority: 8, pic: picOX4 },
 } as const;
 const engineeringP: Record<string, RandomEngineering> = {
-  primaryV1: { start: ["HU", "HD", "HUO", "HD"], priority: 1, pic: picPPrimaryV1 },
-  primaryV2: { start: ["HUO", "HD", "HU", "HD"], priority: 2, pic: picPPrimaryV2 },
-  alternateV1: { start: ["HD", "HU", "HD", "HUO"], priority: 3, pic: picPAlternateV1 },
-  alternateV2: { start: ["HD", "HUO", "HD", "HU"], priority: 4, pic: picPAlternateV2 },
+  V1: { start: ["HU", "HD", "HUO", "HD"], priority: 1, pic: picPV1 },
+  V2: { start: ["HUO", "HD", "HU", "HD"], priority: 2, pic: picPV2 },
+  V3: { start: ["HD", "HU", "HD", "HUO"], priority: 3, pic: picPV3 },
+  V4: { start: ["HD", "HUO", "HD", "HU"], priority: 4, pic: picPV4 },
 } as const;
-// TODO: add piece partners version of Q
 const engineeringQ: Record<string, RandomEngineering> = {
-  primary: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picQPrimary },
-  alternate: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picQAlternate },
+  X1: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picQX1 },
+  X2: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picQX2 },
+  // TODO: add piece partners version of Q
 } as const;
 
 const engineering1: Record<string, BlockEngineering> = {
-  primaryV1: {
+  v1: {
     start: ["HD2", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
-    startPic: pic1PrimaryV1, interPic: pic1PrimaryV1Inter, endPic: pic1PrimaryV1
+    startPic: pic1V1, interPic: pic1V1Inter, endPic: pic1V1
   },
-  primaryV2: {
+  v2: {
     start: ["HD", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
-    startPic: pic1PrimaryV2, interPic: pic1PrimaryV2Inter, endPic: pic1PrimaryV2
+    startPic: pic1V2, interPic: pic1V2Inter, endPic: pic1V2
   },
-  alternateV1: {
+  v3: {
     start: ["HD", "HD2", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 3,
-    startPic: pic1AlternateV1, interPic: pic1AlternateV1Inter, endPic: pic1AlternateV1
+    startPic: pic1V3, interPic: pic1V3Inter, endPic: pic1V3
   },
-  alternateV2: {
+  v4: {
     start: ["HD", "HD", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 4,
-    startPic: pic1AlternateV2, interPic: pic1AlternateV2Inter, endPic: pic1AlternateV2
+    startPic: pic1V4, interPic: pic1V4Inter, endPic: pic1V4
   },
 } as const;
 
