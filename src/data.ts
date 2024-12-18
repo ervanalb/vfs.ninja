@@ -59,6 +59,12 @@ import pic1V1Inter from './pics/1_v1_inter.svg';
 import pic1V2Inter from './pics/1_v2_inter.svg';
 import pic1V3Inter from './pics/1_v3_inter.svg';
 import pic1V4Inter from './pics/1_v4_inter.svg';
+import pic2V1 from './pics/2_v1.svg';
+import pic2V2 from './pics/2_v2.svg';
+import pic2V1Inter from './pics/2_v1_inter.svg';
+import pic2V2Inter from './pics/2_v2_inter.svg';
+import pic2V1End from './pics/2_v1_end.svg';
+import pic2V2End from './pics/2_v2_end.svg';
 
 export type Random = {
   type: "random",
@@ -95,6 +101,7 @@ export type BlockEngineering = {
   startPic: string;
   interPic: string;
   endPic: string;
+  slotSwitch?: "lr" | "ud";
 };
 
 // COLORS: [K  R  G  B]
@@ -204,6 +211,19 @@ const engineering1: Record<string, BlockEngineering> = {
   },
 } as const;
 
+const engineering2: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    startPic: pic2V1, interPic: pic2V1Inter, endPic: pic2V1End,
+    slotSwitch: "lr",
+  },
+  v2: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    startPic: pic2V2, interPic: pic2V2Inter, endPic: pic2V2End,
+    slotSwitch: "ud",
+  },
+}
+
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
   "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced"], engineeringStrategies: engineeringB },
@@ -223,7 +243,7 @@ export const formations: Record<string, Formation> = {
   "q": { type: "random", name: "Q", longName: "Mixed Wave", compClasses: ["open"], engineeringStrategies: engineeringQ },
 
   "1": { type: "block", name: "1", longName: "Arrowhead", compClasses: ["open", "advanced"], engineeringStrategies: engineering1 },
-  //"2": { name: "2", longName: "Claw", compClasses: ["open", "advanced"] },
+  "2": { type: "block", name: "2", longName: "Claw", compClasses: ["open", "advanced"], engineeringStrategies: engineering2 },
   //"3": { name: "3", longName: "HD Accordion", compClasses: ["open", "advanced"] },
   //"4": { name: "4", longName: "Chain Gang", compClasses: ["open", "advanced"] },
   //"5": { name: "5", longName: "Mixed Accordion", compClasses: ["open"] },
