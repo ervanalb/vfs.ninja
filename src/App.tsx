@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { formations, costMatrix, FormationId, Position, CompClassId, compClasses, EngineeringId } from './data.ts';
+import { formations, costMatrix, FormationId, Position, CompClassId, compClasses, EngineeringId, SlotSwitch } from './data.ts';
 import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
 import Modal from 'react-bootstrap/Modal';
@@ -88,6 +88,30 @@ const defaultEngineering = (formationId: FormationId): EngineeringId => {
   );
 };
 
+const slotSwitchCombine = (a: SlotSwitch, b: SlotSwitch): SlotSwitch => ({
+  "null,null": null,
+  "null,lr": "lr",
+  "null,ud": "ud",
+  "null,180": "180",
+  "lr,null": "lr",
+  "lr,lr": null,
+  "lr,ud": "180",
+  "lr,180": "ud",
+  "ud,null": "ud",
+  "ud,lr": "180",
+  "ud,ud": null,
+  "ud,180": "lr",
+  "180,null": "180",
+  "180,lr": "ud",
+  "180,ud": "lr",
+  "180,180": null,
+}[a + "," + b] as SlotSwitch);
+
+const slotSwitchesEquivalent = (a: SlotSwitch, b: SlotSwitch): boolean => {
+  const combined = slotSwitchCombine(a, b);
+  return combined == null || combined == "180";
+}
+
 const argmin = (a: Array<PatternAnalysis>) => {
   if (a.length < 1) throw "Must contain at least 1 entry";
   return a.reduce((minIndex, _, index, arr) => {
@@ -115,32 +139,45 @@ const optimizeEngineering = (round: Round): [Pattern, PatternAnalysis] => {
 
   const firstFormationId = round[round.length - 1];
   const firstFormationEngStrategies = formations[firstFormationId].engineeringStrategies;
+  const firstSlotSwitch = null;
   const patternOptions = Object.keys(firstFormationEngStrategies).map((firstFormationEngId: EngineeringId) => {
     const pattern: Pattern = [firstFormationEngId];
+    const slotSwitches: Array<SlotSwitch> = [firstSlotSwitch];
 
     let prevFormationId = firstFormationId;
     let prevFormationEngId = firstFormationEngId;
+    let prevSlotSwitch: SlotSwitch = firstSlotSwitch;
 
     while (true) {
       let nextFormationId = round[pattern.length % round.length];
-      const nextFormationEngStrategies = formations[nextFormationId].engineeringStrategies;
-      const strategyAnalyses = Object.keys(nextFormationEngStrategies)
+      const f = formations[nextFormationId];
+      const strategyAnalyses = Object.keys(f.engineeringStrategies)
         .map((nextFormationEngId) => analyzePattern([prevFormationId, nextFormationId], [prevFormationEngId, nextFormationEngId], false));
-      const nextFormationEngId = Object.keys(nextFormationEngStrategies)[argmin(strategyAnalyses)];
+      const nextFormationEngId = Object.keys(f.engineeringStrategies)[argmin(strategyAnalyses)];
+
+      let nextSlotSwitch: SlotSwitch = prevSlotSwitch;
+      if (f.type === "block") {
+        nextSlotSwitch = slotSwitchCombine(prevSlotSwitch, f.engineeringStrategies[nextFormationEngId].slotSwitch);
+      }
 
       // See if we're done--if we have a cycle
       if (pattern.length > round.length && pattern.length % round.length == 0) {
         for (let pages = 1; pages < pattern.length / round.length; pages++) {
           const start = pattern.length - pages * round.length;
-          if (nextFormationEngId == pattern[start]) {
+          if (nextFormationEngId == pattern[start] && slotSwitchesEquivalent(nextSlotSwitch, slotSwitches[start])) {
+            console.log("Found cycle of", pages, "pages");
+            console.log(slotSwitches);
+            console.log("nextSlotSwitch", nextSlotSwitch, "=", slotSwitches[start])
             return pattern.slice(start);
           }
         }
       }
 
       pattern.push(nextFormationEngId);
+      slotSwitches.push(nextSlotSwitch);
       prevFormationId = nextFormationId;
       prevFormationEngId = nextFormationEngId;
+      prevSlotSwitch = nextSlotSwitch;
     }
   });
 
@@ -204,13 +241,14 @@ const doesEveryoneGetRest = (round: Round, pattern: Pattern): boolean => {
   };
 
   for (let i = 0; i < pattern.length; i++) {
+    const engId = pattern[i];
     const f = formations[round[i % round.length]];
     if (f.type == "block") {
-      const e = f.engineeringStrategies[pattern[i]];
+      const e = f.engineeringStrategies[engId];
       accumulateRest(e.start);
       accumulateRest(e.end);
     } else {
-      const e = f.engineeringStrategies[pattern[i]];
+      const e = f.engineeringStrategies[engId];
       accumulateRest(e.start);
     }
   }
@@ -237,22 +275,20 @@ const randomRound = (includedFormations: Array<FormationId>, minPoints: number):
 type PicProps = {
   formationId: FormationId,
   formationEngId?: EngineeringId,
+  slotSwitch?: SlotSwitch,
   showEngName?: boolean,
   onClick?: () => void,
   onClickDelete?: () => void,
   className?: string,
 };
 
-const Pic: React.FC<PicProps> = ({ formationId, formationEngId, showEngName, onClick, onClickDelete, className }) => {
+const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, showEngName, onClick, onClickDelete, className }) => {
   if (formationEngId === undefined) {
     formationEngId = defaultEngineering(formationId);
   }
 
-  if (!className) {
-    className = "pic-container";
-  } else {
-    className = "pic-container " + className;
-  }
+  slotSwitch = slotSwitch || null;
+
   const f = formations[formationId];
 
   const fName = f.name;
@@ -268,16 +304,25 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, showEngName, onC
       : <div className="pic-inner-container">pics</div>
   );
 
+  const slotSwitchClassName = (slotSwitch: SlotSwitch): string => {
+    if (slotSwitch) {
+      return " slot-switch-" + slotSwitch;
+    } else {
+      return "";
+    }
+  }
+
   if (f.type === "block") {
     const e = f.engineeringStrategies[formationEngId];
+    const endSlotSwitch = slotSwitchCombine(slotSwitch, e.slotSwitch);
     let pics = wrapOnClick(<>
-      <img src={e.startPic} className="pic-start" />
+      <img src={e.startPic} className={"pic-start" + slotSwitchClassName(slotSwitch)} />
       <div className="pic-sep" />
-      <img src={e.interPic} className="pic-inter" />
+      <img src={e.interPic} className={"pic-inter" + slotSwitchClassName(slotSwitch)} />
       <div className="pic-sep" />
-      <img src={e.endPic} className="pic-end" />
+      <img src={e.endPic} className={"pic-end" + slotSwitchClassName(endSlotSwitch)} />
     </>);
-    return <div className={className}>
+    return <div className={"block-container" + (className ? " " + className : "")}>
       <div className="pic-fname-overlay">{fName}</div>
       {showEngName ? <div className="pic-ename-overlay">{eName}</div> : null}
       {deleteButton}
@@ -285,8 +330,8 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, showEngName, onC
     </div>;
   } else {
     const e = f.engineeringStrategies[formationEngId];
-    const pic = wrapOnClick(<img src={e.pic} className="pic" />);
-    return <div className={className}>
+    const pic = wrapOnClick(<img src={e.pic} className={"pic" + slotSwitchClassName(slotSwitch)} />);
+    return <div className={"random-container" + (className ? " " + className : "")}>
       <div className="pic-fname-overlay">{fName}</div>
       {showEngName ? <div className="pic-ename-overlay">{eName}</div> : null}
       {deleteButton}
@@ -501,7 +546,17 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
   if (engRound !== undefined && round !== undefined && selectedEngineeringId !== undefined) {
     const formationNum = formationPickerPatternIndex % round.length;
     const selectedFormationId = round[formationNum];
-    const { alternateFormations, alternateEngineering } = engRound;
+    const { alternateFormations, alternateEngineering, pattern } = engRound; // FIND ALTERNATES HERE DONT USE STATE
+    const getSlotSwitch = (i: number): SlotSwitch => {
+      const f = formations[round[i % round.length]]
+      if (f.type == "block") {
+        return f.engineeringStrategies[pattern[i]].slotSwitch;
+      } else {
+        return null;
+      }
+    };
+    const slotSwitch = Array.from({ length: formationPickerPatternIndex })
+      .reduce((acc: SlotSwitch, _, i) => slotSwitchCombine(acc, getSlotSwitch(i),), null);
 
     formationPicker = alternateFormations[formationNum].map(([formationId, engId]) => {
       const classes = [];
@@ -511,7 +566,7 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
       if (!includedFormations.includes(formationId)) {
         classes.push("not-preferred");
       }
-      return <Pic key={formationId} formationId={formationId} formationEngId={engId} onClick={() => {
+      return <Pic key={formationId} formationId={formationId} formationEngId={engId} slotSwitch={slotSwitch} onClick={() => {
         formationPickerHide();
         if (selectedFormationId != formationId) {
           changeFormation(formationPickerRoundNum, formationNum, formationId)
@@ -527,7 +582,7 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
       if (relCost > 0) {
         classes.push("not-preferred");
       }
-      return <Pic key={engineeringId} formationId={selectedFormationId} formationEngId={engineeringId} showEngName={true} onClick={() => {
+      return <Pic key={engineeringId} formationId={selectedFormationId} formationEngId={engineeringId} slotSwitch={slotSwitch} showEngName={true} onClick={() => {
         formationPickerHide();
         if (selectedEngineeringId != engineeringId) {
           changeEngineering(formationPickerRoundNum, formationPickerPatternIndex, engineeringId)
@@ -554,26 +609,43 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
 
     const numPages = pattern.length / round.length;
 
-    const roundPics = Array.from({ length: numPages }, (_, page) =>
-      <div className="page" key={page}>
+    let slotSwitch: SlotSwitch = null;
+
+
+    const roundPics = Array.from({ length: numPages }, (_, page) => {
+      const extendRoundButton = page == 0
+        ? <a href="" onClick={(event) => { event.preventDefault(); event.stopPropagation(); extendRound(roundNum); }} className="extend-round">
+          <img src={plus} />
+        </a>
+        : <div className="extend-round-placeholder" />;
+
+      return <div className="page" key={page}>
         {round.map((formationId, formationNum) => {
           const i = page * round.length + formationNum;
-          return <Pic
+          const engId = pattern[i];
+          const result = <Pic
             key={formationId}
             onClick={() => formationPickerShow(roundNum, i)}
             formationId={formationId}
-            formationEngId={pattern[i]}
+            formationEngId={engId}
+            slotSwitch={slotSwitch}
             showEngName={true}
             onClickDelete={round.length > 1 ? () => deleteFormation(roundNum, formationNum) : undefined}
           />;
+
+          // Compute slot switch for next round
+          const f = formations[formationId];
+          if (f.type == "block") {
+            slotSwitch = slotSwitchCombine(slotSwitch, f.engineeringStrategies[engId].slotSwitch)
+          }
+
+          return result;
         }
         )}
 
-        {page == 0 ? <a href="" onClick={(event) => { event.preventDefault(); event.stopPropagation(); extendRound(roundNum); }} className="extend-round">
-          <img src={plus} />
-        </a> : null}
+        {extendRoundButton}
       </div>
-    );
+    });
     const roundString = round.map((formationId: FormationId): string => formations[formationId].name).join(" - ");
 
     return <div key={roundNum}>
@@ -907,6 +979,7 @@ const App = () => {
         );
 
         // See if we can remove pages
+        // TODO handle slot switching
         const firstRep = pattern.slice(0, round.length);
         while (pattern.length / round.length > 1) {
           const lastRep = pattern.slice(-round.length);
@@ -1003,7 +1076,7 @@ const App = () => {
   }, []);
 
   return <>
-    <div className="container">
+    <div className="container-lg">
       <h1 className="text-center my-3">4-way VFS draw generator</h1>
       <div className="form-container mb-5">
         <h2>Setup</h2>

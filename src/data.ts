@@ -65,6 +65,10 @@ import pic2V1Inter from './pics/2_v1_inter.svg';
 import pic2V2Inter from './pics/2_v2_inter.svg';
 import pic2V1End from './pics/2_v1_end.svg';
 import pic2V2End from './pics/2_v2_end.svg';
+import pic3V1 from './pics/3_v1.svg';
+import pic3V2 from './pics/3_v2.svg';
+import pic3V1Inter from './pics/3_v1_inter.svg';
+import pic3V2Inter from './pics/3_v2_inter.svg';
 
 export type Random = {
   type: "random",
@@ -89,6 +93,8 @@ export type Position = "HU" // Head up
   | "HDO" // Head down, outface
   | "HUO"; // Head up, outface
 
+export type SlotSwitch = null | "lr" | "ud" | "180";
+
 export type RandomEngineering = {
   start: [Position, Position, Position, Position];
   priority: number;
@@ -101,7 +107,7 @@ export type BlockEngineering = {
   startPic: string;
   interPic: string;
   endPic: string;
-  slotSwitch?: "lr" | "ud";
+  slotSwitch: SlotSwitch;
 };
 
 // COLORS: [K  R  G  B]
@@ -195,19 +201,23 @@ const engineeringQ: Record<string, RandomEngineering> = {
 const engineering1: Record<string, BlockEngineering> = {
   v1: {
     start: ["HD2", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
-    startPic: pic1V1, interPic: pic1V1Inter, endPic: pic1V1
+    startPic: pic1V1, interPic: pic1V1Inter, endPic: pic1V1,
+    slotSwitch: null,
   },
   v2: {
     start: ["HD", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
-    startPic: pic1V2, interPic: pic1V2Inter, endPic: pic1V2
+    startPic: pic1V2, interPic: pic1V2Inter, endPic: pic1V2,
+    slotSwitch: null,
   },
   v3: {
     start: ["HD", "HD2", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 3,
-    startPic: pic1V3, interPic: pic1V3Inter, endPic: pic1V3
+    startPic: pic1V3, interPic: pic1V3Inter, endPic: pic1V3,
+    slotSwitch: null,
   },
   v4: {
     start: ["HD", "HD", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 4,
-    startPic: pic1V4, interPic: pic1V4Inter, endPic: pic1V4
+    startPic: pic1V4, interPic: pic1V4Inter, endPic: pic1V4,
+    slotSwitch: null,
   },
 } as const;
 
@@ -221,6 +231,19 @@ const engineering2: Record<string, BlockEngineering> = {
     start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
     startPic: pic2V2, interPic: pic2V2Inter, endPic: pic2V2End,
     slotSwitch: "ud",
+  },
+}
+
+const engineering3: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD2", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    startPic: pic3V1, interPic: pic3V1Inter, endPic: pic3V1,
+    slotSwitch: "180",
+  },
+  v2: {
+    start: ["HD", "HD2", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    startPic: pic3V2, interPic: pic3V2Inter, endPic: pic3V2,
+    slotSwitch: "180",
   },
 }
 
@@ -244,7 +267,7 @@ export const formations: Record<string, Formation> = {
 
   "1": { type: "block", name: "1", longName: "Arrowhead", compClasses: ["open", "advanced"], engineeringStrategies: engineering1 },
   "2": { type: "block", name: "2", longName: "Claw", compClasses: ["open", "advanced"], engineeringStrategies: engineering2 },
-  //"3": { name: "3", longName: "HD Accordion", compClasses: ["open", "advanced"] },
+  "3": { type: "block", name: "3", longName: "HD Accordion", compClasses: ["open", "advanced"], engineeringStrategies: engineering3 },
   //"4": { name: "4", longName: "Chain Gang", compClasses: ["open", "advanced"] },
   //"5": { name: "5", longName: "Mixed Accordion", compClasses: ["open"] },
   //"6": { name: "6", longName: "Snowflake", compClasses: ["open"] },

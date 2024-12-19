@@ -3,7 +3,8 @@ body {
 }
 
 .form-container {
-  padding: 10px;
+  padding: 8px;
+  margin: 8px;
   border: 1px solid var(--bs-gray-500);
   border-radius: var(--bs-border-radius);
   background-color: var(--bs-white);
@@ -49,16 +50,64 @@ body {
 }
 
 .pic,.pic-start,.pic-inter,.pic-end {
-  height: 150px;
-  width: 150px;
+  transform-origin: center;
+  object-fit: contain;
+  min-width: 50px;
+  max-width: 150px;
+  position: relative;
 }
 
-.pic-container {
+.slot-switch-lr {
+  transform: scaleX(-1);
+}
+.slot-switch-ud {
+  transform: scaleY(-1);
+}
+.slot-switch-180 {
+  transform: rotate(180deg);
+}
+
+.block-container, .random-container {
   border: 1px solid black;
   border-radius: var(--bs-border-radius);
   position: relative;
   color: var(--bs-body-color);
-  overflow: hidden;
+  width: 150px;
+}
+
+.block-container {
+  height: 450px;
+}
+.random-container {
+  height: 150px;
+}
+
+@media (max-height: 500px) or (max-width: 500px) {
+  .block-container, .random-container {
+    width: 100px;
+  }
+  
+  .block-container {
+    height: 300px;
+  }
+  .random-container {
+    height: 100px;
+  }
+}
+
+.round .block-container,
+.round .random-container {
+  width: auto;
+  height: auto;
+  min-height: 100px;
+}
+
+.round .block-container {
+  min-width: 300px;
+}
+
+.round .random-container {
+  min-width: 100px;
 }
 
 .pic-inner-container {
@@ -72,6 +121,7 @@ body {
   font-size: 24px;
   font-weight: bold;
   pointer-events: none;
+  z-index: 1;
 }
 
 .pic-ename-overlay {
@@ -81,23 +131,80 @@ body {
   right: 0;
   bottom: 0;
   pointer-events: none;
+  z-index: 1;
 }
 
 .pic-delete-overlay {
   padding: 8px;
   position: absolute;
   right: 0;
+  z-index: 1;
+  display: flex;
+  width: 35px;
+  height: 35px;
+  justify-items: center;
+  align-items: center;
 }
 
 .pic-delete-overlay img {
+  min-width: 8px;
+  min-height: 8px;
+}
+
+.extend-round {
+  flex: 0 0 35px;
+  display: flex;
+  border: 1px solid black;
+  border-radius: var(--bs-border-radius);
+  width: 35px;
+  height: 35px;
+  justify-items: center;
+  align-items: center;
+}
+
+.extend-round img {
   display: block;
+  padding: 8px;
+  min-width: 8px;
+  min-height: 8px;
+}
+
+.extend-round-placeholder {
+  flex: 0 0 35px;
+  width: 35px;
+  height: 35px;
+}
+
+@media (max-width: 800px) {
+  .pic-fname-overlay {
+    padding: 0 4px;
+    font-size: 12pt;
+  }
+
+  .pic-ename-overlay {
+    padding: 4px;
+    font-size: 8pt;
+  }
+
+  .pic-delete-overlay {
+    padding: 4px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .extend-round, .extend-round-placeholder {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+  }
+  .extend-round img {
+    padding: 4px;
+  }
 }
 
 .pic-sep {
-  margin: auto;
-  width: 120px;
-  height: 0;
   border-bottom: 1px solid var(--bs-gray-300);
+  margin: 0 10px;
 }
 
 .include-container .form-check-input {
@@ -110,16 +217,19 @@ body {
   display: inline-block;
 }
 
-.include-container .form-check .pic-container {
+.include-container .form-check .block-container,
+.include-container .form-check .random-container {
   overflow: hidden;
   position: relative;
 }
 
-.include-container .form-check.disabled .pic-container {
+.include-container .form-check.disabled .block-container,
+.include-container .form-check.disabled .random-container {
   border: 1px solid #ccc;
 }
 
-.include-container .form-check.disabled .pic-container::after {
+.include-container .form-check.disabled .block-container::after,
+.include-container .form-check.disabled .random-container::after {
   content: '';
   width: 100%;
   height: 100%;
@@ -129,11 +239,15 @@ body {
   pointer-events: none;
 }
 
+.round {
+  overflow: auto;
+}
+
 .page {
   display: flex;
   align-items: center;
   justify-items: center;
-  gap: 16px;
+  gap: 8px;
   margin-bottom: 1rem;
 }
 
@@ -142,10 +256,9 @@ body {
 }
 
 .round .pic-sep {
-  margin: auto;
-  width: 0;
-  height: 120px;
   border-right: 1px solid var(--bs-gray-300);
+  border-bottom: none;
+  margin: 10px 0;
 }
 
 .draw-editor-container {
@@ -196,11 +309,13 @@ body {
   gap: 16px;
 }
 
-.formation-picker .pic-container.selected {
+.formation-picker .block-container.selected,
+.formation-picker .random-container.selected {
   border-width: 3px;
 }
 
-.formation-picker .pic-container.not-preferred .pic-inner-container::after {
+.formation-picker .block-container.not-preferred .pic-inner-container::after,
+.formation-picker .random-container.not-preferred .pic-inner-container::after {
   content: '';
   width: 100%;
   height: 100%;
@@ -210,15 +325,6 @@ body {
   pointer-events: none;
 }
 
-.extend-round {
-  border: 1px solid black;
-  border-radius: var(--bs-border-radius);
-}
-.extend-round img {
-  display: block;
-  padding: 8px;
-}
-
 .modal-dialog {
-	max-width: 80vw;
+  max-width: 800px;
 }
