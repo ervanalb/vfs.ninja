@@ -107,6 +107,10 @@ import pic9V1Inter from './pics/9_v1_inter.svg';
 import pic9V2Inter from './pics/9_v2_inter.svg';
 import pic9V3Inter from './pics/9_v3_inter.svg';
 import pic9V4Inter from './pics/9_v4_inter.svg';
+import pic10V1 from './pics/10_v1.svg';
+import pic10V2 from './pics/10_v2.svg';
+import pic10V1Inter from './pics/10_v1_inter.svg';
+import pic10V2Inter from './pics/10_v2_inter.svg';
 
 export type Random = {
   type: "random",
@@ -225,14 +229,14 @@ const engineeringO: Record<string, RandomEngineering> = {
   x4: { start: ["HD2", "HU", "HDO", "HU"], priority: 8, pic: picOX4 },
 } as const;
 const engineeringP: Record<string, RandomEngineering> = {
-  V1: { start: ["HU", "HD", "HUO", "HD"], priority: 1, pic: picPV1 },
-  V2: { start: ["HUO", "HD", "HU", "HD"], priority: 2, pic: picPV2 },
-  V3: { start: ["HD", "HU", "HD", "HUO"], priority: 3, pic: picPV3 },
-  V4: { start: ["HD", "HUO", "HD", "HU"], priority: 4, pic: picPV4 },
+  v1: { start: ["HU", "HD", "HUO", "HD"], priority: 1, pic: picPV1 },
+  v2: { start: ["HUO", "HD", "HU", "HD"], priority: 2, pic: picPV2 },
+  v3: { start: ["HD", "HU", "HD", "HUO"], priority: 3, pic: picPV3 },
+  v4: { start: ["HD", "HUO", "HD", "HU"], priority: 4, pic: picPV4 },
 } as const;
 const engineeringQ: Record<string, RandomEngineering> = {
-  X1: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picQX1 },
-  X2: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picQX2 },
+  x1: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picQX1 },
+  x2: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picQX2 },
   // TODO: add piece partners version of Q
 } as const;
 
@@ -403,6 +407,19 @@ const engineering9: Record<string, BlockEngineering> = {
   },
 } as const;
 
+const engineering10: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HU", "HD", "HU", "HD"], end: ["HU", "HD", "HU", "HD"], priority: 1,
+    startPic: pic10V1, interPic: pic10V1Inter, endPic: pic10V1,
+    slotSwitch: "180",
+  },
+  v2: {
+    start: ["HD", "HU", "HD", "HU"], end: ["HD", "HU", "HD", "HU"], priority: 2,
+    startPic: pic10V1, interPic: pic10V2Inter, endPic: pic10V2,
+    slotSwitch: "180",
+  },
+}
+
 
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
@@ -430,8 +447,8 @@ export const formations: Record<string, Formation> = {
   "6": { type: "block", name: "6", longName: "Snowflake", compClasses: ["open"], engineeringStrategies: engineering6 },
   "7": { type: "block", name: "7", longName: "Flower", compClasses: ["open", "advanced"], engineeringStrategies: engineering7 },
   "8": { type: "block", name: "8", longName: "Buddy", compClasses: ["open", "advanced"], engineeringStrategies: engineering8 },
-  "9": { type: "block",  name: "9", longName: "Shorty", compClasses: ["open", "advanced"], engineeringStrategies: engineering9 },
-  //"10": { name: "10", longName: "Mixed Anthem", compClasses: ["open"] },
+  "9": { type: "block", name: "9", longName: "Shorty", compClasses: ["open", "advanced"], engineeringStrategies: engineering9 },
+  "10": { type: "block", name: "10", longName: "Mixed Anthem", compClasses: ["open"], engineeringStrategies: engineering10 },
   //"11": { name: "11", longName: "Fun Buddies", compClasses: ["open", "advanced"] },
   //"12": { name: "12", longName: "Pinwheel", compClasses: ["open", "advanced"] },
   //"13": { name: "13", longName: "HD Star", compClasses: ["open", "advanced"] },
