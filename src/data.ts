@@ -93,6 +93,12 @@ import pic6V1Inter from './pics/6_v1_inter.svg';
 import pic6V2Inter from './pics/6_v2_inter.svg';
 import pic6V1End from './pics/6_v1_end.svg';
 import pic6V2End from './pics/6_v2_end.svg';
+import pic7V1 from './pics/7_v1.svg';
+import pic7V2 from './pics/7_v2.svg';
+import pic7Inter from './pics/7_inter.svg';
+import pic8V1 from './pics/8_v1.svg';
+import pic8V2 from './pics/8_v2.svg';
+import pic8Inter from './pics/8_inter.svg';
 
 export type Random = {
   type: "random",
@@ -340,6 +346,32 @@ const engineering6: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering7: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    startPic: pic7V1, interPic: pic7Inter, endPic: pic7V1,
+    slotSwitch: null,
+  },
+  v2: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    startPic: pic7V2, interPic: pic7Inter, endPic: pic7V2,
+    slotSwitch: null,
+  },
+}
+
+const engineering8: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    startPic: pic8V1, interPic: pic8Inter, endPic: pic8V2,
+    slotSwitch: null,
+  },
+  v2: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    startPic: pic8V2, interPic: pic8Inter, endPic: pic8V1,
+    slotSwitch: null,
+  },
+}
+
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
   "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced"], engineeringStrategies: engineeringB },
@@ -364,8 +396,8 @@ export const formations: Record<string, Formation> = {
   "4": { type: "block", name: "4", longName: "Chain Gang", compClasses: ["open", "advanced"], engineeringStrategies: engineering4 },
   "5": { type: "block", name: "5", longName: "Mixed Accordion", compClasses: ["open"], engineeringStrategies: engineering5 },
   "6": { type: "block", name: "6", longName: "Snowflake", compClasses: ["open"], engineeringStrategies: engineering6 },
-  //"7": { name: "7", longName: "Flower", compClasses: ["open", "advanced"] },
-  //"8": { name: "8", longName: "Buddy", compClasses: ["open", "advanced"] },
+  "7": { type: "block", name: "7", longName: "Flower", compClasses: ["open", "advanced"], engineeringStrategies: engineering7 },
+  "8": { type: "block", name: "8", longName: "Buddy", compClasses: ["open", "advanced"], engineeringStrategies: engineering8 },
   //"9": { name: "9", longName: "Shorty", compClasses: ["open", "advanced"] },
   //"10": { name: "10", longName: "Mixed Anthem", compClasses: ["open"] },
   //"11": { name: "11", longName: "Fun Buddies", compClasses: ["open", "advanced"] },
