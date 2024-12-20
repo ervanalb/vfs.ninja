@@ -87,6 +87,12 @@ import pic5P3Inter from './pics/5_p3_inter.svg';
 import pic5P4Inter from './pics/5_p4_inter.svg';
 import pic5X12Inter from './pics/5_x12_inter.svg';
 import pic5X34Inter from './pics/5_x34_inter.svg';
+import pic6V1 from './pics/6_v1.svg';
+import pic6V2 from './pics/6_v2.svg';
+import pic6V1Inter from './pics/6_v1_inter.svg';
+import pic6V2Inter from './pics/6_v2_inter.svg';
+import pic6V1End from './pics/6_v1_end.svg';
+import pic6V2End from './pics/6_v2_end.svg';
 
 export type Random = {
   type: "random",
@@ -321,6 +327,18 @@ const engineering5: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering6: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HU", "HD", "HU", "HD"], end: ["HU", "HD", "HU", "HD"], priority: 1,
+    startPic: pic6V1, interPic: pic6V1Inter, endPic: pic6V1End,
+    slotSwitch: "lr",
+  },
+  v2: {
+    start: ["HD", "HU", "HD", "HU"], end: ["HD", "HU", "HD", "HU"], priority: 2,
+    startPic: pic6V2, interPic: pic6V2Inter, endPic: pic6V2End,
+    slotSwitch: "ud",
+  },
+}
 
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
@@ -345,7 +363,7 @@ export const formations: Record<string, Formation> = {
   "3": { type: "block", name: "3", longName: "HD Accordion", compClasses: ["open", "advanced"], engineeringStrategies: engineering3 },
   "4": { type: "block", name: "4", longName: "Chain Gang", compClasses: ["open", "advanced"], engineeringStrategies: engineering4 },
   "5": { type: "block", name: "5", longName: "Mixed Accordion", compClasses: ["open"], engineeringStrategies: engineering5 },
-  //"6": { name: "6", longName: "Snowflake", compClasses: ["open"] },
+  "6": { type: "block", name: "6", longName: "Snowflake", compClasses: ["open"], engineeringStrategies: engineering6 },
   //"7": { name: "7", longName: "Flower", compClasses: ["open", "advanced"] },
   //"8": { name: "8", longName: "Buddy", compClasses: ["open", "advanced"] },
   //"9": { name: "9", longName: "Shorty", compClasses: ["open", "advanced"] },
