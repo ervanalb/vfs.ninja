@@ -69,6 +69,10 @@ import pic3V1 from './pics/3_v1.svg';
 import pic3V2 from './pics/3_v2.svg';
 import pic3V1Inter from './pics/3_v1_inter.svg';
 import pic3V2Inter from './pics/3_v2_inter.svg';
+import pic4V1 from './pics/4_v1.svg';
+import pic4V2 from './pics/4_v2.svg';
+import pic4V1Inter from './pics/4_v1_inter.svg';
+import pic4V2Inter from './pics/4_v2_inter.svg';
 
 export type Random = {
   type: "random",
@@ -247,6 +251,20 @@ const engineering3: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering4: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD", "HU", "HD", "HU"], end: ["HU", "HD", "HU", "HD"], priority: 1,
+    startPic: pic4V1, interPic: pic4V1Inter, endPic: pic4V2,
+    slotSwitch: null,
+  },
+  v2: {
+    start: ["HU", "HD", "HU", "HD"], end: ["HD", "HU", "HD", "HU"], priority: 2,
+    startPic: pic4V2, interPic: pic4V2Inter, endPic: pic4V1,
+    slotSwitch: null,
+  },
+}
+
+
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
   "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced"], engineeringStrategies: engineeringB },
@@ -268,7 +286,7 @@ export const formations: Record<string, Formation> = {
   "1": { type: "block", name: "1", longName: "Arrowhead", compClasses: ["open", "advanced"], engineeringStrategies: engineering1 },
   "2": { type: "block", name: "2", longName: "Claw", compClasses: ["open", "advanced"], engineeringStrategies: engineering2 },
   "3": { type: "block", name: "3", longName: "HD Accordion", compClasses: ["open", "advanced"], engineeringStrategies: engineering3 },
-  //"4": { name: "4", longName: "Chain Gang", compClasses: ["open", "advanced"] },
+  "4": { type: "block", name: "4", longName: "Chain Gang", compClasses: ["open", "advanced"], engineeringStrategies: engineering4 },
   //"5": { name: "5", longName: "Mixed Accordion", compClasses: ["open"] },
   //"6": { name: "6", longName: "Snowflake", compClasses: ["open"] },
   //"7": { name: "7", longName: "Flower", compClasses: ["open", "advanced"] },
