@@ -99,6 +99,14 @@ import pic7Inter from './pics/7_inter.svg';
 import pic8V1 from './pics/8_v1.svg';
 import pic8V2 from './pics/8_v2.svg';
 import pic8Inter from './pics/8_inter.svg';
+import pic9V1 from './pics/9_v1.svg';
+import pic9V2 from './pics/9_v2.svg';
+import pic9V3 from './pics/9_v3.svg';
+import pic9V4 from './pics/9_v4.svg';
+import pic9V1Inter from './pics/9_v1_inter.svg';
+import pic9V2Inter from './pics/9_v2_inter.svg';
+import pic9V3Inter from './pics/9_v3_inter.svg';
+import pic9V4Inter from './pics/9_v4_inter.svg';
 
 export type Random = {
   type: "random",
@@ -372,6 +380,30 @@ const engineering8: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering9: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HU", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    startPic: pic9V1, interPic: pic9V1Inter, endPic: pic9V1,
+    slotSwitch: null,
+  },
+  v2: {
+    start: ["HD", "HD", "HU", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    startPic: pic9V2, interPic: pic9V2Inter, endPic: pic9V2,
+    slotSwitch: null,
+  },
+  v3: {
+    start: ["HD", "HU", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 3,
+    startPic: pic9V3, interPic: pic9V3Inter, endPic: pic9V3,
+    slotSwitch: null,
+  },
+  v4: {
+    start: ["HD", "HD", "HD", "HU"], end: ["HD", "HD", "HD", "HD"], priority: 4,
+    startPic: pic9V4, interPic: pic9V4Inter, endPic: pic9V4,
+    slotSwitch: null,
+  },
+} as const;
+
+
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
   "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced"], engineeringStrategies: engineeringB },
@@ -398,7 +430,7 @@ export const formations: Record<string, Formation> = {
   "6": { type: "block", name: "6", longName: "Snowflake", compClasses: ["open"], engineeringStrategies: engineering6 },
   "7": { type: "block", name: "7", longName: "Flower", compClasses: ["open", "advanced"], engineeringStrategies: engineering7 },
   "8": { type: "block", name: "8", longName: "Buddy", compClasses: ["open", "advanced"], engineeringStrategies: engineering8 },
-  //"9": { name: "9", longName: "Shorty", compClasses: ["open", "advanced"] },
+  "9": { type: "block",  name: "9", longName: "Shorty", compClasses: ["open", "advanced"], engineeringStrategies: engineering9 },
   //"10": { name: "10", longName: "Mixed Anthem", compClasses: ["open"] },
   //"11": { name: "11", longName: "Fun Buddies", compClasses: ["open", "advanced"] },
   //"12": { name: "12", longName: "Pinwheel", compClasses: ["open", "advanced"] },
