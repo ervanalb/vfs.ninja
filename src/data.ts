@@ -132,6 +132,10 @@ import pic14V1 from './pics/14_v1.svg';
 import pic14V2 from './pics/14_v2.svg';
 import pic14V1Inter from './pics/14_v1_inter.svg';
 import pic14V2Inter from './pics/14_v2_inter.svg';
+import pic15V1 from './pics/15_v1.svg';
+import pic15V2 from './pics/15_v2.svg';
+import pic15V1Inter from './pics/15_v1_inter.svg';
+import pic15V2Inter from './pics/15_v2_inter.svg';
 
 export type Random = {
   type: "random",
@@ -513,6 +517,18 @@ const engineering14: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering15: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HDO", "HD", "HDO", "HD"], end: ["HDO", "HD", "HDO", "HD"], priority: 1,
+    startPic: pic15V1, interPic: pic15V1Inter, endPic: pic15V1,
+    slotSwitch: "null",
+  },
+  v2: {
+    start: ["HD", "HDO", "HD", "HDO"], end: ["HDO", "HD", "HDO", "HD"], priority: 2,
+    startPic: pic15V2, interPic: pic15V2Inter, endPic: pic15V2,
+    slotSwitch: "null",
+  },
+}
 
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
@@ -546,7 +562,7 @@ export const formations: Record<string, Formation> = {
   "12": { type: "block", name: "12", longName: "Pinwheel", compClasses: ["open", "advanced"], engineeringStrategies: engineering12 },
   "13": { type: "block", name: "13", longName: "HD Star", compClasses: ["open", "advanced"], engineeringStrategies: engineering13 },
   "14": { type: "block", name: "14", longName: "Satellite", compClasses: ["open", "advanced"], engineeringStrategies: engineering14 },
-  //"15": { name: "15", longName: "Bipole", compClasses: ["open"] },
+  "15": { type: "block", name: "15", longName: "Bipole", compClasses: ["open"], engineeringStrategies: engineering15 },
   //"16": { name: "16", longName: "Chimmy", compClasses: ["open", "advanced"] },
   //"17": { name: "17", longName: "Zins", compClasses: ["open"] },
   //"18": { name: "18", longName: "Ding", compClasses: ["open"] },
