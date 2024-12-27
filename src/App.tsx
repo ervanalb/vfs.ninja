@@ -88,28 +88,43 @@ const defaultEngineering = (formationId: FormationId): EngineeringId => {
   );
 };
 
-const slotSwitchCombine = (a: SlotSwitch, b: SlotSwitch): SlotSwitch => ({
-  "null,null": null,
-  "null,lr": "lr",
-  "null,ud": "ud",
-  "null,180": "180",
-  "lr,null": "lr",
-  "lr,lr": null,
-  "lr,ud": "180",
-  "lr,180": "ud",
-  "ud,null": "ud",
-  "ud,lr": "180",
-  "ud,ud": null,
-  "ud,180": "lr",
-  "180,null": "180",
-  "180,lr": "ud",
-  "180,ud": "lr",
-  "180,180": null,
-}[a + "," + b] as SlotSwitch);
+const slotSwitchToMatrix: Record<SlotSwitch, [number, number, number, number]> = {
+  "null": [1, 0, 0, 1],
+  "lr": [-1, 0, 0, 1],
+  "ud": [1, 0, 0, -1],
+  "180": [-1, 0, 0, -1],
+  "90": [0, 1, -1, 0],
+  "270": [0, -1, 1, 0],
+  "transpose": [0, -1, -1, 0],
+  "transverse": [0, 1, 1, 0],
+};
+
+const slotSwitchFromMatrix: Record<string, SlotSwitch> = {
+  "1,0,0,1": "null",
+  "-1,0,0,1": "lr",
+  "1,0,0,-1": "ud",
+  "-1,0,0,-1": "180",
+  "0,1,-1,0": "90",
+  "0,-1,1,0": "270",
+  "0,-1,-1,0": "transpose",
+  "0,1,1,0": "transverse",
+};
+
+const slotSwitchCombine = (a: SlotSwitch, b: SlotSwitch): SlotSwitch => {
+  const [a1, a2, a3, a4] = slotSwitchToMatrix[a];
+  const [b1, b2, b3, b4] = slotSwitchToMatrix[b];
+  const matC = [
+    a1 * b1 + a2 * b3,
+    a1 * b2 + a2 * b4,
+    a3 * b1 + a4 * b3,
+    a3 * b2 + a4 * b4
+  ];
+  return slotSwitchFromMatrix[matC.toString()] as SlotSwitch;
+};
 
 const slotSwitchesEquivalent = (a: SlotSwitch, b: SlotSwitch): boolean => {
   const combined = slotSwitchCombine(a, b);
-  return combined == null || combined == "180";
+  return combined == "null" || combined == "180" || combined == "90" || combined == "270";
 }
 
 const argmin = (a: Array<PatternAnalysis>) => {
@@ -139,7 +154,7 @@ const optimizeEngineering = (round: Round): [Pattern, PatternAnalysis] => {
 
   const firstFormationId = round[round.length - 1];
   const firstFormationEngStrategies = formations[firstFormationId].engineeringStrategies;
-  const firstSlotSwitch = null;
+  const firstSlotSwitch = "null";
   const patternOptions = Object.keys(firstFormationEngStrategies).map((firstFormationEngId: EngineeringId) => {
     const pattern: Pattern = [firstFormationEngId];
     const slotSwitches: Array<SlotSwitch> = [firstSlotSwitch];
@@ -148,7 +163,7 @@ const optimizeEngineering = (round: Round): [Pattern, PatternAnalysis] => {
     let prevFormationEngId = firstFormationEngId;
     let prevSlotSwitch: SlotSwitch = firstSlotSwitch;
 
-    while (true) {
+    for (let i = 0; i < 1000; i++) {
       let nextFormationId = round[pattern.length % round.length];
       const f = formations[nextFormationId];
       const strategyAnalyses = Object.keys(f.engineeringStrategies)
@@ -179,6 +194,7 @@ const optimizeEngineering = (round: Round): [Pattern, PatternAnalysis] => {
       prevFormationEngId = nextFormationEngId;
       prevSlotSwitch = nextSlotSwitch;
     }
+    throw "Failed to calculate engineering--no cycle found";
   });
 
   const patternAnalyses = patternOptions.map((pattern) => analyzePattern(round, pattern, true));
@@ -287,7 +303,7 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, show
     formationEngId = defaultEngineering(formationId);
   }
 
-  slotSwitch = slotSwitch || null;
+  slotSwitch = slotSwitch || "null";
 
   const f = formations[formationId];
 
@@ -552,11 +568,11 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
       if (f.type == "block") {
         return f.engineeringStrategies[pattern[i]].slotSwitch;
       } else {
-        return null;
+        return "null";
       }
     };
     const slotSwitch = Array.from({ length: formationPickerPatternIndex })
-      .reduce((acc: SlotSwitch, _, i) => slotSwitchCombine(acc, getSlotSwitch(i),), null);
+      .reduce((acc: SlotSwitch, _, i) => slotSwitchCombine(acc, getSlotSwitch(i),), "null");
 
     formationPicker = alternateFormations[formationNum].map(([formationId, engId]) => {
       const classes = [];
@@ -609,8 +625,7 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
 
     const numPages = pattern.length / round.length;
 
-    let slotSwitch: SlotSwitch = null;
-
+    let slotSwitch: SlotSwitch = "null";
 
     const roundPics = Array.from({ length: numPages }, (_, page) => {
       const extendRoundButton = page == 0
