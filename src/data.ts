@@ -128,6 +128,10 @@ import pic12V4Inter from './pics/12_v4_inter.svg';
 import pic13 from './pics/13.svg';
 import pic13V1Inter from './pics/13_v1_inter.svg';
 import pic13V2Inter from './pics/13_v2_inter.svg';
+import pic14V1 from './pics/14_v1.svg';
+import pic14V2 from './pics/14_v2.svg';
+import pic14V1Inter from './pics/14_v1_inter.svg';
+import pic14V2Inter from './pics/14_v2_inter.svg';
 
 export type Random = {
   type: "random",
@@ -496,6 +500,20 @@ const engineering13: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering14: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD2", "HD2", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    startPic: pic14V1, interPic: pic14V1Inter, endPic: pic14V1,
+    slotSwitch: "null",
+  },
+  v2: {
+    start: ["HD", "HD", "HD2", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    startPic: pic14V2, interPic: pic14V2Inter, endPic: pic14V2,
+    slotSwitch: "null",
+  },
+}
+
+
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
   "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced"], engineeringStrategies: engineeringB },
@@ -527,7 +545,7 @@ export const formations: Record<string, Formation> = {
   "11": { type: "block", name: "11", longName: "Fun Buddies", compClasses: ["open", "advanced"], engineeringStrategies: engineering11 },
   "12": { type: "block", name: "12", longName: "Pinwheel", compClasses: ["open", "advanced"], engineeringStrategies: engineering12 },
   "13": { type: "block", name: "13", longName: "HD Star", compClasses: ["open", "advanced"], engineeringStrategies: engineering13 },
-  //"14": { name: "14", longName: "Satellite", compClasses: ["open", "advanced"] },
+  "14": { type: "block", name: "14", longName: "Satellite", compClasses: ["open", "advanced"], engineeringStrategies: engineering14 },
   //"15": { name: "15", longName: "Bipole", compClasses: ["open"] },
   //"16": { name: "16", longName: "Chimmy", compClasses: ["open", "advanced"] },
   //"17": { name: "17", longName: "Zins", compClasses: ["open"] },
