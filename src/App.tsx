@@ -122,10 +122,13 @@ const slotSwitchCombine = (a: SlotSwitch, b: SlotSwitch): SlotSwitch => {
   return slotSwitchFromMatrix[matC.toString()] as SlotSwitch;
 };
 
-const slotSwitchesEquivalent = (a: SlotSwitch, b: SlotSwitch): boolean => {
-  const combined = slotSwitchCombine(a, b);
-  return combined == "null" || combined == "180" || combined == "90" || combined == "270";
-}
+const resetRotation = (a: SlotSwitch): SlotSwitch =>
+  (a == "null" || a == "180" || a == "90" || a == "270")
+    ? "null"
+    : "transverse"
+  ;
+
+const slotSwitchesEquivalent = (a: SlotSwitch, b: SlotSwitch): boolean => resetRotation(slotSwitchCombine(a, b)) == "null";
 
 const argmin = (a: Array<PatternAnalysis>) => {
   if (a.length < 1) throw "Must contain at least 1 entry";
@@ -292,13 +295,14 @@ type PicProps = {
   formationId: FormationId,
   formationEngId?: EngineeringId,
   slotSwitch?: SlotSwitch,
+  lockRotation?: boolean,
   showEngName?: boolean,
   onClick?: () => void,
   onClickDelete?: () => void,
   className?: string,
 };
 
-const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, showEngName, onClick, onClickDelete, className }) => {
+const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, lockRotation, showEngName, onClick, onClickDelete, className }) => {
   if (formationEngId === undefined) {
     formationEngId = defaultEngineering(formationId);
   }
@@ -321,16 +325,19 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, show
   );
 
   const slotSwitchClassName = (slotSwitch: SlotSwitch): string => {
-    if (slotSwitch) {
-      return " slot-switch-" + slotSwitch;
-    } else {
-      return "";
-    }
+    return " slot-switch-" + slotSwitch;
   }
+
+  if (lockRotation) {
+    slotSwitch = resetRotation(slotSwitch);
+  }
+
+  const alt = showEngName && resetRotation(slotSwitch) != "null" ? <div className="pic-alt-overlay">ALT</div> : null;
 
   if (f.type === "block") {
     const e = f.engineeringStrategies[formationEngId];
-    const endSlotSwitch = slotSwitchCombine(slotSwitch, e.slotSwitch);
+    let endSlotSwitch = lockRotation ? slotSwitch : slotSwitchCombine(slotSwitch, e.slotSwitch);
+
     let pics = wrapOnClick(<>
       <img src={e.startPic} className={"pic-start" + slotSwitchClassName(slotSwitch)} />
       <div className="pic-sep" />
@@ -342,6 +349,7 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, show
       <div className="pic-fname-overlay">{fName}</div>
       {showEngName ? <div className="pic-ename-overlay">{eName}</div> : null}
       {deleteButton}
+      {alt}
       {pics}
     </div>;
   } else {
@@ -351,6 +359,7 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, show
       <div className="pic-fname-overlay">{fName}</div>
       {showEngName ? <div className="pic-ename-overlay">{eName}</div> : null}
       {deleteButton}
+      {alt}
       {pic}
     </div>;
   }
@@ -526,6 +535,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
 
 type DrawProps = {
   draw: Array<EngineeredRound | RoundError>,
+  lockRotation: boolean,
   rerunOne: (roundNum: number) => void,
   changeFormation: (roundNum: number, formationNum: number, newFormationId: FormationId) => void,
   deleteFormation: (roundNum: number, formationNum: number) => void,
@@ -534,7 +544,7 @@ type DrawProps = {
   includedFormations: Array<FormationId>,
 };
 
-const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteFormation, extendRound, changeEngineering, includedFormations }) => {
+const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormation, deleteFormation, extendRound, changeEngineering, includedFormations }) => {
   // Formation picker
   const [formationPickerShown, setFormationPickerShown] = useState<boolean>(false);
   const [formationPickerRoundNum, setFormationPickerRoundNum] = useState<number>(0);
@@ -571,7 +581,7 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
         return "null";
       }
     };
-    const slotSwitch = Array.from({ length: formationPickerPatternIndex })
+    let slotSwitch = Array.from({ length: formationPickerPatternIndex })
       .reduce((acc: SlotSwitch, _, i) => slotSwitchCombine(acc, getSlotSwitch(i),), "null");
 
     formationPicker = alternateFormations[formationNum].map(([formationId, engId]) => {
@@ -582,12 +592,19 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
       if (!includedFormations.includes(formationId)) {
         classes.push("not-preferred");
       }
-      return <Pic key={formationId} formationId={formationId} formationEngId={engId} slotSwitch={slotSwitch} onClick={() => {
-        formationPickerHide();
-        if (selectedFormationId != formationId) {
-          changeFormation(formationPickerRoundNum, formationNum, formationId)
-        }
-      }} className={classes ? classes.join(" ") : undefined} />;
+      return <Pic
+        key={formationId}
+        formationId={formationId}
+        formationEngId={engId}
+        slotSwitch={slotSwitch}
+        lockRotation={lockRotation}
+        onClick={() => {
+          formationPickerHide();
+          if (selectedFormationId != formationId) {
+            changeFormation(formationPickerRoundNum, formationNum, formationId)
+          }
+        }}
+        className={classes ? classes.join(" ") : undefined} />;
     });
 
     engineeringPicker = alternateEngineering[formationPickerPatternIndex].map(([engineeringId, relCost]) => {
@@ -598,12 +615,20 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
       if (relCost > 0) {
         classes.push("not-preferred");
       }
-      return <Pic key={engineeringId} formationId={selectedFormationId} formationEngId={engineeringId} slotSwitch={slotSwitch} showEngName={true} onClick={() => {
-        formationPickerHide();
-        if (selectedEngineeringId != engineeringId) {
-          changeEngineering(formationPickerRoundNum, formationPickerPatternIndex, engineeringId)
-        }
-      }} className={classes ? classes.join(" ") : undefined} />;
+      return <Pic
+        key={engineeringId}
+        formationId={selectedFormationId}
+        formationEngId={engineeringId}
+        slotSwitch={slotSwitch}
+        lockRotation={lockRotation}
+        showEngName={true}
+        onClick={() => {
+          formationPickerHide();
+          if (selectedEngineeringId != engineeringId) {
+            changeEngineering(formationPickerRoundNum, formationPickerPatternIndex, engineeringId)
+          }
+        }}
+        className={classes ? classes.join(" ") : undefined} />;
     });
   }
 
@@ -644,6 +669,7 @@ const Draw: React.FC<DrawProps> = ({ draw, rerunOne, changeFormation, deleteForm
             formationId={formationId}
             formationEngId={engId}
             slotSwitch={slotSwitch}
+            lockRotation={lockRotation}
             showEngName={true}
             onClickDelete={round.length > 1 ? () => deleteFormation(roundNum, formationNum) : undefined}
           />;
@@ -710,16 +736,18 @@ const RerunButton: React.FC<RerunButtonProps> = ({ onClick }) => {
   }}><img className={spinning ? "spin" : ""} src={rerun} /></button>
 };
 
-const serialize = ({ compClass, includedFormations, roundLength, filterRest, draw }: {
+const serialize = ({ compClass, includedFormations, roundLength, filterRest, lockRotation, draw }: {
   compClass: CompClassId | "custom",
   includedFormations: Array<FormationId>,
   roundLength: number,
   filterRest: boolean,
+  lockRotation: boolean,
   draw: Array<EngineeredRound | RoundError>,
 }): string => {
 
   const compClassString = compClass == "custom" ? "custom(" + roundLength + "," + includedFormations.join(",") + ")" : compClass;
   const filterRestString = filterRest ? "r" : "";
+  const lockRotationString = lockRotation ? "l" : "";
 
   const drawString = draw.map((engRound) => {
     if ((engRound as RoundError).error !== undefined) {
@@ -737,16 +765,24 @@ const serialize = ({ compClass, includedFormations, roundLength, filterRest, dra
     }
   }).join(",");
 
-  return "v1," + compClassString + "," + filterRestString + "," + drawString;
+  return "v1," + compClassString + "," + filterRestString + "," + lockRotationString + "," + drawString;
 };
 
 const deserialize = (
   str: string,
-  { setIncludedFormationsNoRerun: setIncludedFormationsNoRerun, setRoundLengthNoRerun: setRoundLength, setFilterRestNoRerun: setFilterRest, setNumRoundsNoRerun: setNumRounds, setDraw }: {
+  {
+    setIncludedFormationsNoRerun: setIncludedFormationsNoRerun,
+    setRoundLengthNoRerun: setRoundLength,
+    setFilterRestNoRerun: setFilterRest,
+    setNumRoundsNoRerun: setNumRounds,
+    setLockRotation,
+    setDraw,
+  }: {
     setIncludedFormationsNoRerun: (includedFormations: Array<FormationId>) => void,
     setRoundLengthNoRerun: (roundLength: number) => void,
     setFilterRestNoRerun: (filterRest: boolean) => void,
     setNumRoundsNoRerun: (numRounds: number) => void,
+    setLockRotation: (lockRotation: boolean) => void,
     setDraw: (draw: Array<EngineeredRound | RoundError>) => void,
   }) => {
 
@@ -814,6 +850,16 @@ const deserialize = (
     throw "Bad filter rest value"
   }
 
+  const lockRotationStr = parseUntil(",");
+  popOff(",");
+  if (lockRotationStr == "l") {
+    setLockRotation(true);
+  } else if (lockRotationStr == "") {
+    setLockRotation(false);
+  } else {
+    throw "Bad lock rotation value"
+  }
+
   let draw: Array<EngineeredRound | RoundError> = [];
   for (; ;) {
     if (remainingStr.startsWith("r")) {
@@ -873,6 +919,7 @@ const App = () => {
   const [includedFormations, setIncludedFormationsNoRerun] = useState<Array<FormationId>>(formationsInCompClass(initialCompClass));
   const [filterRest, setFilterRestNoRerun] = useState<boolean>(false);
   const [numRounds, setNumRoundsNoRerun] = useState<number>(5);
+  const [lockRotation, setLockRotation] = useState<boolean>(false);
   const [draw, setDraw] = useState<Array<EngineeredRound | RoundError>>([]);
   const [hash, setHash] = useState<string>("");
   const [rerunAllTrigger, setRerunAllTrigger] = useState<boolean>(false);
@@ -1047,16 +1094,16 @@ const App = () => {
 
   useEffect(() => {
     if (draw.length > 0) {
-      const newHash = serialize({ compClass, roundLength, includedFormations, filterRest, draw });
+      const newHash = serialize({ compClass, roundLength, includedFormations, filterRest, lockRotation, draw });
       setHash(newHash); // Avoid immediate deserialize
       window.history.pushState(null, '', '#' + newHash);
     }
-  }, [compClass, roundLength, includedFormations, filterRest, draw]);
+  }, [compClass, roundLength, includedFormations, filterRest, lockRotation, draw]);
 
   useEffect(() => {
     if (deserializeTrigger && hash != "") {
       deserialize(hash, {
-        setRoundLengthNoRerun, setIncludedFormationsNoRerun, setFilterRestNoRerun, setNumRoundsNoRerun, setDraw
+        setRoundLengthNoRerun, setIncludedFormationsNoRerun, setFilterRestNoRerun, setNumRoundsNoRerun, setLockRotation, setDraw
       });
       setDeserializeTrigger(false);
     }
@@ -1090,6 +1137,22 @@ const App = () => {
     };
   }, []);
 
+  const visualizationOptions = <Form.Group className="mb-3">
+    <div>Visualization:</div>
+    <div className="form-check">
+      <input
+        className="form-check-input"
+        type="checkbox"
+        checked={lockRotation}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLockRotation(e.target.checked)}
+        id="checkLockRotation"
+      />
+      <label className="form-check-label" htmlFor="checkLockRotation">
+        Lock rotation
+      </label>
+    </div>
+  </Form.Group>;
+
   return <>
     <div className="container-lg">
       <h1 className="text-center my-3">4-way VFS draw generator</h1>
@@ -1105,8 +1168,10 @@ const App = () => {
           <h2>Results</h2>
           <RerunButton onClick={rerunAll} />
         </div>
+        {visualizationOptions}
         <Draw
           draw={draw}
+          lockRotation={lockRotation}
           rerunOne={(roundNum) =>
             setDraw(draw.map((orig, i) => i == roundNum ? rerunOne() : orig))
           }
