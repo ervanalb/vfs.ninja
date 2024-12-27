@@ -125,6 +125,9 @@ import pic12V1Inter from './pics/12_v1_inter.svg';
 import pic12V2Inter from './pics/12_v2_inter.svg';
 import pic12V3Inter from './pics/12_v3_inter.svg';
 import pic12V4Inter from './pics/12_v4_inter.svg';
+import pic13 from './pics/13.svg';
+import pic13V1Inter from './pics/13_v1_inter.svg';
+import pic13V2Inter from './pics/13_v2_inter.svg';
 
 export type Random = {
   type: "random",
@@ -480,6 +483,19 @@ const engineering12: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering13: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    startPic: pic13, interPic: pic13V1Inter, endPic: pic13,
+    slotSwitch: "270",
+  },
+  v2: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    startPic: pic13, interPic: pic13V2Inter, endPic: pic13,
+    slotSwitch: "90",
+  },
+}
+
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
   "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced"], engineeringStrategies: engineeringB },
@@ -510,7 +526,7 @@ export const formations: Record<string, Formation> = {
   "10": { type: "block", name: "10", longName: "Mixed Anthem", compClasses: ["open"], engineeringStrategies: engineering10 },
   "11": { type: "block", name: "11", longName: "Fun Buddies", compClasses: ["open", "advanced"], engineeringStrategies: engineering11 },
   "12": { type: "block", name: "12", longName: "Pinwheel", compClasses: ["open", "advanced"], engineeringStrategies: engineering12 },
-  //"13": { name: "13", longName: "HD Star", compClasses: ["open", "advanced"] },
+  "13": { type: "block", name: "13", longName: "HD Star", compClasses: ["open", "advanced"], engineeringStrategies: engineering13 },
   //"14": { name: "14", longName: "Satellite", compClasses: ["open", "advanced"] },
   //"15": { name: "15", longName: "Bipole", compClasses: ["open"] },
   //"16": { name: "16", longName: "Chimmy", compClasses: ["open", "advanced"] },
