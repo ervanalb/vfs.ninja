@@ -136,6 +136,12 @@ import pic15V1 from './pics/15_v1.svg';
 import pic15V2 from './pics/15_v2.svg';
 import pic15V1Inter from './pics/15_v1_inter.svg';
 import pic15V2Inter from './pics/15_v2_inter.svg';
+import pic16V1 from './pics/16_v1.svg';
+import pic16V2 from './pics/16_v2.svg';
+import pic16V3 from './pics/16_v3.svg';
+import pic16V4 from './pics/16_v4.svg';
+import pic16V12Inter from './pics/16_v12_inter.svg';
+import pic16V34Inter from './pics/16_v34_inter.svg';
 
 export type Random = {
   type: "random",
@@ -530,6 +536,29 @@ const engineering15: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering16: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HU", "HD", "HD", "HD"], end: ["HD", "HD", "HU", "HD"], priority: 1,
+    startPic: pic16V1, interPic: pic16V12Inter, endPic: pic16V2,
+    slotSwitch: "90",
+  },
+  v2: {
+    start: ["HD", "HD", "HU", "HD"], end: ["HU", "HD", "HD", "HD"], priority: 2,
+    startPic: pic16V2, interPic: pic16V12Inter, endPic: pic16V1,
+    slotSwitch: "90",
+  },
+  v3: {
+    start: ["HD", "HU", "HD", "HD"], end: ["HD", "HD", "HD", "HU"], priority: 3,
+    startPic: pic16V3, interPic: pic16V34Inter, endPic: pic16V4,
+    slotSwitch: "270",
+  },
+  v4: {
+    start: ["HD", "HD", "HD", "HU"], end: ["HD", "HU", "HD", "HD"], priority: 4,
+    startPic: pic16V4, interPic: pic16V34Inter, endPic: pic16V3,
+    slotSwitch: "270",
+  },
+}
+
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
   "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced"], engineeringStrategies: engineeringB },
@@ -563,7 +592,7 @@ export const formations: Record<string, Formation> = {
   "13": { type: "block", name: "13", longName: "HD Star", compClasses: ["open", "advanced"], engineeringStrategies: engineering13 },
   "14": { type: "block", name: "14", longName: "Satellite", compClasses: ["open", "advanced"], engineeringStrategies: engineering14 },
   "15": { type: "block", name: "15", longName: "Bipole", compClasses: ["open"], engineeringStrategies: engineering15 },
-  //"16": { name: "16", longName: "Chimmy", compClasses: ["open", "advanced"] },
+  "16": { type: "block", name: "16", longName: "Chimmy", compClasses: ["open", "advanced"], engineeringStrategies: engineering16 },
   //"17": { name: "17", longName: "Zins", compClasses: ["open"] },
   //"18": { name: "18", longName: "Ding", compClasses: ["open"] },
   //"19": { name: "19", longName: "Angry Pelican", compClasses: ["open"] },
