@@ -142,6 +142,18 @@ import pic16V3 from './pics/16_v3.svg';
 import pic16V4 from './pics/16_v4.svg';
 import pic16V12Inter from './pics/16_v12_inter.svg';
 import pic16V34Inter from './pics/16_v34_inter.svg';
+import pic17X1 from './pics/17_x1.svg';
+import pic17X2 from './pics/17_x2.svg';
+import pic17X1Inter from './pics/17_x1_inter.svg';
+import pic17X2Inter from './pics/17_x2_inter.svg';
+import pic17P1 from './pics/17_p1.svg';
+import pic17P2 from './pics/17_p2.svg';
+import pic17P1Inter from './pics/17_p1_inter.svg';
+import pic17P2Inter from './pics/17_p2_inter.svg';
+import pic18V1 from './pics/18_v1.svg';
+import pic18V2 from './pics/18_v2.svg';
+import pic18V1Inter from './pics/18_v1_inter.svg';
+import pic18V2Inter from './pics/18_v2_inter.svg';
 
 export type Random = {
   type: "random",
@@ -481,17 +493,17 @@ const engineering12: Record<string, BlockEngineering> = {
     slotSwitch: "transverse",
   },
   v2: {
-    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
     startPic: pic12V2, interPic: pic12V2Inter, endPic: pic12V1,
     slotSwitch: "transverse",
   },
   v3: {
-    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 3,
     startPic: pic12V3, interPic: pic12V3Inter, endPic: pic12V4,
     slotSwitch: "transverse",
   },
   v4: {
-    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 4,
     startPic: pic12V4, interPic: pic12V4Inter, endPic: pic12V3,
     slotSwitch: "transverse",
   },
@@ -559,6 +571,43 @@ const engineering16: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering17: Record<string, BlockEngineering> = {
+  x1: {
+    start: ["HD", "HU", "HD", "HU"], end: ["HU", "HD", "HU", "HD"], priority: 1,
+    startPic: pic17X1, interPic: pic17X1Inter, endPic: pic17X2,
+    slotSwitch: "null",
+  },
+  x2: {
+    start: ["HU", "HD", "HU", "HD"], end: ["HD", "HU", "HD", "HU"], priority: 2,
+    startPic: pic17X2, interPic: pic17X2Inter, endPic: pic17X1,
+    slotSwitch: "null",
+  },
+  p1: {
+    start: ["HU", "HU", "HD", "HD"], end: ["HD", "HD", "HU", "HU"], priority: 3,
+    startPic: pic17P1, interPic: pic17P1Inter, endPic: pic17P2,
+    slotSwitch: "null",
+  },
+  p2: {
+    start: ["HD", "HD", "HU", "HU"], end: ["HU", "HU", "HD", "HD"], priority: 4,
+    startPic: pic17P2, interPic: pic17P2Inter, endPic: pic17P1,
+    slotSwitch: "null",
+  },
+}
+
+const engineering18: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD", "HU", "HD", "HU"], end: ["HU", "HD", "HU", "HD"], priority: 1,
+    startPic: pic18V1, interPic: pic18V1Inter, endPic: pic18V2,
+    slotSwitch: "null",
+  },
+  v2: {
+    start: ["HU", "HD", "HU", "HD"], end: ["HD", "HU", "HD", "HU"], priority: 2,
+    startPic: pic18V2, interPic: pic18V2Inter, endPic: pic18V1,
+    slotSwitch: "null",
+  },
+}
+
+
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
   "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced"], engineeringStrategies: engineeringB },
@@ -593,8 +642,8 @@ export const formations: Record<string, Formation> = {
   "14": { type: "block", name: "14", longName: "Satellite", compClasses: ["open", "advanced"], engineeringStrategies: engineering14 },
   "15": { type: "block", name: "15", longName: "Bipole", compClasses: ["open"], engineeringStrategies: engineering15 },
   "16": { type: "block", name: "16", longName: "Chimmy", compClasses: ["open", "advanced"], engineeringStrategies: engineering16 },
-  //"17": { name: "17", longName: "Zins", compClasses: ["open"] },
-  //"18": { name: "18", longName: "Ding", compClasses: ["open"] },
+  "17": { type: "block", name: "17", longName: "Zins", compClasses: ["open"], engineeringStrategies: engineering17 },
+  "18": { type: "block", name: "18", longName: "Ding", compClasses: ["open"], engineeringStrategies: engineering18 },
   //"19": { name: "19", longName: "Angry Pelican", compClasses: ["open"] },
   //"20": { name: "20", longName: "Focus Buddies", compClasses: ["open"] },
   //"21": { name: "21", longName: "Top Spot", compClasses: ["open", "advanced"] },
