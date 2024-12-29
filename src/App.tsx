@@ -7,6 +7,7 @@ import Modal from 'react-bootstrap/Modal';
 import rerun from './icons/rerun.svg';
 import close from './icons/close.svg';
 import plus from './icons/plus.svg';
+import about from './icons/about.svg';
 
 const formationsInCompClass: (compClass: CompClassId) => Array<FormationId> = (compClass) =>
   (Object.entries(formations).filter(([_, { compClasses }]) => compClasses.includes(compClass)).map(([id]) => id))
@@ -635,7 +636,7 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormati
   const drawElements = draw.map((engRound: EngineeredRound | RoundError, roundNum: number) => {
 
     const header = (errorOrDrawString: JSX.Element) =>
-      <div className="rerunContainer">
+      <div className="rerun-container">
         <h3>Round {roundNum + 1}: {errorOrDrawString}</h3>
         <RerunButton onClick={() => rerunOne(roundNum)} />
       </div>;
@@ -925,6 +926,7 @@ const App = () => {
   const [rerunAllTrigger, setRerunAllTrigger] = useState<boolean>(false);
   const [rerunSomeTrigger, setRerunSomeTrigger] = useState<boolean>(false);
   const [deserializeTrigger, setDeserializeTrigger] = useState<boolean>(false);
+  const [aboutShown, setAboutShown] = useState<boolean>(false);
 
   const setRoundLength = (newRoundLength: number) => {
     if (newRoundLength !== roundLength) {
@@ -1155,8 +1157,13 @@ const App = () => {
 
   return <>
     <div className="container-lg">
-      <h1 className="text-center my-3">4-way VFS draw generator</h1>
       <div className="form-container mb-5">
+        <div className="title-container">
+          <h1>4-way VFS draw generator</h1>
+          <button className="about-button" onClick={() => { setAboutShown(true); }}>
+            <img src={about} />
+          </button>
+        </div>
         <h2>Setup</h2>
         <Setup compClass={compClass} setCompClass={setCompClass}
           roundLength={roundLength} setRoundLength={setRoundLength}
@@ -1164,7 +1171,7 @@ const App = () => {
           filterRest={filterRest} setFilterRest={setFilterRest}
           numRounds={numRounds} setNumRounds={setNumRounds}
         />
-        <div className="rerunContainer">
+        <div className="rerun-container">
           <h2>Results</h2>
           <RerunButton onClick={rerunAll} />
         </div>
@@ -1183,6 +1190,12 @@ const App = () => {
         />
       </div>
     </div>
+    <Modal show={aboutShown} onHide={() => { setAboutShown(false); }}>
+      <Modal.Body>
+        <h2>What is 4-way VFS?</h2>
+        <h2>What is this tool?</h2>
+      </Modal.Body>
+    </Modal>
   </>
 };
 

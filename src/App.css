@@ -309,7 +309,7 @@ body {
   animation: spin 0.5s ease-out;
 }
 
-.rerunContainer {
+.rerun-container {
   display: flex;
   gap: 16px;
   justify-items: center;
@@ -317,7 +317,7 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.rerunContainer > * {
+.rerun-container > * {
   margin: 0;
 }
 
@@ -353,3 +353,18 @@ body {
 .modal-dialog {
   max-width: 800px;
 }
+
+.title-container {
+  display: flex;
+  gap: 16px;
+  justify-items: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.about-button {
+  background: none;
+  border: none;
+  display: inline-block;
+}
+
