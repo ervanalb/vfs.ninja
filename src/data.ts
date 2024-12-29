@@ -154,6 +154,27 @@ import pic18V1 from './pics/18_v1.svg';
 import pic18V2 from './pics/18_v2.svg';
 import pic18V1Inter from './pics/18_v1_inter.svg';
 import pic18V2Inter from './pics/18_v2_inter.svg';
+import pic19V1 from './pics/19_v1.svg';
+import pic19V2 from './pics/19_v2.svg';
+import pic19V3 from './pics/19_v3.svg';
+import pic19V4 from './pics/19_v4.svg';
+import pic19V1Inter from './pics/19_v1_inter.svg';
+import pic19V2Inter from './pics/19_v2_inter.svg';
+import pic19V3Inter from './pics/19_v3_inter.svg';
+import pic19V4Inter from './pics/19_v4_inter.svg';
+import pic20V1 from './pics/20_v1.svg';
+import pic20V2 from './pics/20_v2.svg';
+import pic20V1Inter from './pics/20_v1_inter.svg';
+import pic20V2Inter from './pics/20_v2_inter.svg';
+import pic21V1 from './pics/21_v1.svg';
+import pic21V2 from './pics/21_v2.svg';
+import pic21Inter from './pics/21_inter.svg';
+import pic22V1 from './pics/22_v1.svg';
+import pic22V2 from './pics/22_v2.svg';
+import pic22V1Inter from './pics/22_v1_inter.svg';
+import pic22V2Inter from './pics/22_v2_inter.svg';
+import pic22V1End from './pics/22_v1_end.svg';
+import pic22V2End from './pics/22_v2_end.svg';
 
 export type Random = {
   type: "random",
@@ -607,6 +628,68 @@ const engineering18: Record<string, BlockEngineering> = {
   },
 }
 
+const engineering19: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HUO", "HD", "HD", "HD"], end: ["HUO", "HD", "HD", "HD"], priority: 1,
+    startPic: pic19V1, interPic: pic19V1Inter, endPic: pic19V1,
+    slotSwitch: "90",
+  },
+  v2: {
+    start: ["HD", "HD", "HUO", "HD"], end: ["HD", "HD", "HUO", "HD"], priority: 2,
+    startPic: pic19V2, interPic: pic19V2Inter, endPic: pic19V2,
+    slotSwitch: "90",
+  },
+  v3: {
+    start: ["HD", "HUO", "HD", "HD"], end: ["HD", "HUO", "HD", "HD"], priority: 3,
+    startPic: pic19V3, interPic: pic19V3Inter, endPic: pic19V3,
+    slotSwitch: "270",
+  },
+  v4: {
+    start: ["HD", "HD", "HD", "HUO"], end: ["HD", "HD", "HD", "HUO"], priority: 4,
+    startPic: pic19V4, interPic: pic19V4Inter, endPic: pic19V4,
+    slotSwitch: "270",
+  },
+}
+
+const engineering20: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD", "HD", "HU", "HU"], end: ["HU", "HU", "HD", "HD"], priority: 1,
+    startPic: pic20V1, interPic: pic20V1Inter, endPic: pic20V2,
+    slotSwitch: "null",
+  },
+  v2: {
+    start: ["HU", "HU", "HD", "HD"], end: ["HD", "HD", "HU", "HU"], priority: 2,
+    startPic: pic20V2, interPic: pic20V2Inter, endPic: pic20V1,
+    slotSwitch: "null",
+  },
+}
+
+const engineering21: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD2", "HD2", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    startPic: pic21V1, interPic: pic21Inter, endPic: pic21V2,
+    slotSwitch: "null",
+  },
+  v2: {
+    start: ["HD", "HD", "HD2", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    startPic: pic21V2, interPic: pic21Inter, endPic: pic21V1,
+    slotSwitch: "null",
+  },
+}
+
+const engineering22: Record<string, BlockEngineering> = {
+  v1: {
+    start: ["HD", "HD2", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    startPic: pic22V1, interPic: pic22V1Inter, endPic: pic22V1End,
+    slotSwitch: "null",
+  },
+  v2: {
+    start: ["HD2", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    startPic: pic22V2, interPic: pic22V2Inter, endPic: pic22V2End,
+    slotSwitch: "null",
+  },
+}
+
 
 export const formations: Record<string, Formation> = {
   "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
@@ -644,10 +727,10 @@ export const formations: Record<string, Formation> = {
   "16": { type: "block", name: "16", longName: "Chimmy", compClasses: ["open", "advanced"], engineeringStrategies: engineering16 },
   "17": { type: "block", name: "17", longName: "Zins", compClasses: ["open"], engineeringStrategies: engineering17 },
   "18": { type: "block", name: "18", longName: "Ding", compClasses: ["open"], engineeringStrategies: engineering18 },
-  //"19": { name: "19", longName: "Angry Pelican", compClasses: ["open"] },
-  //"20": { name: "20", longName: "Focus Buddies", compClasses: ["open"] },
-  //"21": { name: "21", longName: "Top Spot", compClasses: ["open", "advanced"] },
-  //"22": { name: "22", longName: "Core Buddies", compClasses: ["open", "advanced"] },
+  "19": { type: "block", name: "19", longName: "Angry Pelican", compClasses: ["open"], engineeringStrategies: engineering19 },
+  "20": { type: "block", name: "20", longName: "Focus Buddies", compClasses: ["open"], engineeringStrategies: engineering20 },
+  "21": { type: "block", name: "21", longName: "Top Spot", compClasses: ["open", "advanced"], engineeringStrategies: engineering21 },
+  "22": { type: "block", name: "22", longName: "Core Buddies", compClasses: ["open", "advanced"], engineeringStrategies: engineering22 },
 } as const;
 
 export type FormationId = keyof typeof formations;
