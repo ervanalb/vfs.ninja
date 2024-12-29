@@ -13,6 +13,8 @@ import picHIba from './about/h_iba.png';
 import picHP1 from './pics/h_p1.svg';
 import picHP3 from './pics/h_p3.svg';
 import pic8Inter from './pics/8_inter.svg';
+import pic7V1 from './pics/7_v1.svg';
+import pic7Lh from './about/7_lh.svg';
 
 const formationsInCompClass: (compClass: CompClassId) => Array<FormationId> = (compClass) =>
   (Object.entries(formations).filter(([_, { compClasses }]) => compClasses.includes(compClass)).map(([id]) => id))
@@ -327,7 +329,7 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, lock
   const wrapOnClick = (pics: JSX.Element): JSX.Element => (
     onClick
       ? <a href="" className="pic-inner-container" onClick={(event) => { event.preventDefault(); event.stopPropagation(); onClick(); }}>{pics}</a>
-      : <div className="pic-inner-container">pics</div>
+      : <div className="pic-inner-container">{pics}</div>
   );
 
   const slotSwitchClassName = (slotSwitch: SlotSwitch): string => {
@@ -452,14 +454,16 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
 
   const handleToggleCustomPool = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => { event.preventDefault(); event.stopPropagation(); setCustomPoolVisible(!customPoolVisible); };
 
-  const compClassSelector = <Form.Group className="mb-3">
-    <label htmlFor="classSelector">
+  const compClassSelector = <Form.Group className="mb-3 mx-3">
+    <label htmlFor="classSelector" className="col-form-label">
       Class:
     </label>
-    <select className="form-select" id="classSelector" aria-label="Class Selector" value={compClass} onChange={handleCompClassChange}>
-      {compClassOptions}
-      <option value="custom">Custom</option>
-    </select>
+    <div className="col-sm-3">
+      <select className="form-select" id="classSelector" aria-label="Class Selector" value={compClass} onChange={handleCompClassChange}>
+        {compClassOptions}
+        <option value="custom">Custom</option>
+      </select>
+    </div>
     <a href=""
       onClick={handleToggleCustomPool}
       className={"custom-collapse-header" + (customPoolVisible ? "" : " collapsed")}
@@ -490,9 +494,9 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
     </Collapse >
   </Form.Group >;
 
-  const filters = <Form.Group className="mb-3">
-    <div>Modifiers:</div>
-    <div className="form-check">
+  const filters = <Form.Group className="mb-3 mx-3">
+    <div className="col-form-label">Modifiers:</div>
+    <div className="form-check mx-3">
       <input
         className="form-check-input"
         type="checkbox"
@@ -512,22 +516,24 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
   };
 
   const numRoundsSelector =
-    <Form.Group className="mb-3">
-      <label htmlFor="numRoundsSelector">
+    <Form.Group className="mb-3 mx-3">
+      <label htmlFor="numRoundsSelector" className="col-form-label">
         Rounds:
       </label>
-      <select className="form-select" id="numRoundsSelector" aria-label="Round Length Selector" value={numRounds} onChange={handleNumRoundsChange}>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-      </select>
+      <div className="col-sm-3">
+        <select className="form-select" id="numRoundsSelector" aria-label="Round Length Selector" value={numRounds} onChange={handleNumRoundsChange}>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </div>
     </Form.Group>;
 
   return (
@@ -919,7 +925,7 @@ const deserialize = (
 };
 
 const aboutHtml = <>
-  <h2>What is 4-way VFS?</h2>
+  <h4>What is 4-way VFS?</h4>
   <p>
     4-way vertical formation skydiving (VFS) is a competitive skydiving discipline where a team of 4 fliers attempts to build a sequence of formations as quickly as possible.
     The sequence for each round of competition is randomly drawn from a pool of possible formations,
@@ -946,7 +952,7 @@ const aboutHtml = <>
     </Figure.Caption>
   </Figure>
 
-  <h2>What is this tool?</h2>
+  <h4>What is this tool?</h4>
   <p>
     This is intended to be a training tool for 4-way VFS teams.
     Unlike the official rules, whose pictures show the formations in a way that is unambiguous and legal,
@@ -974,8 +980,9 @@ const aboutHtml = <>
 
   <Figure>
     <Figure.Image src={pic8Inter} width={150} height={150} />
+    <Figure.Image src={pic8Inter} width={150} height={150} className="slot-switch-transverse" />
     <Figure.Caption>
-      Regular slots
+      Regular slots and alternate slots
     </Figure.Caption>
   </Figure>
 
@@ -992,15 +999,33 @@ const aboutHtml = <>
     </ul>
   </p>
 
-  <h2>Details for nerds</h2>
+  <Figure>
+    <Figure.Image src={pic7V1} width={150} height={150} />
+    <Figure.Image src={pic7Lh} width={150} height={150} />
+    <Figure.Caption>
+      A right-handed flower and left-handed flower in regular slots.
+      This distinction is not captured by the program (it will only offer the right-handed option.)
+    </Figure.Caption>
+  </Figure>
+
+
+  <h4>Details for nerds</h4>
   <p>
-    Each formation variant specifies the orientation of each flier (e.g "head up", or "head down outface".)
+    Each formation variant stores the orientation of each flier (e.g "head up", or "head down outface".)
     A cost matrix defines how expensive it is to make a given transition (e.g. "head down" to "head up" is more expensive than "head down outface" to "head down.")
     Using the sum of the four transition costs, a greedy algorithm is used to pick the next formation variant.
-    The algorithm runs until it finds a cycle.
+    These computed variants, along with whether fliers are in their regular or alternate slots, are iterated forward until a cycle is found.
+    Alternate slots are visualized by mirroring the picture.
   </p>
 
-  <h2>Disclaimer / License</h2>
+  <h4>Changelog</h4>
+  <p>
+    <ul>
+      <li><em>2024-12-29:</em> First release</li>
+    </ul>
+  </p>
+
+  <h4>Disclaimer / License</h4>
   <p>
     Every effort has been made to ensure the pictures and algorithms are in accordance with the official rules,
     but accuracy is not guaranteed.
@@ -1034,6 +1059,7 @@ const App = () => {
   const [rerunSomeTrigger, setRerunSomeTrigger] = useState<boolean>(false);
   const [deserializeTrigger, setDeserializeTrigger] = useState<boolean>(false);
   const [aboutShown, setAboutShown] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const setRoundLength = (newRoundLength: number) => {
     if (newRoundLength !== roundLength) {
@@ -1211,9 +1237,14 @@ const App = () => {
 
   useEffect(() => {
     if (deserializeTrigger && hash != "") {
-      deserialize(hash, {
-        setRoundLengthNoRerun, setIncludedFormationsNoRerun, setFilterRestNoRerun, setNumRoundsNoRerun, setLockRotation, setDraw
-      });
+      try {
+        deserialize(hash, {
+          setRoundLengthNoRerun, setIncludedFormationsNoRerun, setFilterRestNoRerun, setNumRoundsNoRerun, setLockRotation, setDraw
+        });
+      } catch (e) {
+        setError("Could not load draw from URL: " + e);
+        rerunAll();
+      }
       setDeserializeTrigger(false);
     }
   }, [hash, deserializeTrigger, setDeserializeTrigger]);
@@ -1246,8 +1277,8 @@ const App = () => {
     };
   }, []);
 
-  const visualizationOptions = <Form.Group className="mb-3">
-    <div>Visualization:</div>
+  const visualizationOptions = <Form.Group className="mb-3 mx-3">
+    <div className="col-form-label">Visualization:</div>
     <div className="form-check">
       <input
         className="form-check-input"
@@ -1298,8 +1329,15 @@ const App = () => {
       </div>
     </div>
     <Modal show={aboutShown} onHide={() => { setAboutShown(false); }}>
+      <Modal.Header closeButton><Modal.Title>About</Modal.Title></Modal.Header>
       <Modal.Body>
         {aboutHtml}
+      </Modal.Body>
+    </Modal>
+    <Modal show={error !== null} onHide={() => { setError(null); }}>
+      <Modal.Header closeButton><Modal.Title>Error</Modal.Title></Modal.Header>
+      <Modal.Body>
+        {error}
       </Modal.Body>
     </Modal>
   </>
