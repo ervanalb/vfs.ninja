@@ -147,6 +147,11 @@ body {
   pointer-events: none;
   z-index: 1;
 }
+.pic-ename-overlay img {
+  width: 12px;
+  height: 12px;
+  margin: 0 4px;
+}
 
 .pic-delete-overlay {
   padding: 8px;
@@ -209,6 +214,12 @@ body {
   .pic-ename-overlay {
     padding: 4px;
     font-size: 8pt;
+  }
+
+  .pic-ename-overlay img {
+    width: 10px;
+    height: 10px;
+    margin: 0 4px;
   }
 
   .pic-delete-overlay {

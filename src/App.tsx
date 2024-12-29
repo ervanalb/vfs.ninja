@@ -9,6 +9,7 @@ import rerun from './icons/rerun.svg';
 import close from './icons/close.svg';
 import plus from './icons/plus.svg';
 import about from './icons/about.svg';
+import attentionIcon from './icons/attention.svg';
 import picHIba from './about/h_iba.png';
 import picHP1 from './pics/h_p1.svg';
 import picHP3 from './pics/h_p3.svg';
@@ -308,9 +309,10 @@ type PicProps = {
   onClick?: () => void,
   onClickDelete?: () => void,
   className?: string,
+  attention?: boolean,
 };
 
-const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, lockRotation, showEngName, onClick, onClickDelete, className }) => {
+const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, lockRotation, showEngName, onClick, onClickDelete, className, attention }) => {
   if (formationEngId === undefined) {
     formationEngId = defaultEngineering(formationId);
   }
@@ -320,7 +322,9 @@ const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitch, lock
   const f = formations[formationId];
 
   const fName = f.name;
-  const eName = formationEngId;
+  const eName = attention
+    ? <>{formationEngId}<img src={attentionIcon} className="attention" /></>
+    : formationEngId;
 
   const deleteButton = onClickDelete ? <a href="" onClick={(event) => { event.preventDefault(); event.stopPropagation(); onClickDelete(); }} className="pic-delete-overlay">
     <img src={close} />
@@ -474,18 +478,20 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
     </a>
     <Collapse in={customPoolVisible}>
       <div className="custom-card">
-        <Form.Group className="mb-3">
-          <label htmlFor="roundLengthSelector">
+        <Form.Group className="mb-3 mx-3">
+          <label htmlFor="roundLengthSelector" className="col-form-label">
             Round length:
           </label>
-          <select className="form-select" id="roundLengthSelector" aria-label="Round Length Selector" value={roundLength} onChange={handleRoundLengthChange}>
-            <option value="1">1-2</option>
-            <option value="2">2-3</option>
-            <option value="3">3-4</option>
-            <option value="4">4-5</option>
-            <option value="5">5-6</option>
-            <option value="6">6-7</option>
-          </select>
+          <div className="col-sm-3">
+            <select className="form-select" id="roundLengthSelector" aria-label="Round Length Selector" value={roundLength} onChange={handleRoundLengthChange}>
+              <option value="1">1-2</option>
+              <option value="2">2-3</option>
+              <option value="3">3-4</option>
+              <option value="4">4-5</option>
+              <option value="5">5-6</option>
+              <option value="6">6-7</option>
+            </select>
+          </div>
         </Form.Group>
         <Form.Group className="include-container mb-3">
           {formationOptions}
@@ -505,7 +511,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
         id="checkFilterRest"
       />
       <label className="form-check-label" htmlFor="checkFilterRest">
-        Everybody gets rest (at least 1 HU point)
+        Everybody gets at least 1 HU point
       </label>
     </div>
   </Form.Group>;
@@ -658,7 +664,7 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormati
       </div>;
     }
 
-    const { round, pattern } = engRound as EngineeredRound;
+    const { round, pattern, alternateEngineering } = engRound as EngineeredRound;
 
     const numPages = pattern.length / round.length;
 
@@ -675,6 +681,7 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormati
         {round.map((formationId, formationNum) => {
           const i = page * round.length + formationNum;
           const engId = pattern[i];
+          const relCost = alternateEngineering[i].find((alt) => (alt[0] == engId))?.[1] as number;
           const result = <Pic
             key={formationId}
             onClick={() => formationPickerShow(roundNum, i)}
@@ -684,6 +691,7 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormati
             lockRotation={lockRotation}
             showEngName={true}
             onClickDelete={round.length > 1 ? () => deleteFormation(roundNum, formationNum) : undefined}
+            attention={relCost > 0}
           />;
 
           // Compute slot switch for next round
@@ -694,7 +702,8 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormati
 
           return result;
         }
-        )}
+        )
+        }
 
         {extendRoundButton}
       </div>
@@ -710,12 +719,13 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormati
   });
   return <>
     <Modal show={formationPickerShown} onHide={formationPickerHide}>
+      <Modal.Header closeButton><Modal.Title>Edit</Modal.Title></Modal.Header>
       <Modal.Body>
-        <h2>Change Engineering</h2>
+        <h4>Change Engineering</h4>
         <div className="formation-picker">
           {engineeringPicker}
         </div>
-        <h2>Change Formation</h2>
+        <h4>Change Formation</h4>
         <div className="formation-picker">
           {formationPicker}
         </div>
@@ -987,7 +997,7 @@ const aboutHtml = <>
   </Figure>
 
   <p>
-    This tool does not cover all aspects of engineering:
+    There is a lot that this tool does not cover. For example:
     <ul>
       <li>It does not indicate when grips should be taken early and "flipped."</li>
       <li>It only contains one "handedness" of each formation,
@@ -1008,7 +1018,6 @@ const aboutHtml = <>
     </Figure.Caption>
   </Figure>
 
-
   <h4>Details for nerds</h4>
   <p>
     Each formation variant stores the orientation of each flier (e.g "head up", or "head down outface".)
@@ -1021,7 +1030,7 @@ const aboutHtml = <>
   <h4>Changelog</h4>
   <p>
     <ul>
-      <li><em>2024-12-29:</em> First release</li>
+      <li><em>2024-12-29:</em> Pre-release, subject to change</li>
     </ul>
   </p>
 
