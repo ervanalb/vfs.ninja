@@ -4,10 +4,15 @@ import { formations, costMatrix, FormationId, Position, CompClassId, compClasses
 import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
 import Modal from 'react-bootstrap/Modal';
+import Figure from 'react-bootstrap/Figure';
 import rerun from './icons/rerun.svg';
 import close from './icons/close.svg';
 import plus from './icons/plus.svg';
 import about from './icons/about.svg';
+import picHIba from './about/h_iba.png';
+import picHP1 from './pics/h_p1.svg';
+import picHP3 from './pics/h_p3.svg';
+import pic8Inter from './pics/8_inter.svg';
 
 const formationsInCompClass: (compClass: CompClassId) => Array<FormationId> = (compClass) =>
   (Object.entries(formations).filter(([_, { compClasses }]) => compClasses.includes(compClass)).map(([id]) => id))
@@ -913,6 +918,108 @@ const deserialize = (
   setNumRounds(draw.length);
 };
 
+const aboutHtml = <>
+  <h2>What is 4-way VFS?</h2>
+  <p>
+    4-way vertical formation skydiving (VFS) is a competitive skydiving discipline where a team of 4 fliers attempts to build a sequence of formations as quickly as possible.
+    The sequence for each round of competition is randomly drawn from a pool of possible formations,
+    each of which dictates the fliers grips and orientations (head-up or head-down.)
+    Teams have 35 seconds to loop through the sequence as many times as possible.
+    The dive pool consists of <em>randoms</em>, which are a single formation,
+    and <em>blocks</em>, which consists of a starting formation,
+    some kind of separation or movement, and an ending formation.
+    Check out <a href="https://www.youtube.com/watch?v=_5YaVhswn8Y">this video</a>.
+  </p>
+  <p>
+    The <a href="https://www.fai.org/sites/default/files/isc/documents/2024/2024_isc_cr_formation_skydiving_vertical_formation_skydiving.pdf">offical rules</a> are somewhat lenient.
+    For example, as long as the correct grips are taken, they do not specify whether the four fliers should be stretched out into a line, or curled into a circle.
+    They also do not specify which flier fulfills which role, and allow the formation to be built mirrored.
+    Since there are no points for style, only speed, it is important to make a plan that that minimizes transitions and movement,
+    a process known as <em>engineering</em>.
+  </p>
+  <Figure>
+    <Figure.Image src={picHIba} width={150} height={150} />
+    <Figure.Image src={picHP1} width={150} height={150} />
+    <Figure.Image src={picHP3} width={150} height={150} />
+    <Figure.Caption>
+      The same formation three different ways (first picture from <a href="https://www.tunnelflight.com/">IBA</a>)
+    </Figure.Caption>
+  </Figure>
+
+  <h2>What is this tool?</h2>
+  <p>
+    This is intended to be a training tool for 4-way VFS teams.
+    Unlike the official rules, whose pictures show the formations in a way that is unambiguous and legal,
+    this tool attempts to visualize the formations in a way that is <em>efficient to build</em>.
+    It has several variations of each formation, and automatically picks one based on the previous formation,
+    in an attempt to optimize the engineering.
+  </p>
+  <p>
+    In some cases, you may disagree with the choice the algorithm made
+    (although if you think something is wrong, please file a <a href="https://github.com/ervanalb/draw-generator/issues">bug report</a>.)
+    By clicking on a formation, you can explore different engineering options.
+    This can be used to communicate engineering choices, to make sure everybody is on the same page.
+    The URL of the page will reflect any edits you make, and can be shared.
+  </p>
+  <p>
+    The approach taken here is largely inspired by <a href="https://www.sdccore.com/">SDC core</a> and their methodology.
+    The engineering is based on a circular arrangement of fliers and fixed cross-partners and piece-partners.
+    <ul>
+      <li>The black flier&apos;s cross partner is green, and piece partner is red. This is the "primary head-up" role.</li>
+      <li>The red flier&apos;s cross partner is blue, and piece partner is black.</li>
+      <li>The green flier&apos;s cross partner is black, and piece partner is blue.</li>
+      <li>The blue flier&apos;s cross partner is red, and piece partner is green. This is the "primary head-down" role.</li>
+    </ul>
+  </p>
+
+  <Figure>
+    <Figure.Image src={pic8Inter} width={150} height={150} />
+    <Figure.Caption>
+      Regular slots
+    </Figure.Caption>
+  </Figure>
+
+  <p>
+    This tool does not cover all aspects of engineering:
+    <ul>
+      <li>It does not indicate when grips should be taken early and "flipped."</li>
+      <li>It only contains one "handedness" of each formation,
+        for example, the 7 can be built left-handed or right-handed,
+        but the tool will always show a right-handed flower in regular slots,
+        and a left-handed flower in alternate slots.</li>
+      <li>It does not contain variations of a formation that involve partnering up with non-piece-partners
+        if a piece-partner option is available.</li>
+    </ul>
+  </p>
+
+  <h2>Details for nerds</h2>
+  <p>
+    Each formation variant specifies the orientation of each flier (e.g "head up", or "head down outface".)
+    A cost matrix defines how expensive it is to make a given transition (e.g. "head down" to "head up" is more expensive than "head down outface" to "head down.")
+    Using the sum of the four transition costs, a greedy algorithm is used to pick the next formation variant.
+    The algorithm runs until it finds a cycle.
+  </p>
+
+  <h2>Disclaimer / License</h2>
+  <p>
+    Every effort has been made to ensure the pictures and algorithms are in accordance with the official rules,
+    but accuracy is not guaranteed.
+  </p>
+  <p>
+    The software is licensed under the <a href="https://opensource.org/license/mit">MIT</a> license.
+  </p>
+  <p>
+    The pictures are licensed under the <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en">CC BY-SA 4.0</a> license.
+  </p>
+  <p>
+    More information is available on <a href="https://github.com/ervanalb/draw-generator">github</a>.
+    Bug reports and contributions are welcome.
+  </p>
+  <p>
+    <em>~ervanalb</em>
+  </p>
+</>;
+
 const App = () => {
   // Setup
   const [compClass, setCompClass] = useState<CompClassId | "custom">(initialCompClass);
@@ -1192,8 +1299,7 @@ const App = () => {
     </div>
     <Modal show={aboutShown} onHide={() => { setAboutShown(false); }}>
       <Modal.Body>
-        <h2>What is 4-way VFS?</h2>
-        <h2>What is this tool?</h2>
+        {aboutHtml}
       </Modal.Body>
     </Modal>
   </>
