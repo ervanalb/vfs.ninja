@@ -350,7 +350,7 @@ const engineering3: Record<string, BlockEngineering> = {
   v2: {
     start: ["HD", "HD2", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 2,
     startPic: pic3V2, interPic: pic3V2Inter, endPic: pic3V2,
-    slotSwitch: "270",
+    slotSwitch: "90",
   },
 }
 
@@ -481,7 +481,7 @@ const engineering10: Record<string, BlockEngineering> = {
   v2: {
     start: ["HD", "HU", "HD", "HU"], end: ["HD", "HU", "HD", "HU"], priority: 2,
     startPic: pic10V2, interPic: pic10V2Inter, endPic: pic10V2,
-    slotSwitch: "270",
+    slotSwitch: "90",
   },
 }
 
