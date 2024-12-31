@@ -12,7 +12,7 @@ import about from './icons/about.svg';
 import attentionIcon from './icons/attention.svg';
 import picHIba from './about/h_iba.png';
 import picHP1 from './pics/h_p1.svg';
-import picHP3 from './pics/h_p3.svg';
+import picHP2 from './pics/h_p2.svg';
 import pic8Inter from './pics/8_inter.svg';
 import pic7V1 from './pics/7_v1.svg';
 import pic7Lh from './about/7_lh.svg';
@@ -27,6 +27,7 @@ type Pattern = Array<EngineeringId>;
 type PatternAnalysis = {
   cost: number,
   priority: number,
+  firstFormationPriority: number,
 };
 
 type EngineeredRound = {
@@ -47,6 +48,7 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
 
   let totalCost = 0;
   let totalPriority = 0;
+  let firstFormationPriority: null | number = null;
   for (let i = 0; i < patToAnalyze.length - 1; i++) {
     const fromFormationId = round[i % round.length];
     const fromEngId = patToAnalyze[i];
@@ -66,6 +68,10 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
       priority = e.priority;
     }
 
+    if (firstFormationPriority === null) {
+      firstFormationPriority = priority;
+    }
+
     const toEng = formations[toFormationId].engineeringStrategies[toEngId].start;
 
     const cost = [0, 1, 2, 3].map((i) => costMatrix[fromEng[i]][toEng[i]]).reduce((acc, x) => acc + x);
@@ -82,6 +88,7 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
   return {
     cost: totalCost / (pat.length / round.length),
     priority: totalPriority / (pat.length / round.length),
+    firstFormationPriority: firstFormationPriority as number,
   };
 };
 
@@ -142,8 +149,8 @@ const slotSwitchesEquivalent = (a: SlotSwitch, b: SlotSwitch): boolean => resetR
 const argmin = (a: Array<PatternAnalysis>) => {
   if (a.length < 1) throw "Must contain at least 1 entry";
   return a.reduce((minIndex, _, index, arr) => {
-    let { cost: c, priority: p } = arr[index];
-    let { cost: cMin, priority: pMin } = arr[minIndex];
+    let { cost: c, priority: p, firstFormationPriority: p1 } = arr[index];
+    let { cost: cMin, priority: pMin, firstFormationPriority: p1Min } = arr[minIndex];
     if (c < cMin) {
       return index;
     } else if (c > cMin) {
@@ -151,8 +158,14 @@ const argmin = (a: Array<PatternAnalysis>) => {
     } else {
       if (p < pMin) {
         return index;
-      } else {
+      } else if (p > pMin) {
         return minIndex;
+      } else {
+        if (p1 < p1Min) {
+          return index;
+        } else {
+          return minIndex;
+        }
       }
     }
   }, 0);
@@ -192,9 +205,6 @@ const optimizeEngineering = (round: Round): [Pattern, PatternAnalysis] => {
         for (let pages = 1; pages < pattern.length / round.length; pages++) {
           const start = pattern.length - pages * round.length;
           if (nextFormationEngId == pattern[start] && slotSwitchesEquivalent(nextSlotSwitch, slotSwitches[start])) {
-            console.log("Found cycle of", pages, "pages");
-            console.log(slotSwitches);
-            console.log("nextSlotSwitch", nextSlotSwitch, "=", slotSwitches[start])
             return pattern.slice(start);
           }
         }
@@ -701,9 +711,7 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormati
           }
 
           return result;
-        }
-        )
-        }
+        })}
 
         {extendRoundButton}
       </div>
@@ -938,25 +946,26 @@ const aboutHtml = <>
   <h4>What is 4-way VFS?</h4>
   <p>
     4-way vertical formation skydiving (VFS) is a competitive skydiving discipline where a team of 4 fliers attempts to build a sequence of formations as quickly as possible.
-    The sequence for each round of competition is randomly drawn from a pool of possible formations,
-    each of which dictates the fliers grips and orientations (head-up or head-down.)
+    The sequence for each round of competition is randomly drawn from a pool of possible formations.
+    The formations dictate the grips and orientations (head-up or head-down.)
     Teams have 35 seconds to loop through the sequence as many times as possible.
     The dive pool consists of <em>randoms</em>, which are a single formation,
     and <em>blocks</em>, which consists of a starting formation,
     some kind of separation or movement, and an ending formation.
-    Check out <a href="https://www.youtube.com/watch?v=_5YaVhswn8Y">this video</a>.
+    Check out <a href="https://www.youtube.com/watch?v=_5YaVhswn8Y">this video</a> to see what it looks like.
   </p>
   <p>
     The <a href="https://www.fai.org/sites/default/files/isc/documents/2024/2024_isc_cr_formation_skydiving_vertical_formation_skydiving.pdf">offical rules</a> are somewhat lenient.
-    For example, as long as the correct grips are taken, they do not specify whether the four fliers should be stretched out into a line, or curled into a circle.
-    They also do not specify which flier fulfills which role, and allow the formation to be built mirrored.
+    For example, they do not specify whether the four fliers should be stretched out into a line, or curled into a circle,
+    as long as the correct grips are taken.
+    The rules also don&amp;t specify which flier fulfills which role, and allow the formation to be built mirrored.
     Since there are no points for style, only speed, it is important to make a plan that that minimizes transitions and movement,
     a process known as <em>engineering</em>.
   </p>
   <Figure>
     <Figure.Image src={picHIba} width={150} height={150} />
     <Figure.Image src={picHP1} width={150} height={150} />
-    <Figure.Image src={picHP3} width={150} height={150} />
+    <Figure.Image src={picHP2} width={150} height={150} />
     <Figure.Caption>
       The same formation three different ways (first picture from <a href="https://www.tunnelflight.com/">IBA</a>)
     </Figure.Caption>
@@ -1189,12 +1198,28 @@ const App = () => {
           (engId, j) => j == patternIndex ? newEngineeringId : engId
         );
 
+        let slotSwitches = pattern.reduce<Array<SlotSwitch>>((slotSwitches, engId, i) => {
+          let prevSlotSwitch = slotSwitches[slotSwitches.length - 1];
+
+          let formationId = round[i % round.length];
+          const f = formations[formationId];
+
+          let slotSwitch: SlotSwitch = prevSlotSwitch;
+          if (f.type === "block") {
+            slotSwitch = slotSwitchCombine(prevSlotSwitch, f.engineeringStrategies[engId].slotSwitch);
+          }
+
+          slotSwitches.push(slotSwitch);
+          return slotSwitches;
+        }, ["null"]);
+
         // See if we can remove pages
-        // TODO handle slot switching
+        // TODO handle reducing a 4-page draw to 2 pages
         const firstRep = pattern.slice(0, round.length);
         while (pattern.length / round.length > 1) {
           const lastRep = pattern.slice(-round.length);
-          if (firstRep.every((v, i) => v == lastRep[i])) {
+          const lastSlotSwitch = slotSwitches[slotSwitches.length - 1 - round.length];
+          if (firstRep.every((v, i) => v == lastRep[i]) && slotSwitchesEquivalent(lastSlotSwitch, "null")) {
             pattern = pattern.slice(0, -round.length);
           } else {
             break;
