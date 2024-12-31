@@ -250,13 +250,13 @@ const engineeringG: Record<string, RandomEngineering> = {
 } as const;
 const engineeringH: Record<string, RandomEngineering> = {
   p1: { start: ["HU", "HU", "HDO", "HDO"], priority: 1, pic: picHP1 },
-  p2: { start: ["HDO", "HDO", "HU", "HU"], priority: 2, pic: picHP2 },
-  p3: { start: ["HUO", "HUO", "HD", "HD"], priority: 3, pic: picHP3 },
+  p2: { start: ["HUO", "HUO", "HD", "HD"], priority: 2, pic: picHP2 },
+  p3: { start: ["HDO", "HDO", "HU", "HU"], priority: 3, pic: picHP3 },
   p4: { start: ["HD", "HD", "HUO", "HUO"], priority: 4, pic: picHP4 },
   x1: { start: ["HU", "HD", "HUO", "HD"], priority: 5, pic: picHX1 },
   x2: { start: ["HUO", "HD", "HU", "HD"], priority: 6, pic: picHX2 },
-  x3: { start: ["HD", "HUO", "HD", "HU"], priority: 7, pic: picHX3 },
-  x4: { start: ["HD", "HU", "HD", "HUO"], priority: 8, pic: picHX4 },
+  x3: { start: ["HD", "HU", "HD", "HUO"], priority: 7, pic: picHX3 },
+  x4: { start: ["HD", "HUO", "HD", "HU"], priority: 8, pic: picHX4 },
 } as const;
 const engineeringJ: Record<string, RandomEngineering> = {
   v1: { start: ["HD2", "HD2", "HD", "HD"], priority: 1, pic: picJV1 },
@@ -269,23 +269,23 @@ const engineeringK: Record<string, RandomEngineering> = {
   v4: { start: ["HD", "HD", "HD", "HU"], priority: 4, pic: picKV4 },
 } as const;
 const engineeringL: Record<string, RandomEngineering> = {
-  v1: { start: ["HD", "HD", "HD", "HDO"], priority: 1, pic: picLV1 },
-  v2: { start: ["HD", "HDO", "HD", "HD"], priority: 2, pic: picLV2 },
-  v3: { start: ["HD", "HD", "HDO", "HD"], priority: 3, pic: picLV3 },
-  v4: { start: ["HDO", "HD", "HD", "HD"], priority: 4, pic: picLV4 },
+  v1: { start: ["HDO", "HD", "HD", "HD"], priority: 1, pic: picLV1 },
+  v2: { start: ["HD", "HD", "HDO", "HD"], priority: 2, pic: picLV2 },
+  v3: { start: ["HD", "HDO", "HD", "HD"], priority: 3, pic: picLV3 },
+  v4: { start: ["HD", "HD", "HD", "HDO"], priority: 4, pic: picLV4 },
 } as const;
 const engineeringM: Record<string, RandomEngineering> = {
   v1: { start: ["HU", "HU", "HD", "HD"], priority: 1, pic: picMV1 },
   v2: { start: ["HD", "HD", "HU", "HU"], priority: 2, pic: picMV2 },
 } as const;
 const engineeringN: Record<string, RandomEngineering> = {
-  v1: { start: ["HD", "HD", "HDO", "HDO"], priority: 1, pic: picNV1 },
-  v2: { start: ["HDO", "HDO", "HD", "HD"], priority: 2, pic: picNV2 },
+  v1: { start: ["HDO", "HDO", "HD", "HD"], priority: 1, pic: picNV1 },
+  v2: { start: ["HD", "HD", "HDO", "HDO"], priority: 2, pic: picNV2 },
 } as const;
 const engineeringO: Record<string, RandomEngineering> = {
   p1: { start: ["HU", "HU", "HD2", "HD"], priority: 1, pic: picOP1 },
-  p2: { start: ["HD2", "HD", "HU", "HU"], priority: 2, pic: picOP2 },
-  p3: { start: ["HU", "HU", "HD", "HD2"], priority: 3, pic: picOP3 },
+  p2: { start: ["HU", "HU", "HD", "HD2"], priority: 2, pic: picOP2 },
+  p3: { start: ["HD2", "HD", "HU", "HU"], priority: 3, pic: picOP3 },
   p4: { start: ["HD", "HD2", "HU", "HU"], priority: 4, pic: picOP4 },
   x1: { start: ["HU", "HDO", "HU", "HD2"], priority: 5, pic: picOX1 },
   x2: { start: ["HU", "HD2", "HU", "HDO"], priority: 6, pic: picOX2 },
@@ -563,7 +563,7 @@ const engineering15: Record<string, BlockEngineering> = {
     slotSwitch: "null",
   },
   v2: {
-    start: ["HD", "HDO", "HD", "HDO"], end: ["HDO", "HD", "HDO", "HD"], priority: 2,
+    start: ["HD", "HDO", "HD", "HDO"], end: ["HD", "HDO", "HD", "HDO"], priority: 2,
     startPic: pic15V2, interPic: pic15V2Inter, endPic: pic15V2,
     slotSwitch: "null",
   },
@@ -604,12 +604,12 @@ const engineering17: Record<string, BlockEngineering> = {
     slotSwitch: "null",
   },
   p1: {
-    start: ["HU", "HU", "HD", "HD"], end: ["HD", "HD", "HU", "HU"], priority: 3,
+    start: ["HD", "HD", "HU", "HU"], end: ["HU", "HU", "HD", "HD"], priority: 3,
     startPic: pic17P1, interPic: pic17P1Inter, endPic: pic17P2,
     slotSwitch: "null",
   },
   p2: {
-    start: ["HD", "HD", "HU", "HU"], end: ["HU", "HU", "HD", "HD"], priority: 4,
+    start: ["HU", "HU", "HD", "HD"], end: ["HD", "HD", "HU", "HU"], priority: 4,
     startPic: pic17P2, interPic: pic17P2Inter, endPic: pic17P1,
     slotSwitch: "null",
   },
@@ -679,12 +679,12 @@ const engineering21: Record<string, BlockEngineering> = {
 
 const engineering22: Record<string, BlockEngineering> = {
   v1: {
-    start: ["HD", "HD2", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    start: ["HD2", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
     startPic: pic22V1, interPic: pic22V1Inter, endPic: pic22V1End,
     slotSwitch: "null",
   },
   v2: {
-    start: ["HD2", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    start: ["HD", "HD2", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 2,
     startPic: pic22V2, interPic: pic22V2Inter, endPic: pic22V2End,
     slotSwitch: "null",
   },
