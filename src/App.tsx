@@ -1000,21 +1000,26 @@ const aboutHtml = <>
     There is a lot that this tool does not cover. For example:
     <ul>
       <li>It does not indicate when grips should be taken early and "flipped."</li>
-      <li>It only contains one "handedness" of each formation,
-        for example, the 7 can be built left-handed or right-handed,
-        but the tool will always show a right-handed flower in regular slots,
-        and a left-handed flower in alternate slots.</li>
       <li>It does not contain variations of a formation that involve partnering up with non-piece-partners
         if a piece-partner option is available.</li>
     </ul>
+  </p>
+
+  <p>
+    Many formations can be built left- or right-handed, e.g. 7.
+    The above rule, "use piece partners if possible," tends to force either the left- or right-hand variant,
+    even when the distinction is not particularly meaningful (like in 7.)
+    In other words, this tool chooses to keep piece partners consistent rather than keeping the choice between left- and right-hand consistent.
+    You may want to make a different choice.
   </p>
 
   <Figure>
     <Figure.Image src={pic7V1} width={150} height={150} />
     <Figure.Image src={pic7Lh} width={150} height={150} />
     <Figure.Caption>
-      A right-handed flower and left-handed flower in regular slots.
-      This distinction is not captured by the program (it will only offer the right-handed option.)
+      Two flowers (block 7) with opposite handedness.
+      The second option is not included in this tool, because it does not maintain piece partners,
+      even though the distinction is not very meaningful in this case.
     </Figure.Caption>
   </Figure>
 
