@@ -50,6 +50,10 @@ import picPV3 from './pics/p_v3.svg';
 import picPV4 from './pics/p_v4.svg';
 import picQX1 from './pics/q_x1.svg';
 import picQX2 from './pics/q_x2.svg';
+import picQP1 from './pics/q_p1.svg';
+import picQP2 from './pics/q_p2.svg';
+import picQP3 from './pics/q_p3.svg';
+import picQP4 from './pics/q_p4.svg';
 
 import pic1V1 from './pics/1_v1.svg';
 import pic1V2 from './pics/1_v2.svg';
@@ -302,7 +306,10 @@ const engineeringP: Record<string, RandomEngineering> = {
 const engineeringQ: Record<string, RandomEngineering> = {
   x1: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picQX1 },
   x2: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picQX2 },
-  // TODO: add piece partners version of Q
+  p1: { start: ["HU", "HU", "HD", "HDO"], priority: 3, pic: picQP1 },
+  p2: { start: ["HU", "HU", "HDO", "HD"], priority: 4, pic: picQP2 },
+  p3: { start: ["HD", "HDO", "HU", "HU"], priority: 5, pic: picQP3 },
+  p4: { start: ["HDO", "HD", "HU", "HU"], priority: 6, pic: picQP4 },
 } as const;
 
 const engineering1: Record<string, BlockEngineering> = {
@@ -633,22 +640,22 @@ const engineering19: Record<string, BlockEngineering> = {
   v1: {
     start: ["HUO", "HD", "HD", "HD"], end: ["HUO", "HD", "HD", "HD"], priority: 1,
     startPic: pic19V1, interPic: pic19V1Inter, endPic: pic19V1,
-    slotSwitch: "90",
+    slotSwitch: "270",
   },
   v2: {
     start: ["HD", "HD", "HUO", "HD"], end: ["HD", "HD", "HUO", "HD"], priority: 2,
     startPic: pic19V2, interPic: pic19V2Inter, endPic: pic19V2,
-    slotSwitch: "90",
+    slotSwitch: "270",
   },
   v3: {
     start: ["HD", "HUO", "HD", "HD"], end: ["HD", "HUO", "HD", "HD"], priority: 3,
     startPic: pic19V3, interPic: pic19V3Inter, endPic: pic19V3,
-    slotSwitch: "270",
+    slotSwitch: "90",
   },
   v4: {
     start: ["HD", "HD", "HD", "HUO"], end: ["HD", "HD", "HD", "HUO"], priority: 4,
     startPic: pic19V4, interPic: pic19V4Inter, endPic: pic19V4,
-    slotSwitch: "270",
+    slotSwitch: "90",
   },
 }
 
