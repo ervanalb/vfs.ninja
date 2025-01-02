@@ -700,45 +700,45 @@ const engineering22: Record<string, BlockEngineering> = {
 
 
 export const formations: Record<string, Formation> = {
-  "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced"], engineeringStrategies: engineeringA },
-  "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced"], engineeringStrategies: engineeringB },
+  "a": { type: "random", name: "A", longName: "Cross", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineeringA },
+  "b": { type: "random", name: "B", longName: "Gulley", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineeringB },
   "c": { type: "random", name: "C", longName: "Shoeshine", compClasses: ["open", "advanced"], engineeringStrategies: engineeringC },
   "d": { type: "random", name: "D", longName: "Box", compClasses: ["open"], engineeringStrategies: engineeringD },
-  "e": { type: "random", name: "E", longName: "Wave", compClasses: ["open", "advanced"], engineeringStrategies: engineeringE },
+  "e": { type: "random", name: "E", longName: "Wave", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineeringE },
   "f": { type: "random", name: "F", longName: "Double Joker", compClasses: ["open"], engineeringStrategies: engineeringF },
   "g": { type: "random", name: "G", longName: "Mixed Star", compClasses: ["open"], engineeringStrategies: engineeringG },
   "h": { type: "random", name: "H", longName: "T-Bird", compClasses: ["open"], engineeringStrategies: engineeringH },
-  "j": { type: "random", name: "J", longName: "Flock", compClasses: ["open", "advanced"], engineeringStrategies: engineeringJ },
+  "j": { type: "random", name: "J", longName: "Flock", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineeringJ },
   "k": { type: "random", name: "K", longName: "Anchor", compClasses: ["open", "advanced"], engineeringStrategies: engineeringK },
-  "l": { type: "random", name: "L", longName: "Rebel", compClasses: ["open", "advanced"], engineeringStrategies: engineeringL },
+  "l": { type: "random", name: "L", longName: "Rebel", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineeringL },
   "m": { type: "random", name: "M", longName: "Chemtrails", compClasses: ["open"], engineeringStrategies: engineeringM },
   "n": { type: "random", name: "N", longName: "Double Rebel", compClasses: ["open"], engineeringStrategies: engineeringN },
   "o": { type: "random", name: "O", longName: "Trident", compClasses: ["open"], engineeringStrategies: engineeringO },
   "p": { type: "random", name: "P", longName: "Cortex", compClasses: ["open"], engineeringStrategies: engineeringP },
-  "q": { type: "random", name: "Q", longName: "Mixed Wave", compClasses: ["open"], engineeringStrategies: engineeringQ },
+  "q": { type: "random", name: "Q", longName: "Mixed Wave", compClasses: ["open", "advanced"], engineeringStrategies: engineeringQ },
 
-  "1": { type: "block", name: "1", longName: "Arrowhead", compClasses: ["open", "advanced"], engineeringStrategies: engineering1 },
-  "2": { type: "block", name: "2", longName: "Claw", compClasses: ["open", "advanced"], engineeringStrategies: engineering2 },
-  "3": { type: "block", name: "3", longName: "HD Accordion", compClasses: ["open", "advanced"], engineeringStrategies: engineering3 },
+  "1": { type: "block", name: "1", longName: "Arrowhead", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering1 },
+  "2": { type: "block", name: "2", longName: "Claw", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering2 },
+  "3": { type: "block", name: "3", longName: "HD Accordion", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering3 },
   "4": { type: "block", name: "4", longName: "Chain Gang", compClasses: ["open", "advanced"], engineeringStrategies: engineering4 },
   "5": { type: "block", name: "5", longName: "Mixed Accordion", compClasses: ["open"], engineeringStrategies: engineering5 },
   "6": { type: "block", name: "6", longName: "Snowflake", compClasses: ["open"], engineeringStrategies: engineering6 },
-  "7": { type: "block", name: "7", longName: "Flower", compClasses: ["open", "advanced"], engineeringStrategies: engineering7 },
-  "8": { type: "block", name: "8", longName: "Buddy", compClasses: ["open", "advanced"], engineeringStrategies: engineering8 },
+  "7": { type: "block", name: "7", longName: "Flower", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering7 },
+  "8": { type: "block", name: "8", longName: "Buddy", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering8 },
   "9": { type: "block", name: "9", longName: "Shorty", compClasses: ["open", "advanced"], engineeringStrategies: engineering9 },
   "10": { type: "block", name: "10", longName: "Mixed Anthem", compClasses: ["open"], engineeringStrategies: engineering10 },
   "11": { type: "block", name: "11", longName: "Fun Buddies", compClasses: ["open", "advanced"], engineeringStrategies: engineering11 },
-  "12": { type: "block", name: "12", longName: "Pinwheel", compClasses: ["open", "advanced"], engineeringStrategies: engineering12 },
-  "13": { type: "block", name: "13", longName: "HD Star", compClasses: ["open", "advanced"], engineeringStrategies: engineering13 },
-  "14": { type: "block", name: "14", longName: "Satellite", compClasses: ["open", "advanced"], engineeringStrategies: engineering14 },
+  "12": { type: "block", name: "12", longName: "Pinwheel", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering12 },
+  "13": { type: "block", name: "13", longName: "HD Star", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering13 },
+  "14": { type: "block", name: "14", longName: "Satellite", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering14 },
   "15": { type: "block", name: "15", longName: "Bipole", compClasses: ["open"], engineeringStrategies: engineering15 },
   "16": { type: "block", name: "16", longName: "Chimmy", compClasses: ["open", "advanced"], engineeringStrategies: engineering16 },
-  "17": { type: "block", name: "17", longName: "Zins", compClasses: ["open"], engineeringStrategies: engineering17 },
-  "18": { type: "block", name: "18", longName: "Ding", compClasses: ["open"], engineeringStrategies: engineering18 },
+  "17": { type: "block", name: "17", longName: "Zins", compClasses: ["open", "advanced"], engineeringStrategies: engineering17 },
+  "18": { type: "block", name: "18", longName: "Ding", compClasses: ["open", "advanced"], engineeringStrategies: engineering18 },
   "19": { type: "block", name: "19", longName: "Angry Pelican", compClasses: ["open"], engineeringStrategies: engineering19 },
-  "20": { type: "block", name: "20", longName: "Focus Buddies", compClasses: ["open"], engineeringStrategies: engineering20 },
-  "21": { type: "block", name: "21", longName: "Top Spot", compClasses: ["open", "advanced"], engineeringStrategies: engineering21 },
-  "22": { type: "block", name: "22", longName: "Core Buddies", compClasses: ["open", "advanced"], engineeringStrategies: engineering22 },
+  "20": { type: "block", name: "20", longName: "Focus Buddies", compClasses: ["open", "advanced"], engineeringStrategies: engineering20 },
+  "21": { type: "block", name: "21", longName: "Top Spot", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering21 },
+  "22": { type: "block", name: "22", longName: "Core Buddies", compClasses: ["open", "advanced", "intermediate"], engineeringStrategies: engineering22 },
 } as const;
 
 export type FormationId = keyof typeof formations;
@@ -757,7 +757,11 @@ export type CompClass = {
   roundLength: number;
 };
 
-export const compClasses: Record<string, CompClass> = { "open": { name: "Open", roundLength: 5 }, "advanced": { name: "Advanced", roundLength: 4 } } as const;
+export const compClasses: Record<string, CompClass> = {
+  "open": { name: "Open", roundLength: 5 },
+  "advanced": { name: "Advanced", roundLength: 4 },
+  "intermediate": { name: "Intermediate", roundLength: 3 }
+} as const;
 
 export type CompClassId = keyof typeof compClasses;
 
