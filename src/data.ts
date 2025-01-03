@@ -458,22 +458,22 @@ const engineering8: Record<string, BlockEngineering> = {
 
 const engineering9: Record<string, BlockEngineering> = {
   v1: {
-    start: ["HU", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    start: ["HU", "HD", "HD", "HD"], end: ["HU", "HD", "HD", "HD"], priority: 1,
     startPic: pic9V1, interPic: pic9V1Inter, endPic: pic9V1,
     slotSwitch: "270",
   },
   v2: {
-    start: ["HD", "HD", "HU", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    start: ["HD", "HD", "HU", "HD"], end: ["HD", "HD", "HU", "HD"], priority: 2,
     startPic: pic9V2, interPic: pic9V2Inter, endPic: pic9V2,
     slotSwitch: "270",
   },
   v3: {
-    start: ["HD", "HU", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 3,
+    start: ["HD", "HU", "HD", "HD"], end: ["HD", "HU", "HD", "HD"], priority: 3,
     startPic: pic9V3, interPic: pic9V3Inter, endPic: pic9V3,
     slotSwitch: "90",
   },
   v4: {
-    start: ["HD", "HD", "HD", "HU"], end: ["HD", "HD", "HD", "HD"], priority: 4,
+    start: ["HD", "HD", "HD", "HU"], end: ["HD", "HD", "HD", "HU"], priority: 4,
     startPic: pic9V4, interPic: pic9V4Inter, endPic: pic9V4,
     slotSwitch: "90",
   },
