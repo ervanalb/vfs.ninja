@@ -130,6 +130,10 @@ import pic12V1Inter from './pics/12_v1_inter.svg';
 import pic12V2Inter from './pics/12_v2_inter.svg';
 import pic12V3Inter from './pics/12_v3_inter.svg';
 import pic12V4Inter from './pics/12_v4_inter.svg';
+import pic12V1End from './pics/12_v1_end.svg';
+import pic12V2End from './pics/12_v2_end.svg';
+import pic12V3End from './pics/12_v3_end.svg';
+import pic12V4End from './pics/12_v4_end.svg';
 import pic13 from './pics/13.svg';
 import pic13V1Inter from './pics/13_v1_inter.svg';
 import pic13V2Inter from './pics/13_v2_inter.svg';
@@ -518,23 +522,23 @@ const engineering11: Record<string, BlockEngineering> = {
 const engineering12: Record<string, BlockEngineering> = {
   v1: {
     start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
-    startPic: pic12V1, interPic: pic12V1Inter, endPic: pic12V2,
-    slotSwitch: "transverse",
+    startPic: pic12V1, interPic: pic12V1Inter, endPic: pic12V1End,
+    slotSwitch: "lr",
   },
   v2: {
     start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
-    startPic: pic12V2, interPic: pic12V2Inter, endPic: pic12V1,
-    slotSwitch: "transverse",
+    startPic: pic12V2, interPic: pic12V2Inter, endPic: pic12V2End,
+    slotSwitch: "ud",
   },
   v3: {
     start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 3,
-    startPic: pic12V3, interPic: pic12V3Inter, endPic: pic12V4,
-    slotSwitch: "transverse",
+    startPic: pic12V3, interPic: pic12V3Inter, endPic: pic12V3End,
+    slotSwitch: "ud",
   },
   v4: {
     start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 4,
-    startPic: pic12V4, interPic: pic12V4Inter, endPic: pic12V3,
-    slotSwitch: "transverse",
+    startPic: pic12V4, interPic: pic12V4Inter, endPic: pic12V4End,
+    slotSwitch: "lr",
   },
 }
 

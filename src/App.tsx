@@ -1045,7 +1045,7 @@ const aboutHtml = <>
   <h5>v1.2</h5>
   <em>2025-03-01</em>
   <ul>
-    <li>More changes coming in a moment!</li>
+    <li>Update block 12 as per <a href="https://www.fai.org/sites/default/files/isc/ibd/2024/ibd_2024-14_vfs_dive_pool_change_for_2025_with_inmediate_effect.pdf">IBD 2024-14</a></li>
   </ul>
   <h5>v1.1</h5>
   <em>2025-01-03</em>
