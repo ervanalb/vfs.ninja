@@ -1042,11 +1042,21 @@ const aboutHtml = <>
   </p>
 
   <h4>Changelog</h4>
-  <p>
-    <ul>
-      <li><em>2024-12-29:</em> Pre-release, subject to change</li>
-    </ul>
-  </p>
+  <h5>v1.2</h5>
+  <em>2025-03-01</em>
+  <ul>
+    <li>More changes coming in a moment!</li>
+  </ul>
+  <h5>v1.1</h5>
+  <em>2025-01-03</em>
+  <ul>
+    <li>Fix how optimizer handles block 9 (so it becomes a switcher when combined with blocks like 4)</li>
+  </ul>
+  <h5>v1.0</h5>
+  <em>2024-12-29</em>
+  <ul>
+    <li>Initial release</li>
+  </ul>
 
   <h4>Disclaimer / License</h4>
   <p>
