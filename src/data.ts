@@ -65,10 +65,16 @@ import pic1V3Inter from './pics/1_v3_inter.svg';
 import pic1V4Inter from './pics/1_v4_inter.svg';
 import pic2V1 from './pics/2_v1.svg';
 import pic2V2 from './pics/2_v2.svg';
+import pic2V3 from './pics/2_v3.svg';
+import pic2V4 from './pics/2_v4.svg';
 import pic2V1Inter from './pics/2_v1_inter.svg';
 import pic2V2Inter from './pics/2_v2_inter.svg';
+import pic2V3Inter from './pics/2_v3_inter.svg';
+import pic2V4Inter from './pics/2_v4_inter.svg';
 import pic2V1End from './pics/2_v1_end.svg';
 import pic2V2End from './pics/2_v2_end.svg';
+import pic2V3End from './pics/2_v3_end.svg';
+import pic2V4End from './pics/2_v4_end.svg';
 import pic3V1 from './pics/3_v1.svg';
 import pic3V2 from './pics/3_v2.svg';
 import pic3V1Inter from './pics/3_v1_inter.svg';
@@ -348,6 +354,16 @@ const engineering2: Record<string, BlockEngineering> = {
   v2: {
     start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
     startPic: pic2V2, interPic: pic2V2Inter, endPic: pic2V2End,
+    slotSwitch: "lr",
+  },
+  v3: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 3,
+    startPic: pic2V3, interPic: pic2V3Inter, endPic: pic2V3End,
+    slotSwitch: "ud",
+  },
+  v4: {
+    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 4,
+    startPic: pic2V4, interPic: pic2V4Inter, endPic: pic2V4End,
     slotSwitch: "ud",
   },
 }
