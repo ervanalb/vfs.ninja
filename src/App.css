@@ -1,5 +1,5 @@
 body {
-  background-color: var(--bs-gray-300);
+  margin: 8px;
 }
 
 .form-container {
@@ -8,6 +8,7 @@ body {
   border: 1px solid var(--bs-gray-500);
   border-radius: var(--bs-border-radius);
   background-color: var(--bs-white);
+  display: inline-block;
 }
 
 .custom-collapse-header {
@@ -52,8 +53,7 @@ body {
 .pic,.pic-start,.pic-inter,.pic-end {
   transform-origin: center;
   object-fit: contain;
-  min-width: 50px;
-  max-width: 150px;
+  width: 150px;
   position: relative;
 }
 
@@ -86,42 +86,14 @@ body {
   border-radius: var(--bs-border-radius);
   position: relative;
   color: var(--bs-body-color);
-  width: 150px;
 }
 
-.block-container {
-  height: 450px;
-}
-.random-container {
-  height: 150px;
-}
-
-@media (max-height: 500px) or (max-width: 500px) {
-  .block-container, .random-container {
+@media (max-height: 500px) or (max-width: 800px) {
+  .pic,.pic-start,.pic-inter,.pic-end {
+    transform-origin: center;
+    object-fit: contain;
     width: 100px;
   }
-  
-  .block-container {
-    height: 300px;
-  }
-  .random-container {
-    height: 100px;
-  }
-}
-
-.round .block-container,
-.round .random-container {
-  width: auto;
-  height: auto;
-  min-height: 100px;
-}
-
-.round .block-container {
-  min-width: 300px;
-}
-
-.round .random-container {
-  min-width: 100px;
 }
 
 .pic-inner-container {
@@ -205,7 +177,7 @@ body {
   height: 35px;
 }
 
-@media (max-width: 800px) {
+@media (max-height: 500px) or (max-width: 800px) {
   .pic-fname-overlay {
     padding: 0 4px;
     font-size: 12pt;
@@ -277,7 +249,7 @@ body {
 }
 
 .round {
-  overflow: auto;
+  display: inline-block;
 }
 
 .page {

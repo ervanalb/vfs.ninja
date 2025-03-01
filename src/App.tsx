@@ -1343,40 +1343,36 @@ const App = () => {
   </Form.Group>;
 
   return <>
-    <div className="container-lg">
-      <div className="form-container mb-5">
-        <div className="title-container">
-          <h1>4-way VFS draw generator</h1>
-          <button className="about-button" onClick={() => { setAboutShown(true); }}>
-            <img src={about} />
-          </button>
-        </div>
-        <h2>Setup</h2>
-        <Setup compClass={compClass} setCompClass={setCompClass}
-          roundLength={roundLength} setRoundLength={setRoundLength}
-          includedFormations={includedFormations} setIncludedFormations={setIncludedFormations}
-          filterRest={filterRest} setFilterRest={setFilterRest}
-          numRounds={numRounds} setNumRounds={setNumRounds}
-        />
-        <div className="rerun-container">
-          <h2>Results</h2>
-          <RerunButton onClick={rerunAll} />
-        </div>
-        {visualizationOptions}
-        <Draw
-          draw={draw}
-          lockRotation={lockRotation}
-          rerunOne={(roundNum) =>
-            setDraw(draw.map((orig, i) => i == roundNum ? rerunOne() : orig))
-          }
-          changeFormation={changeFormation}
-          deleteFormation={deleteFormation}
-          extendRound={extendRound}
-          changeEngineering={changeEngineering}
-          includedFormations={includedFormations}
-        />
-      </div>
+    <div className="title-container">
+      <h1>4-way VFS draw generator</h1>
+      <button className="about-button" onClick={() => { setAboutShown(true); }}>
+        <img src={about} />
+      </button>
     </div>
+    <h2>Setup</h2>
+    <Setup compClass={compClass} setCompClass={setCompClass}
+      roundLength={roundLength} setRoundLength={setRoundLength}
+      includedFormations={includedFormations} setIncludedFormations={setIncludedFormations}
+      filterRest={filterRest} setFilterRest={setFilterRest}
+      numRounds={numRounds} setNumRounds={setNumRounds}
+    />
+    <div className="rerun-container">
+      <h2>Results</h2>
+      <RerunButton onClick={rerunAll} />
+    </div>
+    {visualizationOptions}
+    <Draw
+      draw={draw}
+      lockRotation={lockRotation}
+      rerunOne={(roundNum) =>
+        setDraw(draw.map((orig, i) => i == roundNum ? rerunOne() : orig))
+      }
+      changeFormation={changeFormation}
+      deleteFormation={deleteFormation}
+      extendRound={extendRound}
+      changeEngineering={changeEngineering}
+      includedFormations={includedFormations}
+    />
     <Modal show={aboutShown} onHide={() => { setAboutShown(false); }}>
       <Modal.Header closeButton><Modal.Title>About</Modal.Title></Modal.Header>
       <Modal.Body>
