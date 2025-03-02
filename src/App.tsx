@@ -294,16 +294,15 @@ const doesEveryoneGetRest = (round: Round, pattern: Pattern): boolean => {
   return hasRest.every(e => e);
 }
 
-const randomRound = (includedFormations: Array<FormationId>, minPoints: number): Array<FormationId> => {
+const randomRound = (availablePool: Array<FormationId>, fullPool: Array<FormationId>, minPoints: number): Array<FormationId> => {
   let points = 0;
   const draw = [];
-  const pool = Object.keys(formations).filter((f) => includedFormations.includes(f));
   while (points < minPoints) {
-    if (pool.length == 0) {
-      throw "Not enough formations in dive pool";
+    if (availablePool.length == 0) {
+      availablePool = [...fullPool];
     }
-    const randomI = Math.floor(Math.random() * pool.length);
-    const formationId = pool.splice(randomI, 1)[0];
+    const randomI = Math.floor(Math.random() * availablePool.length);
+    const formationId = availablePool.splice(randomI, 1)[0];
     draw.push(formationId);
     points += formations[formationId].type == "block" ? 2 : 1;
   }
@@ -564,7 +563,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
 type DrawProps = {
   draw: Array<EngineeredRound | RoundError>,
   lockRotation: boolean,
-  rerunOne: (roundNum: number) => void,
+  reRandomizeOne: (roundNum: number) => void,
   changeFormation: (roundNum: number, formationNum: number, newFormationId: FormationId) => void,
   deleteFormation: (roundNum: number, formationNum: number) => void,
   extendRound: (roundNum: number) => void,
@@ -572,7 +571,7 @@ type DrawProps = {
   includedFormations: Array<FormationId>,
 };
 
-const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormation, deleteFormation, extendRound, changeEngineering, includedFormations }) => {
+const Draw: React.FC<DrawProps> = ({ draw, lockRotation, reRandomizeOne, changeFormation, deleteFormation, extendRound, changeEngineering, includedFormations }) => {
   // Formation picker
   const [formationPickerShown, setFormationPickerShown] = useState<boolean>(false);
   const [formationPickerRoundNum, setFormationPickerRoundNum] = useState<number>(0);
@@ -665,7 +664,7 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, rerunOne, changeFormati
     const header = (errorOrDrawString: JSX.Element) =>
       <div className="rerun-container">
         <h3>Round {roundNum + 1}: {errorOrDrawString}</h3>
-        <RerunButton onClick={() => rerunOne(roundNum)} />
+        <RerunButton onClick={() => reRandomizeOne(roundNum)} />
       </div>;
 
     if ((engRound as RoundError).error) {
@@ -1133,16 +1132,46 @@ const App = () => {
     throw "Could not satisfy filters";
   };
 
-  const rerunOne = (round?: Round | (() => Round)): EngineeredRound | RoundError => {
+  const availablePoolFromDraw = (draw: Array<EngineeredRound | RoundError>): Array<FormationId> => {
+    // See how many times each formation has been used so far in the draw--
+    // the "available" dive pool consists only of formations with fewer usages than the largest usage count
+    // (e.g. 0 uses until every formation has been used once)
+
+    const usages: Record<FormationId, number> = {};
+    for (let formation of includedFormations) { usages[formation] = 0; }
+    for (let engRound of draw) {
+      if ((engRound as RoundError).error) {
+        continue;
+      }
+      let { round } = (engRound as EngineeredRound);
+      for (let formation of round) {
+        usages[formation]++;
+      }
+    }
+
+    const largestCount = Math.max(...Object.values(usages));
+    return includedFormations.filter((formation) => usages[formation] < largestCount);
+  };
+
+  const reRandomizeOne = (draw: Array<EngineeredRound | RoundError>): EngineeredRound | RoundError => {
+    const firstTry = rerunOne(() =>
+      randomRound(availablePoolFromDraw(draw), includedFormations, roundLength)
+    );
+    if ((firstTry as RoundError).error === undefined) {
+      return firstTry;
+    }
+
+    // If there was an error with the first try,
+    // give it one more attempt, with the whole dive pool available
+    return rerunOne(() =>
+      randomRound([], includedFormations, roundLength)
+    );
+  };
+
+  const rerunOne = (round: Round | (() => Round)): EngineeredRound | RoundError => {
     try {
       let pattern: Pattern;
-      if (round === undefined) {
-        [round, pattern] = applyFilters(() => {
-          const genRound = randomRound(includedFormations, roundLength);
-          [pattern] = optimizeEngineering(genRound);
-          return [genRound, pattern];
-        });
-      } else if (Array.isArray(round)) {
+      if (Array.isArray(round)) {
         // round is an array
         [pattern] = optimizeEngineering(round);
       } else {
@@ -1183,18 +1212,24 @@ const App = () => {
   const extendRound = (roundNum: number) =>
     setDraw(draw.map((engRound, i) => {
       if (i == roundNum) {
-        const round = (engRound as EngineeredRound).round;
         const roundF = () =>
-          [...(engRound as EngineeredRound).round, ...randomRound(includedFormations.filter((f) => !round.includes(f)), 1)];
+          [...(engRound as EngineeredRound).round, ...randomRound(availablePoolFromDraw(draw), includedFormations, 1)];
         // Passing a function into rerunOne will cause it to enforce filters
         const result = rerunOne(roundF);
         if ((result as RoundError).error === undefined) {
           return result;
-        } else {
-          // If there was an error (unsatisfiable filters) then pass an array,
-          // which will always succeed
-          return rerunOne(roundF());
         }
+
+        // If there was an error (unsatisfiable filters) then try once more with the whole dive pool available
+        const roundF2 = () =>
+          [...(engRound as EngineeredRound).round, ...randomRound([], includedFormations, 1)];
+        const result2 = rerunOne(roundF2);
+        if ((result2 as RoundError).error === undefined) {
+          return result2;
+        }
+
+        // If there was still an error, pass an array, which will always succeed but will not abide by any filters
+        return rerunOne(roundF());
       } else {
         return engRound;
       }
@@ -1249,29 +1284,41 @@ const App = () => {
     }));
   };
 
-  const rerunSome = () => {
+  const reRandomizeSome = () => {
     // The number of rounds has changed--shorten the list, or rerun the missing rounds
     if (numRounds < draw.length) {
       setDraw(draw.slice(0, numRounds));
     } else {
-      setDraw([...draw, ...Array.from({ length: numRounds - draw.length }, rerunOne)])
+      const newDraw = [...draw, ...Array.from({ length: numRounds - draw.length }, () => ({ error: "Waiting to be generated..." }))];
+
+      for (let i = draw.length; i < numRounds; i++) {
+        newDraw[i] = reRandomizeOne(newDraw);
+      }
+
+      setDraw(newDraw);
     }
   };
 
-  const rerunAll = () => {
-    setDraw(Array.from({ length: numRounds }, rerunOne));
+  const reRandomizeAll = () => {
+    const newDraw: Array<EngineeredRound | RoundError> = Array.from({ length: numRounds - draw.length }, () => ({ error: "Waiting to be generated..." }));
+
+    for (let i = 0; i < numRounds; i++) {
+      newDraw[i] = reRandomizeOne(newDraw);
+    }
+
+    setDraw(newDraw);
   };
 
   useEffect(() => {
     if (rerunAllTrigger) {
-      rerunAll();
+      reRandomizeAll();
       setRerunAllTrigger(false);
     }
   }, [rerunAllTrigger, setRerunAllTrigger]);
 
   useEffect(() => {
     if (rerunSomeTrigger) {
-      rerunSome();
+      reRandomizeSome();
       setRerunSomeTrigger(false);
     }
   }, [rerunSomeTrigger, setRerunSomeTrigger]);
@@ -1292,7 +1339,7 @@ const App = () => {
         });
       } catch (e) {
         setError("Could not load draw from URL: " + e);
-        rerunAll();
+        reRandomizeAll();
       }
       setDeserializeTrigger(false);
     }
@@ -1316,7 +1363,7 @@ const App = () => {
       hashChanged();
     } else {
       // Run all on first page load if no hash is present
-      rerunAll();
+      reRandomizeAll();
     }
     window.addEventListener('hashchange', hashChanged);
 
@@ -1358,14 +1405,14 @@ const App = () => {
     />
     <div className="rerun-container">
       <h2>Results</h2>
-      <RerunButton onClick={rerunAll} />
+      <RerunButton onClick={reRandomizeAll} />
     </div>
     {visualizationOptions}
     <Draw
       draw={draw}
       lockRotation={lockRotation}
-      rerunOne={(roundNum) =>
-        setDraw(draw.map((orig, i) => i == roundNum ? rerunOne() : orig))
+      reRandomizeOne={(roundNum) =>
+        setDraw(draw.map((orig, i) => i == roundNum ? reRandomizeOne(draw.filter((_, j) => j != roundNum)) : orig))
       }
       changeFormation={changeFormation}
       deleteFormation={deleteFormation}
