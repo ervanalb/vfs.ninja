@@ -410,15 +410,17 @@ type SetupProps = {
   setCompClass: (compClass: CompClassId) => void,
   roundLength: number,
   includedFormations: Array<FormationId>,
-  setCompClassParameters: (roundLength: number, includedFormations: Array<FormationId>, rerun?: false) => void,
+  setCompClassParameters: (roundLength: number, includedFormations: Array<FormationId>) => void,
   filterRest: boolean,
   setFilterRest: (filterRest: boolean) => void,
   numRounds: number,
   setNumRounds: (numRounds: number) => void,
+  reRandomizeAll: (numRounds: number, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean) => void,
+  reRandomizeSome: (numRounds: number, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean) => void,
   setNewHistoryEntry: (newHistoryEntry: boolean) => void,
 };
 
-const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, includedFormations, setCompClassParameters, filterRest, setFilterRest, numRounds, setNumRounds, setNewHistoryEntry }) => {
+const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, includedFormations, setCompClassParameters, filterRest, setFilterRest, numRounds, setNumRounds, reRandomizeAll, reRandomizeSome, setNewHistoryEntry }) => {
   const [customPoolVisible, setCustomPoolVisible] = useState<boolean>(false);
 
   const compClassOptions = Object.entries(compClasses).map(([id, { name }]) =>
@@ -431,7 +433,10 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
       setCompClass(value);
       setCustomPoolVisible(true);
     } else {
-      setCompClassParameters(compClasses[value].roundLength, formationsInCompClass(value));
+      const newRoundLength = compClasses[value].roundLength;
+      const newIncludedFormations = formationsInCompClass(value);
+      setCompClassParameters(newRoundLength, newIncludedFormations);
+      reRandomizeAll(numRounds, newRoundLength, newIncludedFormations, filterRest);
       setNewHistoryEntry(true);
     }
   };
@@ -442,6 +447,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
       // Add or remove from list, based on the checked state
       const newIncludedFormations = checked ? [...includedFormations, id] : includedFormations.filter((f) => f != id);
       setCompClassParameters(roundLength, newIncludedFormations);
+      reRandomizeAll(numRounds, roundLength, newIncludedFormations, filterRest);
       setNewHistoryEntry(true);
     };
 
@@ -467,6 +473,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
     const value = e.target.value;
     const newRoundLength = parseInt(value);
     setCompClassParameters(newRoundLength, includedFormations);
+    reRandomizeAll(numRounds, newRoundLength, includedFormations, filterRest);
     setNewHistoryEntry(true);
   };
 
@@ -525,7 +532,12 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
         className="form-check-input"
         type="checkbox"
         checked={filterRest}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterRest(e.target.checked)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          const newFilterRest = e.target.checked;
+          setFilterRest(newFilterRest)
+          reRandomizeAll(numRounds, roundLength, includedFormations, newFilterRest);
+          setNewHistoryEntry(true);
+        }}
         id="checkFilterRest"
       />
       <label className="form-check-label" htmlFor="checkFilterRest">
@@ -535,8 +547,9 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
   </Form.Group>;
 
   const handleNumRoundsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setNumRounds(parseInt(value));
+    const newNumRounds = parseInt(e.target.value);
+    setNumRounds(newNumRounds);
+    reRandomizeSome(newNumRounds, roundLength, includedFormations, filterRest);
     setNewHistoryEntry(true);
   };
 
@@ -810,15 +823,15 @@ const serialize = ({ includedFormations, roundLength, filterRest, lockRotation, 
 const deserialize = (
   str: string,
   {
-    setCompClassParameters: setCompClassParameters,
-    setFilterRestNoRerun: setFilterRest,
-    setNumRoundsNoRerun: setNumRounds,
+    setCompClassParameters,
+    setFilterRest,
+    setNumRounds,
     setLockRotation,
     setDraw,
   }: {
     setCompClassParameters: (roundLength: number, includedFormations: Array<FormationId>, rerun?: false) => void,
-    setFilterRestNoRerun: (filterRest: boolean) => void,
-    setNumRoundsNoRerun: (numRounds: number) => void,
+    setFilterRest: (filterRest: boolean) => void,
+    setNumRounds: (numRounds: number) => void,
     setLockRotation: (lockRotation: boolean) => void,
     setDraw: (draw: Array<EngineeredRound | RoundError>) => void,
   }) => {
@@ -1097,61 +1110,26 @@ const aboutHtml = <>
 const App = () => {
   // Setup
   const [compClass, setCompClass] = useState<CompClassId | "custom">(initialCompClass);
-  const [roundLength, setRoundLengthNoRerun] = useState<number>(compClasses[initialCompClass].roundLength);
-  const [includedFormations, setIncludedFormationsNoRerun] = useState<Array<FormationId>>(formationsInCompClass(initialCompClass));
-  const [filterRest, setFilterRestNoRerun] = useState<boolean>(false);
-  const [numRounds, setNumRoundsNoRerun] = useState<number>(5);
+  const [roundLength, setRoundLength] = useState<number>(compClasses[initialCompClass].roundLength);
+  const [includedFormations, setIncludedFormations] = useState<Array<FormationId>>(formationsInCompClass(initialCompClass));
+  const [filterRest, setFilterRest] = useState<boolean>(false);
+  const [numRounds, setNumRounds] = useState<number>(5);
   const [lockRotation, setLockRotation] = useState<boolean>(false);
   const [draw, setDraw] = useState<Array<EngineeredRound | RoundError>>([]);
   const [hash, setHash] = useState<string | null>(null);
-  const [rerunAllTrigger, setRerunAllTrigger] = useState<boolean>(false);
-  const [rerunSomeTrigger, setRerunSomeTrigger] = useState<boolean>(false);
   const [deserializeTrigger, setDeserializeTrigger] = useState<boolean>(false);
   const [newHistoryEntry, setNewHistoryEntry] = useState<boolean>(false);
   const [aboutShown, setAboutShown] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const setRoundLength = (newRoundLength: number) => {
-    if (newRoundLength !== roundLength) {
-      setRoundLengthNoRerun(newRoundLength);
-      setRerunAllTrigger(true);
-    }
-  };
-
-  const setIncludedFormations = (newIncludedFormations: Array<FormationId>) => {
-    if (newIncludedFormations !== includedFormations) {
-      setIncludedFormationsNoRerun(newIncludedFormations);
-      setRerunAllTrigger(true);
-    }
-  };
-
-  const setCompClassParameters = (roundLength: number, includedFormations: Array<FormationId>, rerun?: false) => {
-    const computedCompClass: CompClassId | "custom" = computeCompClass(roundLength, includedFormations);
-    if (rerun === false) {
-      setRoundLengthNoRerun(roundLength);
-      setIncludedFormationsNoRerun(includedFormations);
-    } else {
-      setRoundLength(roundLength);
-      setIncludedFormations(includedFormations);
-    }
+  const setCompClassParameters = (newRoundLength: number, newIncludedFormations: Array<FormationId>) => {
+    const computedCompClass: CompClassId | "custom" = computeCompClass(newRoundLength, newIncludedFormations);
+    setRoundLength(newRoundLength);
+    setIncludedFormations(newIncludedFormations);
     setCompClass(computedCompClass);
   };
 
-  const setFilterRest = (newFilterRest: boolean) => {
-    if (newFilterRest !== filterRest) {
-      setFilterRestNoRerun(newFilterRest);
-      setRerunAllTrigger(true);
-    }
-  };
-
-  const setNumRounds = (newNumRounds: number) => {
-    if (newNumRounds !== numRounds) {
-      setNumRoundsNoRerun(newNumRounds);
-      setRerunSomeTrigger(true);
-    }
-  };
-
-  const applyFilters = (f: () => [Round, Pattern]): [Round, Pattern] => {
+  const applyFilters = (filterRest: boolean, f: () => [Round, Pattern]): [Round, Pattern] => {
     for (let i = 0; i < 1000; i++) {
       const [pattern, round] = f();
       if (filterRest && !doesEveryoneGetRest(pattern, round)) {
@@ -1183,9 +1161,9 @@ const App = () => {
     return includedFormations.filter((formation) => usages[formation] == smallestCount);
   };
 
-  const reRandomizeOne = (draw: Array<EngineeredRound | RoundError>): EngineeredRound | RoundError => {
+  const randomRoundMultipleTries = (draw: Array<EngineeredRound | RoundError>, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean): EngineeredRound | RoundError => {
     const firstTry = rerunOne(() =>
-      randomRound(availablePoolFromDraw(draw), includedFormations, roundLength)
+      randomRound(availablePoolFromDraw(draw), includedFormations, roundLength), filterRest
     );
     if ((firstTry as RoundError).error === undefined) {
       return firstTry;
@@ -1195,10 +1173,10 @@ const App = () => {
     // give it one more attempt, with the whole dive pool available
     return rerunOne(() =>
       randomRound([], includedFormations, roundLength)
-    );
+      , filterRest);
   };
 
-  const rerunOne = (round: Round | (() => Round)): EngineeredRound | RoundError => {
+  const rerunOne = (round: Round | (() => Round), filterRest: boolean): EngineeredRound | RoundError => {
     try {
       let pattern: Pattern;
       if (Array.isArray(round)) {
@@ -1206,7 +1184,7 @@ const App = () => {
         [pattern] = optimizeEngineering(round);
       } else {
         // round is a function
-        [round, pattern] = applyFilters(() => {
+        [round, pattern] = applyFilters(filterRest, () => {
           const genRound = (round as () => Round)();
           [pattern] = optimizeEngineering(genRound);
           return [genRound, pattern];
@@ -1224,8 +1202,8 @@ const App = () => {
       i == roundNum ? rerunOne(
         (engRound as EngineeredRound).round.map((formation, j) =>
           j == formationNum ? newFormationId : formation
-        )
-      ) : engRound)
+        ),
+        filterRest) : engRound)
     );
     setNewHistoryEntry(true);
   };
@@ -1235,7 +1213,8 @@ const App = () => {
       i == roundNum ? rerunOne(
         (engRound as EngineeredRound).round.filter((_, j) =>
           j != formationNum
-        )
+        ),
+        filterRest
       ) : engRound)
     );
     setNewHistoryEntry(true);
@@ -1247,7 +1226,7 @@ const App = () => {
         const roundF = () =>
           [...(engRound as EngineeredRound).round, ...randomRound(availablePoolFromDraw(draw), includedFormations, 1)];
         // Passing a function into rerunOne will cause it to enforce filters
-        const result = rerunOne(roundF);
+        const result = rerunOne(roundF, filterRest);
         if ((result as RoundError).error === undefined) {
           return result;
         }
@@ -1255,13 +1234,13 @@ const App = () => {
         // If there was an error (unsatisfiable filters) then try once more with the whole dive pool available
         const roundF2 = () =>
           [...(engRound as EngineeredRound).round, ...randomRound([], includedFormations, 1)];
-        const result2 = rerunOne(roundF2);
+        const result2 = rerunOne(roundF2, filterRest);
         if ((result2 as RoundError).error === undefined) {
           return result2;
         }
 
         // If there was still an error, pass an array, which will always succeed but will not abide by any filters
-        return rerunOne(roundF());
+        return rerunOne(roundF(), filterRest);
       } else {
         return engRound;
       }
@@ -1319,15 +1298,15 @@ const App = () => {
     setNewHistoryEntry(true);
   };
 
-  const reRandomizeSome = () => {
+  const reRandomizeSome = (oldDraw: Array<EngineeredRound | RoundError>, numRounds: number, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean) => {
     // The number of rounds has changed--shorten the list, or rerun the missing rounds
-    if (numRounds < draw.length) {
-      setDraw(draw.slice(0, numRounds));
+    if (numRounds < oldDraw.length) {
+      setDraw(oldDraw.slice(0, numRounds));
     } else {
-      const newDraw = [...draw, ...Array.from({ length: numRounds - draw.length }, () => ({ error: "Waiting to be generated..." }))];
+      const newDraw = [...oldDraw, ...Array.from({ length: numRounds - oldDraw.length }, () => ({ error: "Waiting to be generated..." }))];
 
-      for (let i = draw.length; i < numRounds; i++) {
-        newDraw[i] = reRandomizeOne(newDraw);
+      for (let i = oldDraw.length; i < numRounds; i++) {
+        newDraw[i] = randomRoundMultipleTries(newDraw, roundLength, includedFormations, filterRest);
       }
 
       setDraw(newDraw);
@@ -1335,53 +1314,37 @@ const App = () => {
     setNewHistoryEntry(true);
   };
 
-  const reRandomizeAll = (pushHistory?: false) => {
+  const reRandomizeAll = (numRounds: number, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean) => {
     const newDraw: Array<EngineeredRound | RoundError> = Array.from({ length: numRounds - draw.length }, () => ({ error: "Waiting to be generated..." }));
 
     for (let i = 0; i < numRounds; i++) {
-      newDraw[i] = reRandomizeOne(newDraw);
+      newDraw[i] = randomRoundMultipleTries(newDraw, roundLength, includedFormations, filterRest);
     }
 
     setDraw(newDraw);
-    if (pushHistory !== false) {
-      setNewHistoryEntry(true);
-    }
   };
-
-  useEffect(() => {
-    if (rerunAllTrigger) {
-      reRandomizeAll();
-      setRerunAllTrigger(false);
-    }
-  }, [rerunAllTrigger, setRerunAllTrigger]);
-
-  useEffect(() => {
-    if (rerunSomeTrigger) {
-      reRandomizeSome();
-      setRerunSomeTrigger(false);
-    }
-  }, [rerunSomeTrigger, setRerunSomeTrigger]);
 
   useEffect(() => {
     if (deserializeTrigger) {
       // User has changed the hash--deserialize
       if (hash === null) { return; }
       if (hash === "") {
-        reRandomizeAll(false);
+        reRandomizeAll(numRounds, roundLength, includedFormations, filterRest);
       } else {
         try {
           deserialize(hash, {
-            setCompClassParameters: setCompClassParameters, setFilterRestNoRerun, setNumRoundsNoRerun, setLockRotation, setDraw
+            setCompClassParameters, setFilterRest, setNumRounds, setLockRotation, setDraw
           });
         } catch (e) {
           setError("Could not load draw from URL: " + e);
-          reRandomizeAll();
+          reRandomizeAll(numRounds, roundLength, includedFormations, filterRest);
+          setNewHistoryEntry(true);
         }
       }
       setDeserializeTrigger(false);
     } else {
       if (draw.length > 0) {
-        const newHash = serialize({ roundLength, includedFormations, filterRest, lockRotation, draw });
+        const newHash = serialize({ roundLength, includedFormations, filterRest, lockRotation, draw: draw });
 
         if (hash !== newHash) {
           setHash(newHash);
@@ -1399,10 +1362,10 @@ const App = () => {
     setHash,
     deserializeTrigger,
     setDeserializeTrigger,
-    setRoundLengthNoRerun,
-    setIncludedFormationsNoRerun,
-    setFilterRestNoRerun,
-    setNumRoundsNoRerun,
+    setRoundLength,
+    setIncludedFormations,
+    setFilterRest,
+    setNumRounds,
     setLockRotation,
     setDraw,
     roundLength,
@@ -1442,7 +1405,10 @@ const App = () => {
         className="form-check-input"
         type="checkbox"
         checked={lockRotation}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLockRotation(e.target.checked)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          setLockRotation(e.target.checked);
+          setNewHistoryEntry(true);
+        }}
         id="checkLockRotation"
       />
       <label className="form-check-label" htmlFor="checkLockRotation">
@@ -1465,19 +1431,25 @@ const App = () => {
       setCompClassParameters={setCompClassParameters}
       filterRest={filterRest} setFilterRest={setFilterRest}
       numRounds={numRounds} setNumRounds={setNumRounds}
+      reRandomizeAll={reRandomizeAll}
+      reRandomizeSome={(numRounds, roundLength, includedFormations, filterRest) => reRandomizeSome(draw, numRounds, roundLength, includedFormations, filterRest)}
       setNewHistoryEntry={setNewHistoryEntry}
     />
     <div className="rerun-container">
       <h2>Results</h2>
-      <RerunButton onClick={() => { reRandomizeAll(); }} />
+      <RerunButton onClick={() => {
+        reRandomizeAll(numRounds, roundLength, includedFormations, filterRest);
+        setNewHistoryEntry(true);
+      }} />
     </div>
     {visualizationOptions}
     <Draw
       draw={draw}
       lockRotation={lockRotation}
-      reRandomizeOne={(roundNum) =>
-        setDraw(draw.map((orig, i) => i == roundNum ? reRandomizeOne(draw.filter((_, j) => j != roundNum)) : orig))
-      }
+      reRandomizeOne={(roundNum) => {
+        setDraw(draw.map((orig, i) => i == roundNum ? randomRoundMultipleTries(draw.filter((_, j) => j != roundNum), roundLength, includedFormations, filterRest) : orig));
+        setNewHistoryEntry(true);
+      }}
       changeFormation={changeFormation}
       deleteFormation={deleteFormation}
       extendRound={extendRound}
