@@ -424,22 +424,22 @@ const engineering5: Record<string, BlockEngineering> = {
     slotSwitch: "90",
   },
   x1: {
-    start: ["HUO", "HD", "HUO", "HD"], end: ["HUO", "HD", "HUO", "HD"], priority: 5,
+    start: ["HU", "HD", "HUO", "HD"], end: ["HU", "HD", "HUO", "HD"], priority: 5,
     startPic: pic5X1, interPic: pic5X12Inter, endPic: pic5X1,
     slotSwitch: "270",
   },
   x2: {
-    start: ["HUO", "HD", "HUO", "HD"], end: ["HUO", "HD", "HUO", "HD"], priority: 6,
+    start: ["HUO", "HD", "HU", "HD"], end: ["HUO", "HD", "HU", "HD"], priority: 6,
     startPic: pic5X2, interPic: pic5X12Inter, endPic: pic5X2,
     slotSwitch: "270",
   },
   x3: {
-    start: ["HD", "HUO", "HD", "HUO"], end: ["HD", "HUO", "HD", "HUO"], priority: 7,
+    start: ["HD", "HU", "HD", "HUO"], end: ["HD", "HU", "HD", "HUO"], priority: 7,
     startPic: pic5X3, interPic: pic5X34Inter, endPic: pic5X3,
     slotSwitch: "90",
   },
   x4: {
-    start: ["HD", "HUO", "HD", "HUO"], end: ["HD", "HUO", "HD", "HUO"], priority: 8,
+    start: ["HD", "HUO", "HD", "HU"], end: ["HD", "HUO", "HD", "HU"], priority: 8,
     startPic: pic5X4, interPic: pic5X34Inter, endPic: pic5X4,
     slotSwitch: "90",
   },
@@ -519,22 +519,22 @@ const engineering10: Record<string, BlockEngineering> = {
     slotSwitch: "90",
   },
   p1: {
-    start: ["HUO", "HU", "HDO", "HD"], end: ["HUO", "HU", "HDO", "HD"], priority: 3,
+    start: ["HU", "HU", "HDO", "HD"], end: ["HU", "HU", "HDO", "HD"], priority: 3,
     startPic: pic10P1, interPic: pic10P1Inter, endPic: pic10P1,
     slotSwitch: "90",
   },
   p2: {
-    start: ["HU", "HUO", "HD", "HDO"], end: ["HU", "HUO", "HD", "HDO"], priority: 4,
+    start: ["HU", "HU", "HD", "HDO"], end: ["HU", "HU", "HD", "HDO"], priority: 4,
     startPic: pic10P2, interPic: pic10P2Inter, endPic: pic10P2,
     slotSwitch: "270",
   },
   p3: {
-    start: ["HD", "HDO", "HU", "HUO"], end: ["HD", "HDO", "HU", "HUO"], priority: 5,
+    start: ["HD", "HDO", "HU", "HU"], end: ["HD", "HDO", "HU", "HU"], priority: 5,
     startPic: pic10P3, interPic: pic10P3Inter, endPic: pic10P3,
     slotSwitch: "270",
   },
   p4: {
-    start: ["HDO", "HD", "HUO", "HU"], end: ["HDO", "HD", "HUO", "HU"], priority: 6,
+    start: ["HDO", "HD", "HU", "HU"], end: ["HDO", "HD", "HU", "HU"], priority: 6,
     startPic: pic10P4, interPic: pic10P4Inter, endPic: pic10P4,
     slotSwitch: "90",
   },
