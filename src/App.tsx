@@ -296,17 +296,20 @@ const doesEveryoneGetRest = (round: Round, pattern: Pattern): boolean => {
 
 const randomRound = (availablePool: Array<FormationId>, fullPool: Array<FormationId>, minPoints: number): Array<FormationId> => {
   let points = 0;
-  const draw = [];
+  const round: Array<FormationId> = [];
   while (points < minPoints) {
     if (availablePool.length == 0) {
-      availablePool = [...fullPool];
+      // Put all formations back into the pool,
+      // except those which are already included in this round
+      // (to avoid duplicates within a single round)
+      availablePool = fullPool.filter((formation) => !round.includes(formation));
     }
     const randomI = Math.floor(Math.random() * availablePool.length);
     const formationId = availablePool.splice(randomI, 1)[0];
-    draw.push(formationId);
+    round.push(formationId);
     points += formations[formationId].type == "block" ? 2 : 1;
   }
-  return draw;
+  return round;
 }
 
 const computeCompClass = (roundLength: number, includedFormations: Array<FormationId>): CompClassId | "custom" => {
@@ -1161,7 +1164,7 @@ const App = () => {
 
   const availablePoolFromDraw = (draw: Array<EngineeredRound | RoundError>): Array<FormationId> => {
     // See how many times each formation has been used so far in the draw--
-    // the "available" dive pool consists only of formations with fewer usages than the largest usage count
+    // the "available" dive pool consists only of formations with the smallest usage count
     // (e.g. 0 uses until every formation has been used once)
 
     const usages: Record<FormationId, number> = {};
@@ -1176,8 +1179,8 @@ const App = () => {
       }
     }
 
-    const largestCount = Math.max(...Object.values(usages));
-    return includedFormations.filter((formation) => usages[formation] < largestCount);
+    const smallestCount = Math.min(...Object.values(usages));
+    return includedFormations.filter((formation) => usages[formation] == smallestCount);
   };
 
   const reRandomizeOne = (draw: Array<EngineeredRound | RoundError>): EngineeredRound | RoundError => {
@@ -1364,10 +1367,8 @@ const App = () => {
       // User has changed the hash--deserialize
       if (hash === null) { return; }
       if (hash === "") {
-        console.log("Generate random draw on page load");
         reRandomizeAll(false);
       } else {
-        console.log("Deserialize: ", hash);
         try {
           deserialize(hash, {
             setCompClassParameters: setCompClassParameters, setFilterRestNoRerun, setNumRoundsNoRerun, setLockRotation, setDraw
@@ -1381,20 +1382,14 @@ const App = () => {
     } else {
       if (draw.length > 0) {
         const newHash = serialize({ roundLength, includedFormations, filterRest, lockRotation, draw });
-        console.log("Serialize: new hash is", newHash);
 
         if (hash !== newHash) {
           setHash(newHash);
           if (newHistoryEntry) {
-            console.log("Serialize: push new hash to history", newHash);
             window.history.pushState(undefined, '', '#' + newHash);
           } else {
-            console.log("Serialize: replace hash", newHash);
             window.history.replaceState(undefined, '', '#' + newHash);
           }
-        }
-        if (newHistoryEntry) {
-          console.log("Clear newHistoryEntry");
         }
         setNewHistoryEntry(false);
       }
