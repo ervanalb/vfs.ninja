@@ -309,6 +309,20 @@ const randomRound = (availablePool: Array<FormationId>, fullPool: Array<Formatio
   return draw;
 }
 
+const computeCompClass = (roundLength: number, includedFormations: Array<FormationId>): CompClassId | "custom" => {
+  let computedCompClass: CompClassId | "custom" = "custom";
+
+  for (const compClassId in compClasses) {
+    if (compClasses[compClassId].roundLength == roundLength
+      && Object.entries(formations).every(([id, { compClasses }]) => compClasses.includes(compClassId) == includedFormations.includes(id))) {
+      computedCompClass = compClassId;
+      break;
+    }
+  }
+
+  return computedCompClass;
+};
+
 type PicProps = {
   formationId: FormationId,
   formationEngId?: EngineeringId,
@@ -392,30 +406,17 @@ type SetupProps = {
   compClass: CompClassId,
   setCompClass: (compClass: CompClassId) => void,
   roundLength: number,
-  setRoundLength: (roundLength: number) => void,
   includedFormations: Array<FormationId>,
-  setIncludedFormations: (includedFormations: Array<FormationId>) => void,
+  setCompClassParameters: (roundLength: number, includedFormations: Array<FormationId>, rerun?: false) => void,
   filterRest: boolean,
   setFilterRest: (filterRest: boolean) => void,
   numRounds: number,
   setNumRounds: (numRounds: number) => void,
+  setNewHistoryEntry: (newHistoryEntry: boolean) => void,
 };
 
-const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, setRoundLength, includedFormations, setIncludedFormations, filterRest, setFilterRest, numRounds, setNumRounds }) => {
+const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, includedFormations, setCompClassParameters, filterRest, setFilterRest, numRounds, setNumRounds, setNewHistoryEntry }) => {
   const [customPoolVisible, setCustomPoolVisible] = useState<boolean>(false);
-
-  useEffect(() => {
-    let computedCompClass: CompClassId | "custom" = "custom";
-
-    for (const compClassId in compClasses) {
-      if (compClasses[compClassId].roundLength == roundLength
-        && Object.entries(formations).every(([id, { compClasses }]) => compClasses.includes(compClassId) == includedFormations.includes(id))) {
-        computedCompClass = compClassId;
-        break;
-      }
-    }
-    setCompClass(computedCompClass);
-  }, [roundLength, includedFormations]);
 
   const compClassOptions = Object.entries(compClasses).map(([id, { name }]) =>
     <option value={id} key={id}>{name}</option>
@@ -427,10 +428,8 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
       setCompClass(value);
       setCustomPoolVisible(true);
     } else {
-      // Setting both of these should trigger an effect
-      // that sets the comp class
-      setRoundLength(compClasses[value].roundLength);
-      setIncludedFormations(formationsInCompClass(value));
+      setCompClassParameters(compClasses[value].roundLength, formationsInCompClass(value));
+      setNewHistoryEntry(true);
     }
   };
 
@@ -439,7 +438,8 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
       const { checked } = e.target;
       // Add or remove from list, based on the checked state
       const newIncludedFormations = checked ? [...includedFormations, id] : includedFormations.filter((f) => f != id);
-      setIncludedFormations(newIncludedFormations);
+      setCompClassParameters(roundLength, newIncludedFormations);
+      setNewHistoryEntry(true);
     };
 
     const htmlName = "include" + id + "Check";
@@ -462,10 +462,16 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
 
   const handleRoundLengthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    setRoundLength(parseInt(value));
+    const newRoundLength = parseInt(value);
+    setCompClassParameters(newRoundLength, includedFormations);
+    setNewHistoryEntry(true);
   };
 
-  const handleToggleCustomPool = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => { event.preventDefault(); event.stopPropagation(); setCustomPoolVisible(!customPoolVisible); };
+  const handleToggleCustomPool = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setCustomPoolVisible(!customPoolVisible);
+  };
 
   const compClassSelector = <Form.Group className="mb-3 mx-3">
     <label htmlFor="classSelector" className="col-form-label">
@@ -528,6 +534,7 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, set
   const handleNumRoundsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setNumRounds(parseInt(value));
+    setNewHistoryEntry(true);
   };
 
   const numRoundsSelector =
@@ -765,8 +772,7 @@ const RerunButton: React.FC<RerunButtonProps> = ({ onClick }) => {
   }}><img className={spinning ? "spin" : ""} src={rerun} /></button>
 };
 
-const serialize = ({ compClass, includedFormations, roundLength, filterRest, lockRotation, draw }: {
-  compClass: CompClassId | "custom",
+const serialize = ({ includedFormations, roundLength, filterRest, lockRotation, draw }: {
   includedFormations: Array<FormationId>,
   roundLength: number,
   filterRest: boolean,
@@ -774,6 +780,7 @@ const serialize = ({ compClass, includedFormations, roundLength, filterRest, loc
   draw: Array<EngineeredRound | RoundError>,
 }): string => {
 
+  const compClass = computeCompClass(roundLength, includedFormations);
   const compClassString = compClass == "custom" ? "custom(" + roundLength + "," + includedFormations.join(",") + ")" : compClass;
   const filterRestString = filterRest ? "r" : "";
   const lockRotationString = lockRotation ? "l" : "";
@@ -800,15 +807,13 @@ const serialize = ({ compClass, includedFormations, roundLength, filterRest, loc
 const deserialize = (
   str: string,
   {
-    setIncludedFormationsNoRerun: setIncludedFormationsNoRerun,
-    setRoundLengthNoRerun: setRoundLength,
+    setCompClassParameters: setCompClassParameters,
     setFilterRestNoRerun: setFilterRest,
     setNumRoundsNoRerun: setNumRounds,
     setLockRotation,
     setDraw,
   }: {
-    setIncludedFormationsNoRerun: (includedFormations: Array<FormationId>) => void,
-    setRoundLengthNoRerun: (roundLength: number) => void,
+    setCompClassParameters: (roundLength: number, includedFormations: Array<FormationId>, rerun?: false) => void,
     setFilterRestNoRerun: (filterRest: boolean) => void,
     setNumRoundsNoRerun: (numRounds: number) => void,
     setLockRotation: (lockRotation: boolean) => void,
@@ -852,12 +857,12 @@ const deserialize = (
     if (isNaN(roundLength)) {
       throw "Bad round length";
     }
-    setRoundLength(roundLength);
 
     if (!includedFormationStrs.every((includedFormationStr) => Object.keys(formations).includes(includedFormationStr))) {
       throw "Bad included formations list";
     }
-    setIncludedFormationsNoRerun(includedFormationStrs);
+
+    setCompClassParameters(roundLength, includedFormationStrs, false);
   } else {
     const compClassString = parseUntil(",");
     popOff(",");
@@ -865,8 +870,7 @@ const deserialize = (
     if (!Object.keys(compClasses).includes(compClassString)) {
       throw "Bad comp class";
     }
-    setRoundLength(compClasses[compClassString].roundLength);
-    setIncludedFormationsNoRerun(formationsInCompClass(compClassString));
+    setCompClassParameters(compClasses[compClassString].roundLength, formationsInCompClass(compClassString), false);
   }
 
   const filterRestStr = parseUntil(",");
@@ -1041,6 +1045,12 @@ const aboutHtml = <>
   </p>
 
   <h4>Changelog</h4>
+  <h5>v1.3</h5>
+  <em>2025-XX-XX</em>
+  <ul>
+    <li>Add piece-partner variant of block 10</li>
+    <li>Optimizer now weights HU cross-body grips the same as regular HU grips</li>
+  </ul>
   <h5>v1.2</h5>
   <em>2025-03-01</em>
   <ul>
@@ -1090,10 +1100,11 @@ const App = () => {
   const [numRounds, setNumRoundsNoRerun] = useState<number>(5);
   const [lockRotation, setLockRotation] = useState<boolean>(false);
   const [draw, setDraw] = useState<Array<EngineeredRound | RoundError>>([]);
-  const [hash, setHash] = useState<string>("");
+  const [hash, setHash] = useState<string | null>(null);
   const [rerunAllTrigger, setRerunAllTrigger] = useState<boolean>(false);
   const [rerunSomeTrigger, setRerunSomeTrigger] = useState<boolean>(false);
   const [deserializeTrigger, setDeserializeTrigger] = useState<boolean>(false);
+  const [newHistoryEntry, setNewHistoryEntry] = useState<boolean>(false);
   const [aboutShown, setAboutShown] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -1109,6 +1120,18 @@ const App = () => {
       setIncludedFormationsNoRerun(newIncludedFormations);
       setRerunAllTrigger(true);
     }
+  };
+
+  const setCompClassParameters = (roundLength: number, includedFormations: Array<FormationId>, rerun?: false) => {
+    const computedCompClass: CompClassId | "custom" = computeCompClass(roundLength, includedFormations);
+    if (rerun === false) {
+      setRoundLengthNoRerun(roundLength);
+      setIncludedFormationsNoRerun(includedFormations);
+    } else {
+      setRoundLength(roundLength);
+      setIncludedFormations(includedFormations);
+    }
+    setCompClass(computedCompClass);
   };
 
   const setFilterRest = (newFilterRest: boolean) => {
@@ -1201,6 +1224,7 @@ const App = () => {
         )
       ) : engRound)
     );
+    setNewHistoryEntry(true);
   };
 
   const deleteFormation = (roundNum: number, formationNum: number) => {
@@ -1211,9 +1235,10 @@ const App = () => {
         )
       ) : engRound)
     );
+    setNewHistoryEntry(true);
   };
 
-  const extendRound = (roundNum: number) =>
+  const extendRound = (roundNum: number) => {
     setDraw(draw.map((engRound, i) => {
       if (i == roundNum) {
         const roundF = () =>
@@ -1238,6 +1263,8 @@ const App = () => {
         return engRound;
       }
     }));
+    setNewHistoryEntry(true);
+  };
 
   const changeEngineering = (roundNum: number, patternIndex: number, newEngineeringId: EngineeringId) => {
     setDraw(draw.map((engRound, i) => {
@@ -1286,6 +1313,7 @@ const App = () => {
         return engRound;
       }
     }));
+    setNewHistoryEntry(true);
   };
 
   const reRandomizeSome = () => {
@@ -1301,9 +1329,10 @@ const App = () => {
 
       setDraw(newDraw);
     }
+    setNewHistoryEntry(true);
   };
 
-  const reRandomizeAll = () => {
+  const reRandomizeAll = (pushHistory?: false) => {
     const newDraw: Array<EngineeredRound | RoundError> = Array.from({ length: numRounds - draw.length }, () => ({ error: "Waiting to be generated..." }));
 
     for (let i = 0; i < numRounds; i++) {
@@ -1311,6 +1340,9 @@ const App = () => {
     }
 
     setDraw(newDraw);
+    if (pushHistory !== false) {
+      setNewHistoryEntry(true);
+    }
   };
 
   useEffect(() => {
@@ -1328,48 +1360,79 @@ const App = () => {
   }, [rerunSomeTrigger, setRerunSomeTrigger]);
 
   useEffect(() => {
-    if (draw.length > 0) {
-      const newHash = serialize({ compClass, roundLength, includedFormations, filterRest, lockRotation, draw });
-      setHash(newHash); // Avoid immediate deserialize
-      window.history.pushState(null, '', '#' + newHash);
-    }
-  }, [compClass, roundLength, includedFormations, filterRest, lockRotation, draw]);
-
-  useEffect(() => {
-    if (deserializeTrigger && hash != "") {
-      try {
-        deserialize(hash, {
-          setRoundLengthNoRerun, setIncludedFormationsNoRerun, setFilterRestNoRerun, setNumRoundsNoRerun, setLockRotation, setDraw
-        });
-      } catch (e) {
-        setError("Could not load draw from URL: " + e);
-        reRandomizeAll();
+    if (deserializeTrigger) {
+      // User has changed the hash--deserialize
+      if (hash === null) { return; }
+      if (hash === "") {
+        console.log("Generate random draw on page load");
+        reRandomizeAll(false);
+      } else {
+        console.log("Deserialize: ", hash);
+        try {
+          deserialize(hash, {
+            setCompClassParameters: setCompClassParameters, setFilterRestNoRerun, setNumRoundsNoRerun, setLockRotation, setDraw
+          });
+        } catch (e) {
+          setError("Could not load draw from URL: " + e);
+          reRandomizeAll();
+        }
       }
       setDeserializeTrigger(false);
+    } else {
+      if (draw.length > 0) {
+        const newHash = serialize({ roundLength, includedFormations, filterRest, lockRotation, draw });
+        console.log("Serialize: new hash is", newHash);
+
+        if (hash !== newHash) {
+          setHash(newHash);
+          if (newHistoryEntry) {
+            console.log("Serialize: push new hash to history", newHash);
+            window.history.pushState(undefined, '', '#' + newHash);
+          } else {
+            console.log("Serialize: replace hash", newHash);
+            window.history.replaceState(undefined, '', '#' + newHash);
+          }
+        }
+        if (newHistoryEntry) {
+          console.log("Clear newHistoryEntry");
+        }
+        setNewHistoryEntry(false);
+      }
     }
-  }, [hash, deserializeTrigger, setDeserializeTrigger]);
+  }, [
+    hash,
+    setHash,
+    deserializeTrigger,
+    setDeserializeTrigger,
+    setRoundLengthNoRerun,
+    setIncludedFormationsNoRerun,
+    setFilterRestNoRerun,
+    setNumRoundsNoRerun,
+    setLockRotation,
+    setDraw,
+    roundLength,
+    includedFormations,
+    filterRest,
+    lockRotation,
+    draw,
+    newHistoryEntry,
+    setNewHistoryEntry
+  ]);
 
   useEffect(() => {
     const hashChanged = () => {
       let newHash = window.location.hash;
-      if (newHash) {
-        newHash = newHash.substring(1);
-        if (newHash !== hash) {
-          setHash(newHash);
-          setDeserializeTrigger(true);
-        }
-      } else {
-        setHash("");
+      newHash = newHash.substring(1);
+      if (newHash !== hash) {
+        setHash(newHash);
+        setDeserializeTrigger(true);
       }
     };
 
-    if (window.location.hash.length > 1) {
-      hashChanged();
-    } else {
-      // Run all on first page load if no hash is present
-      reRandomizeAll();
-    }
     window.addEventListener('hashchange', hashChanged);
+
+    // Parse hash on page load
+    hashChanged();
 
     // Cleanup
     return () => {
@@ -1402,14 +1465,16 @@ const App = () => {
     </div>
     <h2>Setup</h2>
     <Setup compClass={compClass} setCompClass={setCompClass}
-      roundLength={roundLength} setRoundLength={setRoundLength}
-      includedFormations={includedFormations} setIncludedFormations={setIncludedFormations}
+      roundLength={roundLength}
+      includedFormations={includedFormations}
+      setCompClassParameters={setCompClassParameters}
       filterRest={filterRest} setFilterRest={setFilterRest}
       numRounds={numRounds} setNumRounds={setNumRounds}
+      setNewHistoryEntry={setNewHistoryEntry}
     />
     <div className="rerun-container">
       <h2>Results</h2>
-      <RerunButton onClick={reRandomizeAll} />
+      <RerunButton onClick={() => { reRandomizeAll(); }} />
     </div>
     {visualizationOptions}
     <Draw
