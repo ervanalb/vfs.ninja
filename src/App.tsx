@@ -978,7 +978,7 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, reRandomizeOne, changeF
 
     const header = (errorOrDrawString: JSX.Element) =>
       <div className="rerun-container">
-        <h3>Round {roundNum + 1}: {errorOrDrawString}</h3>
+        <h4>Round {roundNum + 1}: {errorOrDrawString}</h4>
         <RerunButton onClick={() => reRandomizeOne(roundNum)} />
       </div>;
 
@@ -1311,7 +1311,7 @@ const aboutHtml = <>
     The <a href="https://www.fai.org/sites/default/files/isc/documents/2024/2024_isc_cr_formation_skydiving_vertical_formation_skydiving.pdf">offical rules</a> are somewhat lenient.
     For example, they do not specify whether the four fliers should be stretched out into a line, or curled into a circle,
     as long as the correct grips are taken.
-    The rules also don&amp;t specify which flier fulfills which role, and allow the formation to be built mirrored.
+    The rules also don't specify which flier fulfills which role, and allow the formation to be built mirrored.
     Since there are no points for style, only speed, it is important to make a plan that that minimizes transitions and movement,
     a process known as <em>engineering</em>.
   </p>
@@ -1326,7 +1326,7 @@ const aboutHtml = <>
 
   <h4>What is this tool?</h4>
   <p>
-    This is intended to be a training tool for 4-way VFS teams.
+    <em>vfs.ninja</em> is intended to be a training tool for 4-way VFS teams.
     Unlike the official rules, whose pictures show the formations in a way that is unambiguous and legal,
     this tool attempts to visualize the formations in a way that is <em>efficient to build</em>.
     It has several variations of each formation, and automatically picks one based on the previous formation,
@@ -1342,13 +1342,13 @@ const aboutHtml = <>
   <p>
     The approach taken here is largely inspired by <a href="https://www.sdccore.com/">SDC core</a> and their methodology.
     The engineering is based on a circular arrangement of fliers and fixed cross-partners and piece-partners.
-    <ul>
-      <li>The black flier&apos;s cross partner is green, and piece partner is red. This is the "primary head-up" role.</li>
-      <li>The red flier&apos;s cross partner is blue, and piece partner is black.</li>
-      <li>The green flier&apos;s cross partner is black, and piece partner is blue.</li>
-      <li>The blue flier&apos;s cross partner is red, and piece partner is green. This is the "primary head-down" role.</li>
-    </ul>
   </p>
+  <ul>
+    <li>The black flier&apos;s cross partner is green, and piece partner is red. This is the "primary head-up" role.</li>
+    <li>The red flier&apos;s cross partner is blue, and piece partner is black.</li>
+    <li>The green flier&apos;s cross partner is black, and piece partner is blue.</li>
+    <li>The blue flier&apos;s cross partner is red, and piece partner is green. This is the "primary head-down" role.</li>
+  </ul>
 
   <Figure>
     <Figure.Image src={pic8Inter} width={150} height={150} />
@@ -1360,12 +1360,12 @@ const aboutHtml = <>
 
   <p>
     There is a lot that this tool does not cover. For example:
-    <ul>
-      <li>It does not indicate when grips should be taken early and "flipped."</li>
-      <li>It does not contain variations of a formation that involve partnering up with non-piece-partners
-        if a piece-partner option is available.</li>
-    </ul>
   </p>
+  <ul>
+    <li>It does not indicate when grips should be taken early and "flipped."</li>
+    <li>It does not contain variations of a formation that involve partnering up with non-piece-partners
+      if a piece-partner option is available.</li>
+  </ul>
 
   <p>
     Many formations can be built left- or right-handed, e.g. 7.
@@ -1915,13 +1915,14 @@ const App = () => {
   </Form.Group>;
 
   return <>
+    <h1>vfs.ninja</h1>
     <div className="title-container">
-      <h1>4-way VFS draw generator</h1>
+      <h2>4-way VFS draw generator</h2>
       <button className="about-button" onClick={() => { setAboutShown(true); }}>
         <img src={about} />
       </button>
     </div>
-    <h2>Setup</h2>
+    <h3>Setup</h3>
     <Setup compClass={compClass} setCompClass={setCompClass}
       roundLength={roundLength}
       includedFormations={includedFormations}
@@ -1945,7 +1946,7 @@ const App = () => {
       setNewHistoryEntry={setNewHistoryEntry}
     />
     <div className="rerun-container">
-      <h2>Results</h2>
+      <h3>Results</h3>
       <RerunButton onClick={() => {
         reRandomizeAll(
           numRounds,
