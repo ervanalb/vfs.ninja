@@ -26,7 +26,9 @@ type Round = Array<FormationId>;
 type Pattern = Array<EngineeringId>;
 
 type PatternAnalysis = {
-  cost: number,
+  speedCost: number, // How slow this pattern is
+  shapeCost: number, // How unfamiliar the shapes in the pattern are
+  rolesCost: number, // How unfamiliar the roles in the pattern are
   priority: number,
   firstFormationPriority: number,
 };
@@ -51,7 +53,9 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
   else if (loop && pat.length < 1) { throw "Loop must contain at least 1 formation"; }
   const patToAnalyze = loop ? [...pat, pat[0]] : pat;
 
-  let totalCost = 0;
+  let totalSpeedCost = 0;
+  let totalShapeCost = 0;
+  let totalRolesCost = 0;
   let totalPriority = 0;
   let firstFormationPriority: null | number = null;
   for (let i = 0; i < patToAnalyze.length - 1; i++) {
@@ -63,14 +67,20 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
     const f = formations[fromFormationId];
     let fromEng: [Position, Position, Position, Position];
     let priority: number;
+    let shapeCost: number;
+    let rolesCost: number;
     if (f.type == "block") {
       const e = f.engineeringStrategies[fromEngId];
       fromEng = e.end;
       priority = e.priority;
+      shapeCost = !e.commonShape ? 1 : 0;
+      rolesCost = !e.commonRoles ? 1 : 0;
     } else {
       const e = f.engineeringStrategies[fromEngId];
       fromEng = e.start;
       priority = e.priority;
+      shapeCost = !e.commonShape ? 1 : 0;
+      rolesCost = !e.commonRoles ? 1 : 0;
     }
 
     if (firstFormationPriority === null) {
@@ -79,8 +89,10 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
 
     const toEng = formations[toFormationId].engineeringStrategies[toEngId].start;
 
-    const cost = [0, 1, 2, 3].map((i) => costMatrix[fromEng[i]][toEng[i]]).reduce((acc, x) => acc + x);
-    totalCost += cost;
+    const speedCost = [0, 1, 2, 3].map((i) => costMatrix[fromEng[i]][toEng[i]]).reduce((acc, x) => acc + x);
+    totalSpeedCost += speedCost;
+    totalShapeCost += shapeCost;
+    totalRolesCost += rolesCost;
     totalPriority += priority;
   }
 
@@ -90,9 +102,12 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
     totalPriority += formations[lastFormationId].engineeringStrategies[lastEngId].priority;
   }
 
+  const pages = pat.length / round.length;
   return {
-    cost: totalCost / (pat.length / round.length),
-    priority: totalPriority / (pat.length / round.length),
+    speedCost: totalSpeedCost / pages,
+    shapeCost: totalShapeCost / pages,
+    rolesCost: totalRolesCost / pages,
+    priority: totalPriority / pages,
     firstFormationPriority: firstFormationPriority as number,
   };
 };
@@ -154,22 +169,34 @@ const slotSwitchesEquivalent = (a: SlotSwitch, b: SlotSwitch): boolean => resetR
 const argmin = (a: Array<PatternAnalysis>) => {
   if (a.length < 1) throw "Must contain at least 1 entry";
   return a.reduce((minIndex, _, index, arr) => {
-    let { cost: c, priority: p, firstFormationPriority: p1 } = arr[index];
-    let { cost: cMin, priority: pMin, firstFormationPriority: p1Min } = arr[minIndex];
+    let { speedCost: c, shapeCost: sc, rolesCost: rc, priority: p, firstFormationPriority: p1 } = arr[index];
+    let { speedCost: cMin, shapeCost: scMin, rolesCost: rcMin, priority: pMin, firstFormationPriority: p1Min } = arr[minIndex];
     if (c < cMin) {
       return index;
     } else if (c > cMin) {
       return minIndex;
     } else {
-      if (p < pMin) {
+      if (sc < scMin) {
         return index;
-      } else if (p > pMin) {
+      } else if (sc > scMin) {
         return minIndex;
       } else {
-        if (p1 < p1Min) {
+        if (rc < rcMin) {
           return index;
-        } else {
+        } else if (rc > rcMin) {
           return minIndex;
+        } else {
+          if (p < pMin) {
+            return index;
+          } else if (p > pMin) {
+            return minIndex;
+          } else {
+            if (p1 < p1Min) {
+              return index;
+            } else {
+              return minIndex;
+            }
+          }
         }
       }
     }
@@ -182,7 +209,7 @@ const optimizeEngineering = (round: Round): [Pattern, PatternAnalysis] => {
 
   if (round.length < 1) { throw "Draw must contain at least 1 formation"; }
 
-  const firstFormationId = round[round.length - 1];
+  const firstFormationId = round[0];
   const firstFormationEngStrategies = formations[firstFormationId].engineeringStrategies;
   const firstSlotSwitch = "null";
   const patternOptions = Object.keys(firstFormationEngStrategies).map((firstFormationEngId: EngineeringId) => {
@@ -206,10 +233,11 @@ const optimizeEngineering = (round: Round): [Pattern, PatternAnalysis] => {
       }
 
       // See if we're done--if we have a cycle
-      if (pattern.length > round.length && pattern.length % round.length == 0) {
-        for (let pages = 1; pages < pattern.length / round.length; pages++) {
+      if (pattern.length > 0 && pattern.length % round.length == 0) {
+        for (let pages = 1; pages <= pattern.length / round.length; pages++) {
           const start = pattern.length - pages * round.length;
-          if (nextFormationEngId == pattern[start] && slotSwitchesEquivalent(nextSlotSwitch, slotSwitches[start])) {
+          // If we made a cycle, return it
+          if (slotSwitchesEquivalent(nextSlotSwitch, slotSwitches[start]) && nextFormationEngId == pattern[start]) {
             return pattern.slice(start);
           }
         }
@@ -260,11 +288,11 @@ const findAlternatives = (round: Round, pattern: Pattern): {
 
     const argsort = strategyAnalyses
       .map((value, index) => ({ value, index }))
-      .sort((a, b) => a.value.cost - b.value.cost)
+      .sort((a, b) => a.value.speedCost - b.value.speedCost)
       .map(({ index }) => index);
 
-    const minCost = strategyAnalyses[argsort[0]].cost;
-    return argsort.map((i) => [Object.keys(engStrategies)[i], strategyAnalyses[i].cost - minCost]);
+    const minCost = strategyAnalyses[argsort[0]].speedCost;
+    return argsort.map((i) => [Object.keys(engStrategies)[i], strategyAnalyses[i].speedCost - minCost]);
   });
 
   return {
@@ -298,6 +326,30 @@ const doesEveryoneGetRest = (round: Round, pattern: Pattern): boolean => {
 
   return hasRest.every(e => e);
 }
+
+const doesRoundContainUncommonRoles = (round: Round, pattern: Pattern): boolean => {
+  for (let i = 0; i < pattern.length; i++) {
+    const engId = pattern[i];
+    const f = formations[round[i % round.length]];
+    const e = f.engineeringStrategies[engId];
+    if (!e.commonRoles) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const doesRoundContainUncommonShape = (round: Round, pattern: Pattern): boolean => {
+  for (let i = 0; i < pattern.length; i++) {
+    const engId = pattern[i];
+    const f = formations[round[i % round.length]];
+    const e = f.engineeringStrategies[engId];
+    if (!e.commonShape) {
+      return true;
+    }
+  }
+  return false;
+};
 
 const randomRound = (availablePool: Array<FormationId>, fullPool: Array<FormationId>, minPoints: number): Array<FormationId> => {
   let points = 0;
@@ -496,14 +548,54 @@ type SetupProps = {
   setCompClassParameters: (roundLength: number, includedFormations: Array<FormationId>) => void,
   filterRest: boolean,
   setFilterRest: (filterRest: boolean) => void,
+  filterSlotSwitchers: boolean,
+  setFilterSlotSwitchers: (filterSlotSwitchers: boolean) => void,
+  filterUncommonRoles: boolean,
+  setFilterUncommonRoles: (filterUncommonRoles: boolean) => void,
+  filterUncommonShapes: boolean,
+  setFilterUncommonShapes: (filterUncommonShapes: boolean) => void,
   numRounds: number,
   setNumRounds: (numRounds: number) => void,
-  reRandomizeAll: (numRounds: number, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean) => void,
-  reRandomizeSome: (numRounds: number, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean) => void,
+  reRandomizeAll: (
+    numRounds: number,
+    roundLength: number,
+    includedFormations: Array<FormationId>,
+    filterRest: boolean,
+    filterSlotSwitchers: boolean,
+    filterUncommonRoles: boolean,
+    filterUncommonShapes: boolean,
+  ) => void,
+  reRandomizeSome: (numRounds: number,
+    roundLength: number,
+    includedFormations: Array<FormationId>,
+    filterRest: boolean,
+    filterSlotSwitchers: boolean,
+    filterUncommonRoles: boolean,
+    filterUncommonShapes: boolean,
+  ) => void,
   setNewHistoryEntry: (newHistoryEntry: boolean) => void,
 };
 
-const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, includedFormations, setCompClassParameters, filterRest, setFilterRest, numRounds, setNumRounds, reRandomizeAll, reRandomizeSome, setNewHistoryEntry }) => {
+const Setup: React.FC<SetupProps> = ({
+  compClass,
+  setCompClass,
+  roundLength,
+  includedFormations,
+  setCompClassParameters,
+  filterRest,
+  setFilterRest,
+  filterSlotSwitchers,
+  setFilterSlotSwitchers,
+  filterUncommonRoles,
+  setFilterUncommonRoles,
+  filterUncommonShapes,
+  setFilterUncommonShapes,
+  numRounds,
+  setNumRounds,
+  reRandomizeAll,
+  reRandomizeSome,
+  setNewHistoryEntry
+}) => {
   const [customPoolVisible, setCustomPoolVisible] = useState<boolean>(false);
 
   const compClassOptions = Object.entries(compClasses).map(([id, { name }]) =>
@@ -519,7 +611,15 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
       const newRoundLength = compClasses[value].roundLength;
       const newIncludedFormations = formationsInCompClass(value);
       setCompClassParameters(newRoundLength, newIncludedFormations);
-      reRandomizeAll(numRounds, newRoundLength, newIncludedFormations, filterRest);
+      reRandomizeAll(
+        numRounds,
+        newRoundLength,
+        newIncludedFormations,
+        filterRest,
+        filterSlotSwitchers,
+        filterUncommonRoles,
+        filterUncommonShapes,
+      );
       setNewHistoryEntry(true);
     }
   };
@@ -530,7 +630,15 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
       // Add or remove from list, based on the checked state
       const newIncludedFormations = checked ? [...includedFormations, id] : includedFormations.filter((f) => f != id);
       setCompClassParameters(roundLength, newIncludedFormations);
-      reRandomizeAll(numRounds, roundLength, newIncludedFormations, filterRest);
+      reRandomizeAll(
+        numRounds,
+        roundLength,
+        newIncludedFormations,
+        filterRest,
+        filterSlotSwitchers,
+        filterUncommonRoles,
+        filterUncommonShapes,
+      );
       setNewHistoryEntry(true);
     };
 
@@ -556,7 +664,15 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
     const value = e.target.value;
     const newRoundLength = parseInt(value);
     setCompClassParameters(newRoundLength, includedFormations);
-    reRandomizeAll(numRounds, newRoundLength, includedFormations, filterRest);
+    reRandomizeAll(
+      numRounds,
+      newRoundLength,
+      includedFormations,
+      filterRest,
+      filterSlotSwitchers,
+      filterUncommonRoles,
+      filterUncommonShapes,
+    );
     setNewHistoryEntry(true);
   };
 
@@ -608,31 +724,124 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
     </Collapse >
   </Form.Group >;
 
-  const filters = <Form.Group className="mb-3 mx-3">
-    <div className="col-form-label">Modifiers:</div>
+  type FilterCheckboxProps = {
+    id: string,
+    value: boolean,
+    onChange: (newValue: boolean) => void,
+    label: string,
+  };
+
+  const FilterCheckbox: React.FC<FilterCheckboxProps> = ({
+    id,
+    value,
+    onChange,
+    label
+  }) =>
     <div className="form-check mx-3">
       <input
         className="form-check-input"
         type="checkbox"
-        checked={filterRest}
+        checked={value}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-          const newFilterRest = e.target.checked;
-          setFilterRest(newFilterRest)
-          reRandomizeAll(numRounds, roundLength, includedFormations, newFilterRest);
-          setNewHistoryEntry(true);
+          const newValue = e.target.checked;
+          onChange(newValue)
         }}
-        id="checkFilterRest"
+        id={id}
       />
-      <label className="form-check-label" htmlFor="checkFilterRest">
-        Everybody gets at least 1 HU point
+      <label className="form-check-label" htmlFor={id}>
+        {label}
       </label>
     </div>
+    ;
+
+  const filters = <Form.Group className="mb-3 mx-3">
+    <div className="col-form-label">Modifiers:</div>
+    <FilterCheckbox
+      id="checkFilterRest"
+      value={filterRest}
+      onChange={(newFilterRest) => {
+        setFilterRest(newFilterRest);
+        reRandomizeAll(
+          numRounds,
+          roundLength,
+          includedFormations,
+          newFilterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+        );
+        setNewHistoryEntry(true);
+      }}
+      label="Everybody gets at least 1 HU point"
+    />
+    <FilterCheckbox
+      id="checkFilterSlotSwitchers"
+      value={filterSlotSwitchers}
+      onChange={(newFilterSlotSwitchers) => {
+        setFilterSlotSwitchers(newFilterSlotSwitchers);
+        reRandomizeAll(
+          numRounds,
+          roundLength,
+          includedFormations,
+          filterRest,
+          newFilterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+        );
+        setNewHistoryEntry(true);
+      }}
+      label="Slot switchers"
+    />
+    <FilterCheckbox
+      id="checkFilterUncommonRoles"
+      value={filterUncommonRoles}
+      onChange={(newFilterUncommonRoles) => {
+        setFilterUncommonRoles(newFilterUncommonRoles);
+        reRandomizeAll(
+          numRounds,
+          roundLength,
+          includedFormations,
+          filterRest,
+          filterSlotSwitchers,
+          newFilterUncommonRoles,
+          filterUncommonShapes,
+        );
+        setNewHistoryEntry(true);
+      }}
+      label="Uncommon roles"
+    />
+    <FilterCheckbox
+      id="checkFilterUncommonShapes"
+      value={filterUncommonShapes}
+      onChange={(newFilterUncommonShapes) => {
+        setFilterUncommonShapes(newFilterUncommonShapes);
+        reRandomizeAll(
+          numRounds,
+          roundLength,
+          includedFormations,
+          filterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          newFilterUncommonShapes,
+        );
+        setNewHistoryEntry(true);
+      }}
+      label="Uncommon shapes"
+    />
   </Form.Group>;
 
   const handleNumRoundsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newNumRounds = parseInt(e.target.value);
     setNumRounds(newNumRounds);
-    reRandomizeSome(newNumRounds, roundLength, includedFormations, filterRest);
+    reRandomizeSome(
+      newNumRounds,
+      roundLength,
+      includedFormations,
+      filterRest,
+      filterSlotSwitchers,
+      filterUncommonRoles,
+      filterUncommonShapes,
+    );
     setNewHistoryEntry(true);
   };
 
@@ -1196,6 +1405,9 @@ const App = () => {
   const [roundLength, setRoundLength] = useState<number>(compClasses[initialCompClass].roundLength);
   const [includedFormations, setIncludedFormations] = useState<Array<FormationId>>(formationsInCompClass(initialCompClass));
   const [filterRest, setFilterRest] = useState<boolean>(false);
+  const [filterSlotSwitchers, setFilterSlotSwitchers] = useState<boolean>(false);
+  const [filterUncommonRoles, setFilterUncommonRoles] = useState<boolean>(false);
+  const [filterUncommonShapes, setFilterUncommonShapes] = useState<boolean>(false);
   const [numRounds, setNumRounds] = useState<number>(5);
   const [lockRotation, setLockRotation] = useState<boolean>(false);
   const [draw, setDraw] = useState<Array<EngineeredRound | RoundError>>([]);
@@ -1215,10 +1427,25 @@ const App = () => {
     setCompClass(computedCompClass);
   };
 
-  const applyFilters = (filterRest: boolean, f: () => [Round, Pattern]): [Round, Pattern] => {
+  const applyFilters = (
+    filterRest: boolean,
+    filterSlotSwitchers: boolean,
+    filterUncommonRoles: boolean,
+    filterUncommonShapes: boolean,
+    f: () => [Round, Pattern]
+  ): [Round, Pattern] => {
     for (let i = 0; i < 1000; i++) {
       const [pattern, round] = f();
       if (filterRest && !doesEveryoneGetRest(pattern, round)) {
+        continue;
+      }
+      if (filterSlotSwitchers && pattern.length == round.length) {
+        continue;
+      }
+      if (filterUncommonRoles && !doesRoundContainUncommonRoles(pattern, round)) {
+        continue;
+      }
+      if (filterUncommonShapes && !doesRoundContainUncommonShape(pattern, round)) {
         continue;
       }
       return [pattern, round];
@@ -1247,9 +1474,21 @@ const App = () => {
     return includedFormations.filter((formation) => usages[formation] == smallestCount);
   };
 
-  const randomRoundMultipleTries = (draw: Array<EngineeredRound | RoundError>, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean): EngineeredRound | RoundError => {
+  const randomRoundMultipleTries = (
+    draw: Array<EngineeredRound | RoundError>,
+    roundLength: number,
+    includedFormations: Array<FormationId>,
+    filterRest: boolean,
+    filterSlotSwitchers: boolean,
+    filterUncommonRoles: boolean,
+    filterUncommonShapes: boolean,
+  ): EngineeredRound | RoundError => {
     const firstTry = rerunOne(() =>
-      randomRound(availablePoolFromDraw(draw), includedFormations, roundLength), filterRest
+      randomRound(availablePoolFromDraw(draw), includedFormations, roundLength),
+      filterRest,
+      filterSlotSwitchers,
+      filterUncommonRoles,
+      filterUncommonShapes,
     );
     if ((firstTry as RoundError).error === undefined) {
       return firstTry;
@@ -1258,11 +1497,21 @@ const App = () => {
     // If there was an error with the first try,
     // give it one more attempt, with the whole dive pool available
     return rerunOne(() =>
-      randomRound([], includedFormations, roundLength)
-      , filterRest);
+      randomRound([], includedFormations, roundLength),
+      filterRest,
+      filterSlotSwitchers,
+      filterUncommonRoles,
+      filterUncommonShapes,
+    );
   };
 
-  const rerunOne = (round: Round | (() => Round), filterRest: boolean): EngineeredRound | RoundError => {
+  const rerunOne = (
+    round: Round | (() => Round),
+    filterRest: boolean,
+    filterSlotSwitchers: boolean,
+    filterUncommonRoles: boolean,
+    filterUncommonShapes: boolean,
+  ): EngineeredRound | RoundError => {
     try {
       let pattern: Pattern;
       if (Array.isArray(round)) {
@@ -1270,11 +1519,17 @@ const App = () => {
         [pattern] = optimizeEngineering(round);
       } else {
         // round is a function
-        [round, pattern] = applyFilters(filterRest, () => {
-          const genRound = (round as () => Round)();
-          [pattern] = optimizeEngineering(genRound);
-          return [genRound, pattern];
-        });
+        [round, pattern] = applyFilters(
+          filterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+          () => {
+            const genRound = (round as () => Round)();
+            [pattern] = optimizeEngineering(genRound);
+            return [genRound, pattern];
+          }
+        );
       }
       const { alternateFormations, alternateEngineering } = findAlternatives(round, pattern);
       return { round, pattern, alternateFormations, alternateEngineering };
@@ -1289,7 +1544,11 @@ const App = () => {
         (engRound as EngineeredRound).round.map((formation, j) =>
           j == formationNum ? newFormationId : formation
         ),
-        filterRest) : engRound)
+        filterRest,
+        filterSlotSwitchers,
+        filterUncommonRoles,
+        filterUncommonShapes,
+      ) : engRound)
     );
     setNewHistoryEntry(true);
   };
@@ -1300,7 +1559,10 @@ const App = () => {
         (engRound as EngineeredRound).round.filter((_, j) =>
           j != formationNum
         ),
-        filterRest
+        filterRest,
+        filterSlotSwitchers,
+        filterUncommonRoles,
+        filterUncommonShapes,
       ) : engRound)
     );
     setNewHistoryEntry(true);
@@ -1312,7 +1574,13 @@ const App = () => {
         const roundF = () =>
           [...(engRound as EngineeredRound).round, ...randomRound(availablePoolFromDraw(draw), includedFormations, 1)];
         // Passing a function into rerunOne will cause it to enforce filters
-        const result = rerunOne(roundF, filterRest);
+        const result = rerunOne(
+          roundF,
+          filterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+        );
         if ((result as RoundError).error === undefined) {
           return result;
         }
@@ -1320,13 +1588,25 @@ const App = () => {
         // If there was an error (unsatisfiable filters) then try once more with the whole dive pool available
         const roundF2 = () =>
           [...(engRound as EngineeredRound).round, ...randomRound([], includedFormations, 1)];
-        const result2 = rerunOne(roundF2, filterRest);
+        const result2 = rerunOne(
+          roundF2,
+          filterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+        );
         if ((result2 as RoundError).error === undefined) {
           return result2;
         }
 
         // If there was still an error, pass an array, which will always succeed but will not abide by any filters
-        return rerunOne(roundF(), filterRest);
+        return rerunOne(
+          roundF(),
+          filterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+        );
       } else {
         return engRound;
       }
@@ -1384,7 +1664,16 @@ const App = () => {
     setNewHistoryEntry(true);
   };
 
-  const reRandomizeSome = (oldDraw: Array<EngineeredRound | RoundError>, numRounds: number, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean) => {
+  const reRandomizeSome = (
+    oldDraw: Array<EngineeredRound | RoundError>,
+    numRounds: number,
+    roundLength: number,
+    includedFormations: Array<FormationId>,
+    filterRest: boolean,
+    filterSlotSwitchers: boolean,
+    filterUncommonRoles: boolean,
+    filterUncommonShapes: boolean,
+  ) => {
     // The number of rounds has changed--shorten the list, or rerun the missing rounds
     if (numRounds < oldDraw.length) {
       setDraw(oldDraw.slice(0, numRounds));
@@ -1392,7 +1681,15 @@ const App = () => {
       const newDraw = [...oldDraw, ...Array.from({ length: numRounds - oldDraw.length }, () => ({ error: "Waiting to be generated..." }))];
 
       for (let i = oldDraw.length; i < numRounds; i++) {
-        newDraw[i] = randomRoundMultipleTries(newDraw, roundLength, includedFormations, filterRest);
+        newDraw[i] = randomRoundMultipleTries(
+          newDraw,
+          roundLength,
+          includedFormations,
+          filterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+        );
       }
 
       setDraw(newDraw);
@@ -1400,11 +1697,27 @@ const App = () => {
     setNewHistoryEntry(true);
   };
 
-  const reRandomizeAll = (numRounds: number, roundLength: number, includedFormations: Array<FormationId>, filterRest: boolean) => {
+  const reRandomizeAll = (
+    numRounds: number,
+    roundLength: number,
+    includedFormations: Array<FormationId>,
+    filterRest: boolean,
+    filterSlotSwitchers: boolean,
+    filterUncommonRoles: boolean,
+    filterUncommonShapes: boolean,
+  ) => {
     const newDraw: Array<EngineeredRound | RoundError> = Array.from({ length: numRounds - draw.length }, () => ({ error: "Waiting to be generated..." }));
 
     for (let i = 0; i < numRounds; i++) {
-      newDraw[i] = randomRoundMultipleTries(newDraw, roundLength, includedFormations, filterRest);
+      newDraw[i] = randomRoundMultipleTries(
+        newDraw,
+        roundLength,
+        includedFormations,
+        filterRest,
+        filterSlotSwitchers,
+        filterUncommonRoles,
+        filterUncommonShapes,
+      );
     }
 
     setDraw(newDraw);
@@ -1415,7 +1728,15 @@ const App = () => {
       // User has changed the hash--deserialize
       if (hash === null) { return; }
       if (hash === "") {
-        reRandomizeAll(numRounds, roundLength, includedFormations, filterRest);
+        reRandomizeAll(
+          numRounds,
+          roundLength,
+          includedFormations,
+          filterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+        );
       } else {
         try {
           deserialize(hash, {
@@ -1423,7 +1744,15 @@ const App = () => {
           });
         } catch (e) {
           setError("Could not load draw from URL: " + e);
-          reRandomizeAll(numRounds, roundLength, includedFormations, filterRest);
+          reRandomizeAll(
+            numRounds,
+            roundLength,
+            includedFormations,
+            filterRest,
+            filterSlotSwitchers,
+            filterUncommonRoles,
+            filterUncommonShapes,
+          );
           setNewHistoryEntry(true);
         }
       }
@@ -1451,12 +1780,18 @@ const App = () => {
     setRoundLength,
     setIncludedFormations,
     setFilterRest,
+    setFilterSlotSwitchers,
+    setFilterUncommonRoles,
+    setFilterUncommonShapes,
     setNumRounds,
     setLockRotation,
     setDraw,
     roundLength,
     includedFormations,
     filterRest,
+    filterSlotSwitchers,
+    filterUncommonRoles,
+    filterUncommonShapes,
     lockRotation,
     draw,
     newHistoryEntry,
@@ -1529,15 +1864,35 @@ const App = () => {
       includedFormations={includedFormations}
       setCompClassParameters={setCompClassParameters}
       filterRest={filterRest} setFilterRest={setFilterRest}
+      filterSlotSwitchers={filterSlotSwitchers} setFilterSlotSwitchers={setFilterSlotSwitchers}
+      filterUncommonRoles={filterUncommonRoles} setFilterUncommonRoles={setFilterUncommonRoles}
+      filterUncommonShapes={filterUncommonShapes} setFilterUncommonShapes={setFilterUncommonShapes}
       numRounds={numRounds} setNumRounds={setNumRounds}
       reRandomizeAll={reRandomizeAll}
-      reRandomizeSome={(numRounds, roundLength, includedFormations, filterRest) => reRandomizeSome(draw, numRounds, roundLength, includedFormations, filterRest)}
+      reRandomizeSome={(numRounds, roundLength, includedFormations, filterRest) => reRandomizeSome(
+        draw,
+        numRounds,
+        roundLength,
+        includedFormations,
+        filterRest,
+        filterSlotSwitchers,
+        filterUncommonRoles,
+        filterUncommonShapes,
+      )}
       setNewHistoryEntry={setNewHistoryEntry}
     />
     <div className="rerun-container">
       <h2>Results</h2>
       <RerunButton onClick={() => {
-        reRandomizeAll(numRounds, roundLength, includedFormations, filterRest);
+        reRandomizeAll(
+          numRounds,
+          roundLength,
+          includedFormations,
+          filterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+        );
         setNewHistoryEntry(true);
       }} />
       <a href=""
@@ -1555,7 +1910,20 @@ const App = () => {
       draw={draw}
       lockRotation={lockRotation}
       reRandomizeOne={(roundNum) => {
-        setDraw(draw.map((orig, i) => i == roundNum ? randomRoundMultipleTries(draw.filter((_, j) => j != roundNum), roundLength, includedFormations, filterRest) : orig));
+        setDraw(draw.map(
+          (orig, i) =>
+            i == roundNum
+              ? randomRoundMultipleTries(
+                draw.filter((_, j) => j != roundNum),
+                roundLength,
+                includedFormations,
+                filterRest,
+                filterSlotSwitchers,
+                filterUncommonRoles,
+                filterUncommonShapes,
+              )
+              : orig
+        ));
         setNewHistoryEntry(true);
       }}
       changeFormation={changeFormation}
