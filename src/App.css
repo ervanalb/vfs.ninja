@@ -260,11 +260,11 @@ body {
   margin-bottom: 1rem;
 }
 
-.round .pic-inner-container {
+.round .pic-inner-container, .dive-pool-horizontal .pic-inner-container  {
   flex-direction: row;
 }
 
-.round .pic-sep {
+.round .pic-sep, .dive-pool-horizontal .pic-sep {
   border-right: 1px solid var(--bs-gray-300);
   border-bottom: none;
   margin: 10px 0;
@@ -309,7 +309,7 @@ body {
   color: var(--bs-red);
 }
 
-.formation-picker {
+.formation-picker, .dive-pool, .dive-pool-horizontal {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -362,3 +362,24 @@ body {
 .col-form-label {
   font-weight: bold;
 }
+
+.dive-pool, .dive-pool-horizontal {
+  margin: 16px;
+  justify-content: flex-start;
+}
+
+@media print {
+  .no-print {
+    display: none;
+  }
+}
+
+.comp-class-container {
+  display: flex;
+  gap: 16px;
+  justify-items: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+}
+

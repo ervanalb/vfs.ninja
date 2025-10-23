@@ -7,14 +7,16 @@ import {
   Route,
 } from "react-router";
 import './App.css';
-import App from './App.tsx'
 import About from './About.tsx'
+import Pool from './Pool.tsx'
+import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/about" element={<About />} />
+        <Route path="/pool" element={<Pool />} />
         <Route path="/" element={<App />} />
       </Routes>
     </BrowserRouter>
