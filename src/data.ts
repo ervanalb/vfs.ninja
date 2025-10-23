@@ -329,10 +329,10 @@ const engineeringP: Record<string, RandomEngineering> = {
 const engineeringQ: Record<string, RandomEngineering> = {
   x1: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picQX1, commonShape: true, commonRoles: true },
   x2: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picQX2, commonShape: true, commonRoles: false },
-  p1: { start: ["HU", "HU", "HD", "HDO"], priority: 3, pic: picQP1, commonShape: false, commonRoles: true },
-  p2: { start: ["HU", "HU", "HDO", "HD"], priority: 4, pic: picQP2, commonShape: false, commonRoles: false },
-  p3: { start: ["HD", "HDO", "HU", "HU"], priority: 5, pic: picQP3, commonShape: false, commonRoles: false },
-  p4: { start: ["HDO", "HD", "HU", "HU"], priority: 6, pic: picQP4, commonShape: false, commonRoles: false },
+  p1: { start: ["HU", "HU", "HDO", "HD"], priority: 3, pic: picQP1, commonShape: false, commonRoles: true },
+  p2: { start: ["HU", "HU", "HD", "HDO"], priority: 4, pic: picQP2, commonShape: false, commonRoles: false },
+  p3: { start: ["HDO", "HD", "HU", "HU"], priority: 5, pic: picQP3, commonShape: false, commonRoles: false },
+  p4: { start: ["HD", "HDO", "HU", "HU"], priority: 6, pic: picQP4, commonShape: false, commonRoles: false },
 } as const;
 
 const engineering1: Record<string, BlockEngineering> = {
