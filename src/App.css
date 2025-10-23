@@ -358,3 +358,7 @@ body {
   border-radius: var(--bs-border-radius);
   padding: 8px;
 }
+
+.col-form-label {
+  font-weight: bold;
+}

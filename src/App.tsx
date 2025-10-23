@@ -1080,10 +1080,13 @@ const RerunButton: React.FC<RerunButtonProps> = ({ onClick }) => {
   }}><img className={spinning ? "spin" : ""} src={rerun} /></button>
 };
 
-const serialize = ({ includedFormations, roundLength, filterRest, lockRotation, draw }: {
+const serialize = ({ includedFormations, roundLength, filterRest, filterSlotSwitchers, filterUncommonRoles, filterUncommonShapes, lockRotation, draw }: {
   includedFormations: Array<FormationId>,
   roundLength: number,
   filterRest: boolean,
+  filterSlotSwitchers: boolean,
+  filterUncommonRoles: boolean,
+  filterUncommonShapes: boolean,
   lockRotation: boolean,
   draw: Array<EngineeredRound | RoundError>,
 }): string => {
@@ -1091,6 +1094,9 @@ const serialize = ({ includedFormations, roundLength, filterRest, lockRotation, 
   const compClass = computeCompClass(roundLength, includedFormations);
   const compClassString = compClass == "custom" ? "custom(" + roundLength + "," + includedFormations.join(",") + ")" : compClass;
   const filterRestString = filterRest ? "r" : "";
+  const filterSlotSwitchersString = filterSlotSwitchers ? "ss" : "";
+  const filterUncommonRolesString = filterUncommonRoles ? "ur" : "";
+  const filterUncommonShapesString = filterUncommonShapes ? "us" : "";
   const lockRotationString = lockRotation ? "l" : "";
 
   const drawString = draw.map((engRound) => {
@@ -1109,7 +1115,7 @@ const serialize = ({ includedFormations, roundLength, filterRest, lockRotation, 
     }
   }).join(",");
 
-  return "v1," + compClassString + "," + filterRestString + "," + lockRotationString + "," + drawString;
+  return "v2," + compClassString + "," + filterRestString + "," + filterSlotSwitchersString + "," + filterUncommonRolesString + "," + filterUncommonShapesString + "," + lockRotationString + "," + drawString;
 };
 
 const deserialize = (
@@ -1117,12 +1123,18 @@ const deserialize = (
   {
     setCompClassParameters,
     setFilterRest,
+    setFilterSlotSwitchers,
+    setFilterUncommonRoles,
+    setFilterUncommonShapes,
     setNumRounds,
     setLockRotation,
     setDraw,
   }: {
     setCompClassParameters: (roundLength: number, includedFormations: Array<FormationId>, rerun?: false) => void,
     setFilterRest: (filterRest: boolean) => void,
+    setFilterSlotSwitchers: (filterSlotSwitchers: boolean) => void,
+    setFilterUncommonRoles: (filterUncommonRoles: boolean) => void,
+    setFilterUncommonShapes: (filterUncommonShapes: boolean) => void,
     setNumRounds: (numRounds: number) => void,
     setLockRotation: (lockRotation: boolean) => void,
     setDraw: (draw: Array<EngineeredRound | RoundError>) => void,
@@ -1152,7 +1164,7 @@ const deserialize = (
 
   const version = parseUntil(",");
   popOff(",");
-  if (version != "v1") {
+  if (version != "v2") {
     throw "Incorrect version";
   }
 
@@ -1189,6 +1201,36 @@ const deserialize = (
     setFilterRest(false);
   } else {
     throw "Bad filter rest value"
+  }
+
+  const filterSlotSwitchersStr = parseUntil(",");
+  popOff(",");
+  if (filterSlotSwitchersStr == "ss") {
+    setFilterSlotSwitchers(true);
+  } else if (filterSlotSwitchersStr == "") {
+    setFilterSlotSwitchers(false);
+  } else {
+    throw "Bad filter slot switchers value"
+  }
+
+  const filterUncommonRolesStr = parseUntil(",");
+  popOff(",");
+  if (filterUncommonRolesStr == "ur") {
+    setFilterUncommonRoles(true);
+  } else if (filterUncommonRolesStr == "") {
+    setFilterUncommonRoles(false);
+  } else {
+    throw "Bad filter uncommon roles value"
+  }
+
+  const filterUncommonShapesStr = parseUntil(",");
+  popOff(",");
+  if (filterUncommonShapesStr == "us") {
+    setFilterUncommonShapes(true);
+  } else if (filterUncommonShapesStr == "") {
+    setFilterUncommonShapes(false);
+  } else {
+    throw "Bad filter uncommon shapes value"
   }
 
   const lockRotationStr = parseUntil(",");
@@ -1353,11 +1395,16 @@ const aboutHtml = <>
   </p>
 
   <h4>Changelog</h4>
-  <h5>v1.3</h5>
+  <h5>v2.0</h5>
   <em>2025-XX-XX</em>
   <ul>
     <li>Add piece-partner variant of block 10</li>
-    <li>Optimizer now weights HU cross-body grips the same as regular HU grips</li>
+    <li>Rename piece partner variants of random Q</li>
+    <li>Add ability to manually enter a draw</li>
+    <li>Introduce additional modifiers: slot switchers, uncommon roles, uncommon shapes</li>
+    <li>Fix browser navigation (back / forward button should work more reliably)</li>
+    <li>Change optimizer behavior slightly</li>
+    <li>Minor fixes to random selection process</li>
   </ul>
   <h5>v1.2</h5>
   <em>2025-03-01</em>
@@ -1740,7 +1787,14 @@ const App = () => {
       } else {
         try {
           deserialize(hash, {
-            setCompClassParameters, setFilterRest, setNumRounds, setLockRotation, setDraw
+            setCompClassParameters,
+            setFilterRest,
+            setFilterSlotSwitchers,
+            setFilterUncommonRoles,
+            setFilterUncommonShapes,
+            setNumRounds,
+            setLockRotation,
+            setDraw,
           });
         } catch (e) {
           setError("Could not load draw from URL: " + e);
@@ -1759,7 +1813,16 @@ const App = () => {
       setDeserializeTrigger(false);
     } else {
       if (draw.length > 0) {
-        const newHash = serialize({ roundLength, includedFormations, filterRest, lockRotation, draw: draw });
+        const newHash = serialize({
+          roundLength,
+          includedFormations,
+          filterRest,
+          filterSlotSwitchers,
+          filterUncommonRoles,
+          filterUncommonShapes,
+          lockRotation,
+          draw: draw,
+        });
 
         if (hash !== newHash) {
           setHash(newHash);
@@ -1834,7 +1897,7 @@ const App = () => {
 
   const visualizationOptions = <Form.Group className="mb-3 mx-3">
     <div className="col-form-label">Visualization:</div>
-    <div className="form-check">
+    <div className="form-check mx-3">
       <input
         className="form-check-input"
         type="checkbox"
@@ -1973,7 +2036,8 @@ const App = () => {
     <Modal show={error !== null} onHide={() => { setError(null); }}>
       <Modal.Header closeButton><Modal.Title>Error</Modal.Title></Modal.Header>
       <Modal.Body>
-        {error}
+        <p>{error}</p>
+        <p><em>If you have bookmarked this address, consider changing it to <a href="https://vfs.ninja">https://vfs.ninja</a> (with no "#...")</em></p>
       </Modal.Body>
     </Modal>
   </>
