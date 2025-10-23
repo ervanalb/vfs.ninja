@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
 import Modal from 'react-bootstrap/Modal';
 import Figure from 'react-bootstrap/Figure';
+import Button from 'react-bootstrap/Button';
 import rerun from './icons/rerun.svg';
 import close from './icons/close.svg';
 import plus from './icons/plus.svg';
@@ -38,6 +39,10 @@ type EngineeredRound = {
 };
 
 type RoundError = {
+  error: string;
+}
+
+type ManualEntryError = {
   error: string;
 }
 
@@ -326,6 +331,84 @@ const computeCompClass = (roundLength: number, includedFormations: Array<Formati
   return computedCompClass;
 };
 
+const serializeManualEntry = (draw: Array<EngineeredRound | RoundError>): string => {
+  return draw.map((engRound) => {
+    if ((engRound as RoundError).error) {
+      return (engRound as RoundError).error;
+    } else {
+      return (engRound as EngineeredRound).round.map((formation) => formation.toUpperCase()).join("-");
+    }
+  }).join("\n");
+};
+
+const deserializeManualEntry = (manualEntry: string, draw: Array<EngineeredRound | RoundError>): Array<EngineeredRound> | ManualEntryError => {
+  const errors: Array<string> = [];
+  let manualEntryRounds = manualEntry.trim().split("\n");
+  const rounds = manualEntryRounds.map((manualEntryRound, roundNum) => {
+    let manualEntryFormations = manualEntryRound.trim().split(/[^A-Za-z0-9]+/);
+    const round = manualEntryFormations.map((formation) => {
+      if (formation.length == 0) {
+        return null;
+      }
+      const formationId = formation.toLowerCase();
+      if (!formations[formationId]) {
+        errors.push(`Round ${roundNum + 1}: unknown formation ${formation}`);
+        return "";
+      }
+      return formationId;
+    }).filter((formation) => formation !== null);
+
+    if (round.length == 0) {
+      errors.push(`Round ${roundNum + 1} is empty`);
+    }
+    return round;
+  });
+
+  if (errors.length > 0) {
+    return { error: errors.join("\n") };
+  }
+
+  const newDraw = rounds.map((roundOrNull, roundNum) => {
+    const round = roundOrNull as Array<FormationId>; // Null entries will have generated errors
+
+    // See if the manually entered round matches the existing round in the draw.
+    // If so, we will preserve the user's custom engineering
+    let roundsEqual = true;
+    if (roundNum >= draw.length) {
+      roundsEqual = false;
+    } else {
+      let existingRoundOrError = draw[roundNum];
+      if ((existingRoundOrError as RoundError).error) {
+        roundsEqual = false;
+      } else {
+        let existingRound = (existingRoundOrError as EngineeredRound).round;
+        if (existingRound.length != round.length) {
+          roundsEqual = false;
+        } else {
+          for (let i = 0; i < round.length; i++) {
+            if (existingRound[i] != round[i]) {
+              roundsEqual = false;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (roundsEqual) {
+      // Preserve engineering
+      return draw[roundNum] as EngineeredRound;
+    } else {
+      // Calculate new engineering
+      const [pattern] = optimizeEngineering(round);
+      const { alternateFormations, alternateEngineering } = findAlternatives(round, pattern);
+      return { round, pattern, alternateFormations, alternateEngineering };
+    }
+  });
+
+  return newDraw;
+};
+
 type PicProps = {
   formationId: FormationId,
   formationEngId?: EngineeringId,
@@ -577,8 +660,8 @@ const Setup: React.FC<SetupProps> = ({ compClass, setCompClass, roundLength, inc
   return (
     <form>
       {compClassSelector}
-      {filters}
       {numRoundsSelector}
+      {filters}
     </form>
   );
 };
@@ -715,7 +798,7 @@ const Draw: React.FC<DrawProps> = ({ draw, lockRotation, reRandomizeOne, changeF
           const engId = pattern[i];
           const relCost = alternateEngineering[i].find((alt) => (alt[0] == engId))?.[1] as number;
           const result = <Pic
-            key={formationId}
+            key={formationNum}
             onClick={() => formationPickerShow(roundNum, i)}
             formationId={formationId}
             formationEngId={engId}
@@ -1121,6 +1204,9 @@ const App = () => {
   const [newHistoryEntry, setNewHistoryEntry] = useState<boolean>(false);
   const [aboutShown, setAboutShown] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [manualEntryShown, setManualEntryShown] = useState<boolean>(false);
+  const [manualEntry, setManualEntry] = useState<string>("");
+  const [manualEntryError, setManualEntryError] = useState<string>("");
 
   const setCompClassParameters = (newRoundLength: number, newIncludedFormations: Array<FormationId>) => {
     const computedCompClass: CompClassId | "custom" = computeCompClass(newRoundLength, newIncludedFormations);
@@ -1398,6 +1484,19 @@ const App = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setManualEntry(serializeManualEntry(draw));
+  }, [draw, setManualEntry]);
+
+  useEffect(() => {
+    const result = deserializeManualEntry(manualEntry, draw);
+    if ((result as ManualEntryError).error) {
+      setManualEntryError((result as ManualEntryError).error);
+    } else {
+      setManualEntryError("");
+    }
+  }, [manualEntry, setManualEntryError]);
+
   const visualizationOptions = <Form.Group className="mb-3 mx-3">
     <div className="col-form-label">Visualization:</div>
     <div className="form-check">
@@ -1441,6 +1540,15 @@ const App = () => {
         reRandomizeAll(numRounds, roundLength, includedFormations, filterRest);
         setNewHistoryEntry(true);
       }} />
+      <a href=""
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setManualEntryShown(true);
+        }}
+      >
+        Manual Entry
+      </a>
     </div>
     {visualizationOptions}
     <Draw
@@ -1462,6 +1570,38 @@ const App = () => {
         {aboutHtml}
       </Modal.Body>
     </Modal>
+    <Modal show={manualEntryShown} onHide={() => { setManualEntryShown(false); }}>
+      <Modal.Header closeButton><Modal.Title>Manual Entry</Modal.Title></Modal.Header>
+      <Modal.Body>
+        <p>
+          <Form.Control
+            as="textarea"
+            rows={10}
+            value={manualEntry}
+            onChange={(event) => setManualEntry(event.target.value)}
+          />
+        </p>
+        {
+          manualEntryError
+            ? <ul className="error">{manualEntryError.split("\n").map((line, i) => <li key={i}>{line}</li>)}</ul>
+            : null
+        }
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => { setManualEntryShown(false); }}>Cancel</Button>
+        <Button variant="primary" disabled={!!manualEntryError} onClick={() => {
+          const newDrawOrError = deserializeManualEntry(manualEntry, draw);
+          if ((newDrawOrError as ManualEntryError).error) {
+          } else {
+            const newDraw = newDrawOrError as Array<EngineeredRound | RoundError>;
+            setDraw(newDraw);
+            setNumRounds(newDraw.length);
+            setNewHistoryEntry(true);
+            setManualEntryShown(false);
+          }
+        }}>Ok</Button>
+      </Modal.Footer>
+    </Modal >
     <Modal show={error !== null} onHide={() => { setError(null); }}>
       <Modal.Header closeButton><Modal.Title>Error</Modal.Title></Modal.Header>
       <Modal.Body>
