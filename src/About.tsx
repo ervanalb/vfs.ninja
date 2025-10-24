@@ -1,4 +1,5 @@
 import Figure from 'react-bootstrap/Figure';
+import { Title } from './lib.tsx';
 import picHIba from './about/h_iba.png';
 import picHP1 from './pics/h_p1.svg';
 import picHP2 from './pics/h_p2.svg';
@@ -7,7 +8,7 @@ import pic7V1 from './pics/7_v1.svg';
 import pic7Lh from './about/7_lh.svg';
 
 const About = () => <>
-  <h1>vfs.ninja - about</h1>
+  <Title subpage="About" />
   <h4>What is 4-way VFS?</h4>
   <p>
     4-way vertical formation skydiving (VFS) is a competitive skydiving discipline where a team of 4 fliers attempts to build a sequence of formations as quickly as possible.
@@ -113,6 +114,7 @@ const About = () => <>
     <li>Add piece-partner variant of block 10</li>
     <li>Rename piece partner variants of random Q</li>
     <li>Add ability to manually enter a draw</li>
+    <li>Add option to view the dive pool</li>
     <li>Introduce additional modifiers: slot switchers, uncommon roles, uncommon shapes</li>
     <li>Fix browser navigation (back / forward button should work more reliably)</li>
     <li>Change optimizer behavior slightly</li>

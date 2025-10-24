@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { formations, costMatrix, FormationId, Position, CompClassId, compClasses, EngineeringId, SlotSwitch } from './data.ts';
-import { initialCompClass, resetRotation, slotSwitchCombine, formationsInCompClass, Pic } from './lib.tsx';
+import { initialCompClass, resetRotation, slotSwitchCombine, formationsInCompClass, Pic, Title } from './lib.tsx';
 import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
 import Modal from 'react-bootstrap/Modal';
@@ -545,35 +545,39 @@ const Setup: React.FC<SetupProps> = ({
     <label htmlFor="classSelector" className="col-form-label">
       Class:
     </label>
-    <div className="col-sm-3">
-      <div className="comp-class-container">
+    <div className="row align-items-center">
+      <div className="col-sm-4">
         <select className="form-select" id="classSelector" aria-label="Class Selector" value={compClass} onChange={handleCompClassChange}>
           {compClassOptions}
           <option value="custom">Custom</option>
         </select>
+      </div>
+      <div className="col-auto my-1">
         {compClass !== "custom"
-          ? <a href={`/pool#v1,${compClass},,,`}>
+          ? <a target="_blank" href={`/pool#v1,${compClass},1,m,,`}>
             View dive pool
           </a>
-          : null
+          : <div className="disabled-link">View dive pool</div>
         }
       </div>
+      <div className="col-auto my-1">
+        <a href=""
+          onClick={handleToggleCustomPool}
+          className={"custom-collapse-header" + (customPoolVisible ? "" : " collapsed")}
+          aria-controls="collapseCustomPool"
+          aria-expanded={customPoolVisible}
+        >
+          Customize
+        </a>
+      </div>
     </div>
-    <a href=""
-      onClick={handleToggleCustomPool}
-      className={"custom-collapse-header" + (customPoolVisible ? "" : " collapsed")}
-      aria-controls="collapseCustomPool"
-      aria-expanded={customPoolVisible}
-    >
-      Customize
-    </a>
-    <Collapse in={customPoolVisible}>
+    <Collapse in={customPoolVisible} className="my-3">
       <div className="custom-card">
         <Form.Group className="mb-3 mx-3">
           <label htmlFor="roundLengthSelector" className="col-form-label">
             Round length:
           </label>
-          <div className="col-sm-3">
+          <div className="col-sm-4">
             <select className="form-select" id="roundLengthSelector" aria-label="Round Length Selector" value={roundLength} onChange={handleRoundLengthChange}>
               <option value="1">1-2</option>
               <option value="2">2-3</option>
@@ -717,19 +721,21 @@ const Setup: React.FC<SetupProps> = ({
       <label htmlFor="numRoundsSelector" className="col-form-label">
         Rounds:
       </label>
-      <div className="col-sm-3">
-        <select className="form-select" id="numRoundsSelector" aria-label="Round Length Selector" value={numRounds} onChange={handleNumRoundsChange}>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-        </select>
+      <div className="row">
+        <div className="col-sm-4">
+          <select className="form-select" id="numRoundsSelector" aria-label="Round Length Selector" value={numRounds} onChange={handleNumRoundsChange}>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+        </div>
       </div>
     </Form.Group>;
 
@@ -1486,9 +1492,9 @@ const App = () => {
   };
 
   useEffect(() => {
+    if (hash === null) { return; }
     if (deserializeTrigger) {
       // User has changed the hash--deserialize
-      if (hash === null) { return; }
       if (hash === "") {
         reRandomizeAll(
           numRounds,
@@ -1631,8 +1637,8 @@ const App = () => {
 
   return <>
     <div className="title-container">
-      <h1>vfs.ninja - draw generator</h1>
-      <a href="/about">
+      <Title subpage="Draw Generator" />
+      <a target="_blank" href="/about">
         <img src={about} />
       </a>
     </div>

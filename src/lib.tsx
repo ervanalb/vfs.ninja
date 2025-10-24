@@ -136,3 +136,14 @@ export const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitc
   }
 };
 
+type TitleProps = {
+  subpage?: string,
+}
+
+export const Title: React.FC<TitleProps> = ({ subpage }) => {
+  let subpageText: string | null = null;
+  if (subpage) {
+    subpageText = " - " + subpage;
+  }
+  return <h1><a href="/">vfs.ninja</a>{subpageText}</h1>;
+};

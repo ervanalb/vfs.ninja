@@ -2,21 +2,6 @@ body {
   margin: 8px;
 }
 
-.form-container {
-  padding: 8px;
-  margin: 8px;
-  border: 1px solid var(--bs-gray-500);
-  border-radius: var(--bs-border-radius);
-  background-color: var(--bs-white);
-  display: inline-block;
-}
-
-.custom-collapse-header {
-  display: block;
-  padding-top: calc(.375rem + var(--bs-border-width));
-  padding-bottom: calc(.375rem + var(--bs-border-width));
-}
-
 .custom-collapse-header::after {
   content: "";
   display: inline-block;
@@ -86,6 +71,7 @@ body {
   border-radius: var(--bs-border-radius);
   position: relative;
   color: var(--bs-body-color);
+  break-inside: avoid;
 }
 
 @media (max-height: 500px) or (max-width: 800px) {
@@ -110,7 +96,7 @@ body {
   z-index: 1;
 }
 
-.pic-ename-overlay {
+.pic-ename-overlay, .pic-alt-overlay {
   padding: 8px;
   position: absolute;
   font-size: 12px;
@@ -119,6 +105,7 @@ body {
   pointer-events: none;
   z-index: 1;
 }
+
 .pic-ename-overlay img {
   width: 12px;
   height: 12px;
@@ -143,14 +130,9 @@ body {
 }
 
 .pic-alt-overlay {
-  padding: 8px;
-  position: absolute;
-  font-size: 10px;
   font-weight: bold;
+  right: auto;
   left: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 1;
 }
 
 .extend-round {
@@ -183,7 +165,7 @@ body {
     font-size: 12pt;
   }
 
-  .pic-ename-overlay {
+  .pic-ename-overlay, .pic-alt-overlay {
     padding: 4px;
     font-size: 8pt;
   }
@@ -260,11 +242,11 @@ body {
   margin-bottom: 1rem;
 }
 
-.round .pic-inner-container, .dive-pool-horizontal .pic-inner-container  {
+.round .pic-inner-container, .dive-pool.horizontal .pic-inner-container  {
   flex-direction: row;
 }
 
-.round .pic-sep, .dive-pool-horizontal .pic-sep {
+.round .pic-sep, .dive-pool.horizontal .pic-sep {
   border-right: 1px solid var(--bs-gray-300);
   border-bottom: none;
   margin: 10px 0;
@@ -309,7 +291,7 @@ body {
   color: var(--bs-red);
 }
 
-.formation-picker, .dive-pool, .dive-pool-horizontal {
+.formation-picker, .dive-pool {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -363,7 +345,7 @@ body {
   font-weight: bold;
 }
 
-.dive-pool, .dive-pool-horizontal {
+.dive-pool {
   margin: 16px;
   justify-content: flex-start;
 }
@@ -374,6 +356,49 @@ body {
   }
 }
 
+.dive-pool.small .pic, .dive-pool.small .pic-start, .dive-pool.small .pic-inter, .dive-pool.small .pic-end {
+  width: 90px;
+}
+
+.dive-pool.small .pic-fname-overlay {
+  padding: 0 4px;
+  font-size: 12pt;
+}
+
+.dive-pool.small .pic-ename-overlay, .dive-pool.small .pic-alt-overlay {
+  padding: 4px;
+  font-size: 8pt;
+}
+
+.dive-pool.medium .pic, .dive-pool.medium .pic-start, .dive-pool.medium .pic-inter, .dive-pool.medium .pic-end {
+  width: 140px;
+}
+
+.dive-pool.medium .pic-fname-overlay {
+  padding: 0 8px;
+  font-size: 24pt;
+}
+
+.dive-pool.medium .pic-ename-overlay, .dive-pool.medium .pic-alt-overlay {
+  padding: 8px;
+  font-size: 12pt;
+}
+
+.dive-pool.large .pic, .dive-pool.large .pic-start, .dive-pool.large .pic-inter, .dive-pool.large .pic-end {
+  width: 290px;
+}
+
+.dive-pool.large .pic-fname-overlay {
+  padding: 0 16px;
+  font-size: 32pt;
+}
+
+.dive-pool.large .pic-ename-overlay, .dive-pool.large .pic-alt-overlay  {
+  padding: 16px;
+  font-size: 18pt;
+}
+
+/*
 .comp-class-container {
   display: flex;
   gap: 16px;
@@ -381,5 +406,14 @@ body {
   align-items: center;
   margin-bottom: 0.5rem;
   white-space: nowrap;
+}*/
+
+h1 {
+  font-size: 22pt;
 }
 
+.disabled-link {
+  color: var(--bs-gray-300);
+  text-decoration: underline;
+  cursor: default;
+}

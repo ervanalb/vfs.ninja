@@ -2,33 +2,40 @@ import { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 
 import { CompClassId, compClasses, formations } from './data.ts';
-import { initialCompClass, formationsInCompClass, Pic } from './lib.tsx';
+import { initialCompClass, formationsInCompClass, Pic, Title } from './lib.tsx';
 
-const serialize = ({ compClass, allVariants, horizontal, lockRotation }: {
+type Size = "small" | "medium" | "large";
+type Variants = "oneVariant" | "variants" | "variantsAndAltSlots";
+
+const serialize = ({ compClass, variants, size, horizontal, lockRotation }: {
   compClass: CompClassId,
-  allVariants: boolean,
+  variants: Variants,
+  size: Size,
   horizontal: boolean,
   lockRotation: boolean,
 }): string => {
 
   const compClassString = compClass;
-  const allVariantsString = allVariants ? "a" : "";
+  const variantsString = { "oneVariant": "1", "variants": "v", "variantsAndAltSlots": "a" }[variants];
+  const sizeString = { "small": "s", "medium": "m", "large": "l" }[size];
   const horizontalString = horizontal ? "h" : "";
   const lockRotationString = lockRotation ? "l" : "";
 
-  return "v1," + compClassString + "," + allVariantsString + "," + horizontalString + "," + lockRotationString;
+  return "v1," + compClassString + "," + variantsString + "," + sizeString + "," + horizontalString + "," + lockRotationString;
 };
 
 const deserialize = (
   str: string,
   {
     setCompClass,
-    setAllVariants,
+    setVariants,
+    setSize,
     setHorizontal,
     setLockRotation,
   }: {
     setCompClass: (compClass: CompClassId) => void,
-    setAllVariants: (allVariants: boolean) => void,
+    setVariants: (variants: Variants) => void,
+    setSize: (size: Size) => void,
     setHorizontal: (horizontal: boolean) => void,
     setLockRotation: (lockRotation: boolean) => void,
   }) => {
@@ -69,14 +76,28 @@ const deserialize = (
   }
   setCompClass(compClassString);
 
-  const allVariantsStr = parseUntil(",");
+  const variantsStr = parseUntil(",");
   popOff(",");
-  if (allVariantsStr == "a") {
-    setAllVariants(true);
-  } else if (allVariantsStr == "") {
-    setAllVariants(false);
+  if (variantsStr == "1") {
+    setVariants("oneVariant");
+  } else if (variantsStr == "v") {
+    setVariants("variants");
+  } else if (variantsStr == "a") {
+    setVariants("variantsAndAltSlots");
   } else {
-    throw "Bad all variants value"
+    throw "Bad variants value"
+  }
+
+  const sizeStr = parseUntil(",");
+  popOff(",");
+  if (sizeStr == "s") {
+    setSize("small");
+  } else if (sizeStr == "m") {
+    setSize("medium");
+  } else if (sizeStr == "l") {
+    setSize("large");
+  } else {
+    throw "Bad size value"
   }
 
   const horizontalStr = parseUntil(",");
@@ -101,7 +122,8 @@ const deserialize = (
 
 const Pool = () => {
   const [compClass, setCompClass] = useState<CompClassId>(initialCompClass);
-  const [allVariants, setAllVariants] = useState<boolean>(false);
+  const [variants, setVariants] = useState<Variants>("oneVariant");
+  const [size, setSize] = useState<Size>("medium");
   const [horizontal, setHorizontal] = useState<boolean>(false);
   const [lockRotation, setLockRotation] = useState<boolean>(false);
   const [hash, setHash] = useState<string | null>(null);
@@ -129,23 +151,43 @@ const Pool = () => {
           <option value="custom">Custom</option>
         </select>
       </div>
-      <div className="form-check mx-3">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          checked={allVariants}
-          onChange={(e) => { setAllVariants(e.target.checked); setNewHistoryEntry(true); }}
-          id="checkAllVariants"
-        />
-        <label htmlFor="checkAllVariants">
-          Show all variants
-        </label>
+      <label htmlFor="variantsSelector" className="col-form-label">
+        Variants:
+      </label>
+      <div className="col-sm-3 mb-3">
+        <select
+          className="form-select"
+          id="variantsSelector"
+          aria-label="Variants Selector"
+          value={variants}
+          onChange={(e) => { setVariants(e.target.value as Variants); setNewHistoryEntry(true); }}
+        >
+          <option value="oneVariant">One variant</option>
+          <option value="variants">All variants</option>
+          <option value="variantsAndAltSlots">All variants and alternate slots</option>
+        </select>
       </div>
     </Form.Group>
 
     <Form.Group className="mb-3 mx-3">
       <div className="col-form-label">
         Visualization Options:
+      </div>
+      <label htmlFor="classSelector">
+        Size:
+      </label>
+      <div className="col-sm-3 mb-3">
+        <select
+          className="form-select"
+          id="classSelector"
+          aria-label="Class Selector"
+          value={size}
+          onChange={(e) => { setSize(e.target.value as Size); setNewHistoryEntry(true); }}
+        >
+          <option value="small">Small</option>
+          <option value="medium">Medium</option>
+          <option value="large">Large</option>
+        </select>
       </div>
       <div className="form-check mx-3">
         <input
@@ -171,13 +213,27 @@ const Pool = () => {
           Lock rotation
         </label>
       </div>
+      {size == "large" && horizontal ? <em className="mx-3">Printing in landscape is recommended</em> : null}
     </Form.Group>
   </div>;
 
   let pics;
   const includedFormations = formationsInCompClass(compClass);
 
-  if (allVariants) {
+  if (variants == "oneVariant") {
+    const blocks = includedFormations.filter((formationId) => formations[formationId].type == "block");
+    const randoms = includedFormations.filter((formationId) => formations[formationId].type == "random");
+
+    pics = <>{[blocks, randoms].map((includedFormations) =>
+      <div className={"dive-pool " + size + (horizontal ? " horizontal" : "")}>
+        {includedFormations.map((formationId) => <Pic
+          key={formationId}
+          formationId={formationId}
+          lockRotation={lockRotation}
+        />)}
+      </div >
+    )}</>;
+  } else if (variants == "variants") {
     pics = <>{
       includedFormations.map((formationId) => {
         const engineeringIds = Object.keys(formations[formationId].engineeringStrategies);
@@ -190,37 +246,56 @@ const Pool = () => {
         />
         );
 
-        return <div className={"dive-pool" + (horizontal ? "-horizontal" : "")}>
+        return <div className={"dive-pool " + size + (horizontal ? " horizontal" : "")}>
           {picVariants}
         </div>;
       })
     }</>;
-  } else {
-    const blocks = includedFormations.filter((formationId) => formations[formationId].type == "block");
-    const randoms = includedFormations.filter((formationId) => formations[formationId].type == "random");
-
-    pics = <>{[blocks, randoms].map((includedFormations) =>
-      <div className={"dive-pool" + (horizontal ? "-horizontal" : "")}>
-        {includedFormations.map((formationId) => <Pic
-          key={formationId}
+  } else if (variants == "variantsAndAltSlots") {
+    pics = <>{
+      includedFormations.map((formationId) => {
+        const engineeringIds = Object.keys(formations[formationId].engineeringStrategies);
+        const picVariantsReg = engineeringIds.map((engineeringId) => <Pic
+          key={formationId + "-" + engineeringId}
           formationId={formationId}
+          formationEngId={engineeringId}
           lockRotation={lockRotation}
-        />)}
-      </div >
-    )}</>;
+          showEngName={true}
+        />
+        );
+        const picVariantsAlt = engineeringIds.map((engineeringId) => <Pic
+          key={formationId + "-" + engineeringId + "-alt"}
+          formationId={formationId}
+          formationEngId={engineeringId}
+          lockRotation={lockRotation}
+          showEngName={true}
+          slotSwitch="transverse"
+        />
+        );
+
+        return <>
+          <div className={"dive-pool " + size + (horizontal ? " horizontal" : "")}>
+            {picVariantsReg}
+          </div>
+          <div className={"dive-pool " + size + (horizontal ? " horizontal" : "")}>
+            {picVariantsAlt}
+          </div>
+        </>;
+      })
+    }</>;
   }
 
   useEffect(() => {
+    if (hash === null) { return; }
     if (deserializeTrigger) {
       // User has changed the hash--deserialize
-      if (hash === null) { return; }
       if (hash === "") {
       } else {
-        console.log("Deserialize hash", hash);
         try {
           deserialize(hash, {
             setCompClass,
-            setAllVariants,
+            setVariants,
+            setSize,
             setHorizontal,
             setLockRotation,
           });
@@ -233,14 +308,14 @@ const Pool = () => {
     } else {
       const newHash = serialize({
         compClass,
-        allVariants,
+        variants,
+        size,
         horizontal,
         lockRotation,
       });
 
       if (hash !== newHash) {
         setHash(newHash);
-        console.log("Setting hash", newHash);
         if (newHistoryEntry) {
           window.history.pushState(undefined, '', '#' + newHash);
         } else {
@@ -255,11 +330,11 @@ const Pool = () => {
     deserializeTrigger,
     setDeserializeTrigger,
     setCompClass,
-    setAllVariants,
+    setVariants,
     setHorizontal,
     setLockRotation,
     compClass,
-    allVariants,
+    variants,
     horizontal,
     lockRotation,
     newHistoryEntry,
@@ -289,7 +364,7 @@ const Pool = () => {
 
 
   return <>
-    <h1>vfs.ninja - {compClasses[compClass].name} Dive Pool</h1>
+    <Title subpage={compClasses[compClass].name + " Dive Pool"} />
     {setup}
     {pics}
     <em className="mx-3">
