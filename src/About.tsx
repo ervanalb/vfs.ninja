@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import Figure from 'react-bootstrap/Figure';
 import { Title } from './lib.tsx';
 import picHIba from './about/h_iba.png';
@@ -8,6 +9,9 @@ import pic7V1 from './pics/7_v1.svg';
 import pic7Lh from './about/7_lh.svg';
 
 const About = () => <>
+  <Helmet>
+    <title>About - vfs.ninja</title>
+  </Helmet>
   <Title subpage="About" />
   <h4>What is 4-way VFS?</h4>
   <p>

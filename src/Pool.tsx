@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import Form from 'react-bootstrap/Form';
 
 import { CompClassId, compClasses, formations } from './data.ts';
@@ -354,6 +355,9 @@ const Pool = () => {
 
 
   return <>
+    <Helmet>
+      <title>{compClasses[compClass].name + " Dive Pool"} - vfs.ninja</title>
+    </Helmet>
     <Title subpage={compClasses[compClass].name + " Dive Pool"} />
     {setup}
     {pics}

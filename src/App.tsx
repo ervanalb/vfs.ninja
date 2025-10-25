@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 
 import { formations, costMatrix, FormationId, Position, CompClassId, compClasses, EngineeringId, SlotSwitch } from './data.ts';
 import { initialCompClass, resetRotation, slotSwitchCombine, formationsInCompClass, Pic, Title } from './lib.tsx';
@@ -1040,8 +1041,10 @@ const deserialize = (
 
   const version = parseUntil(",");
   popOff(",");
-  if (version != "v2") {
-    throw "Incorrect version";
+  if (version == "v1") {
+    throw "The linked draw comes from an older version of this tool.";
+  } else if (version != "v2") {
+    throw "The linked draw comes from a newer version of this tool.";
   }
 
   if (remainingStr.startsWith("custom")) {
@@ -1624,7 +1627,30 @@ const App = () => {
     </div>
   </Form.Group>;
 
+  let title: String;
+  if (draw.length == 0) {
+    title = "4-way VFS draw generator";
+  } else {
+    let drawStrs = []
+    for (let i = 0; i < Math.min(2, draw.length); i++) {
+      const engRound = draw[i];
+      if ((engRound as RoundError).error) {
+        drawStrs.push("error")
+      } else {
+        drawStrs.push((engRound as EngineeredRound).round.map((formation) => formation.toUpperCase()).join("-"));
+      }
+    }
+    if (draw.length > 2) {
+      drawStrs.push("...")
+    }
+
+    title = drawStrs.join(", ");
+  }
+
   return <>
+    <Helmet>
+      <title>{title} - vfs.ninja</title>
+    </Helmet>
     <div className="title-container">
       <Title subpage="Draw Generator" />
       <a target="_blank" href="/about">
@@ -1741,7 +1767,8 @@ const App = () => {
       <Modal.Header closeButton><Modal.Title>Error</Modal.Title></Modal.Header>
       <Modal.Body>
         <p>{error}</p>
-        <p><em>If you have bookmarked this address, consider changing it to <a href="https://vfs.ninja">https://vfs.ninja</a> (with no "#...")</em></p>
+        <p>A new random draw will be generated.</p>
+        <p><em>If you have bookmarked this address, changing it to <a href="https://vfs.ninja">https://vfs.ninja</a> (with no "#...") will remove this error message.</em></p>
       </Modal.Body>
     </Modal>
   </>
