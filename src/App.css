@@ -40,6 +40,7 @@ body {
   object-fit: contain;
   width: 150px;
   position: relative;
+  pointer-events: none;
 }
 
 .slot-switch-null {

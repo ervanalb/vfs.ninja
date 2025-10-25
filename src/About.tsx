@@ -117,8 +117,9 @@ const About = () => <>
     <li>Add option to view the dive pool</li>
     <li>Introduce additional modifiers: slot switchers, uncommon roles, uncommon shapes</li>
     <li>Fix browser navigation (back / forward button should work more reliably)</li>
+    <li>Fix mirrored / rotated text on pictures</li>
     <li>Change optimizer behavior slightly</li>
-    <li>Minor fixes to random selection process</li>
+    <li>Minor fixes to draw selection process</li>
   </ul>
   <h5>v1.2</h5>
   <em>2025-03-01</em>

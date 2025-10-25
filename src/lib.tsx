@@ -1,3 +1,4 @@
+import { SyntheticEvent } from 'react';
 import { CompClassId, FormationId, formations, EngineeringId, SlotSwitch } from './data.ts';
 import attentionIcon from './icons/attention.svg';
 import close from './icons/close.svg';
@@ -105,16 +106,40 @@ export const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitc
 
   const alt = showEngName && resetRotation(slotSwitch) != "null" ? <div className="pic-alt-overlay">ALT</div> : null;
 
+  const rotateText = (element: HTMLObjectElement, slotSwitch: SlotSwitch) => {
+
+    const svgTransformForSlotSwitch = {
+      "null": "",
+      "lr": "scale(-1, 1)",
+      "ud": "scale(1, -1)",
+      "180": "scale(-1, -1)",
+      "90": "rotate(270)",
+      "270": "rotate(90)",
+      "transpose": "rotate(270) scale(-1, 1)",
+      "transverse": "rotate(90) scale(-1, 1)",
+    };
+
+    const svg = (element as HTMLObjectElement).contentDocument;
+    if (!svg) { return; }
+    for (const el of svg.getElementsByTagName("text")) {
+      const x = parseFloat(el.getAttribute("x") || "");
+      const y = parseFloat(el.getAttribute("y") || "");
+      if (!isFinite(x) || !isFinite(y)) { continue; }
+      el.setAttribute("transform", svgTransformForSlotSwitch[slotSwitch]);
+      el.setAttribute("transform-origin", `${x + 3.15} ${y - 1.2}`);
+    }
+  };
+
   if (f.type === "block") {
     const e = f.engineeringStrategies[formationEngId];
     let endSlotSwitch = lockRotation ? slotSwitch : slotSwitchCombine(slotSwitch, e.slotSwitch);
 
     let pics = wrapOnClick(<>
-      <img src={e.startPic} className={"pic-start" + slotSwitchClassName(slotSwitch)} />
+      <object key={formationEngId + "-start-" + slotSwitch} data={e.startPic} type="image/svg+xml" className={"pic-start" + slotSwitchClassName(slotSwitch)} onLoad={(e) => rotateText(e.target as HTMLObjectElement, slotSwitch)} />
       <div className="pic-sep" />
-      <img src={e.interPic} className={"pic-inter" + slotSwitchClassName(slotSwitch)} />
+      <object key={formationEngId + "-inter-" + slotSwitch} data={e.interPic} type="image/svg+xml" className={"pic-inter" + slotSwitchClassName(slotSwitch)} onLoad={(e) => rotateText(e.target as HTMLObjectElement, slotSwitch)} />
       <div className="pic-sep" />
-      <img src={e.endPic} className={"pic-end" + slotSwitchClassName(endSlotSwitch)} />
+      <object key={formationEngId + "-end-" + endSlotSwitch} data={e.endPic} type="image/svg+xml" className={"pic-end" + slotSwitchClassName(endSlotSwitch)} onLoad={(e) => rotateText(e.target as HTMLObjectElement, endSlotSwitch)} />
     </>);
     return <div className={"block-container" + (className ? " " + className : "")}>
       <div className="pic-fname-overlay">{fName}</div>
@@ -125,7 +150,9 @@ export const Pic: React.FC<PicProps> = ({ formationId, formationEngId, slotSwitc
     </div>;
   } else {
     const e = f.engineeringStrategies[formationEngId];
-    const pic = wrapOnClick(<img src={e.pic} className={"pic" + slotSwitchClassName(slotSwitch)} />);
+    const pic = wrapOnClick(
+      <object key={formationEngId + "-" + slotSwitch} data={e.pic} type="image/svg+xml" className={"pic" + slotSwitchClassName(slotSwitch)} onLoad={(e) => rotateText(e.target as HTMLObjectElement, slotSwitch)} />
+    );
     return <div className={"random-container" + (className ? " " + className : "")}>
       <div className="pic-fname-overlay">{fName}</div>
       {showEngName ? <div className="pic-ename-overlay">{eName}</div> : null}
