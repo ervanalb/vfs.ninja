@@ -554,7 +554,7 @@ const Setup: React.FC<SetupProps> = ({
       </div>
       <div className="col-auto my-1">
         {compClass !== "custom"
-          ? <a target="_blank" href={`/pool#v1,${compClass},1,m,,`}>
+          ? <a target="_blank" href={`/pool#v1,${compClass},`}>
             View dive pool
           </a>
           : <div className="disabled-link">View dive pool</div>
@@ -966,11 +966,14 @@ const serialize = ({ includedFormations, roundLength, filterRest, filterSlotSwit
 
   const compClass = computeCompClass(roundLength, includedFormations);
   const compClassString = compClass == "custom" ? "custom(" + roundLength + "," + includedFormations.join(",") + ")" : compClass;
-  const filterRestString = filterRest ? "r" : "";
-  const filterSlotSwitchersString = filterSlotSwitchers ? "ss" : "";
-  const filterUncommonRolesString = filterUncommonRoles ? "ur" : "";
-  const filterUncommonShapesString = filterUncommonShapes ? "us" : "";
-  const lockRotationString = lockRotation ? "l" : "";
+  let filterString = "";
+  if (filterRest) { filterString += "r"; }
+  if (filterSlotSwitchers) { filterString += "s"; }
+  if (filterUncommonRoles) { filterString += "o"; }
+  if (filterUncommonShapes) { filterString += "p"; }
+
+  let vizString = "";
+  if (lockRotation) { vizString += "l"; }
 
   const drawString = draw.map((engRound) => {
     if ((engRound as RoundError).error !== undefined) {
@@ -988,7 +991,7 @@ const serialize = ({ includedFormations, roundLength, filterRest, filterSlotSwit
     }
   }).join(",");
 
-  return "v2," + compClassString + "," + filterRestString + "," + filterSlotSwitchersString + "," + filterUncommonRolesString + "," + filterUncommonShapesString + "," + lockRotationString + "," + drawString;
+  return "v2," + compClassString + "," + filterString + "," + vizString + "," + drawString;
 };
 
 const deserialize = (
@@ -1066,54 +1069,40 @@ const deserialize = (
     setCompClassParameters(compClasses[compClassString].roundLength, formationsInCompClass(compClassString), false);
   }
 
-  const filterRestStr = parseUntil(",");
+  const filterStr = parseUntil(",");
   popOff(",");
-  if (filterRestStr == "r") {
+
+  if (filterStr.indexOf("r") >= 0) {
     setFilterRest(true);
-  } else if (filterRestStr == "") {
+  } else {
     setFilterRest(false);
-  } else {
-    throw "Bad filter rest value"
   }
 
-  const filterSlotSwitchersStr = parseUntil(",");
-  popOff(",");
-  if (filterSlotSwitchersStr == "ss") {
+  if (filterStr.indexOf("s") >= 0) {
     setFilterSlotSwitchers(true);
-  } else if (filterSlotSwitchersStr == "") {
+  } else {
     setFilterSlotSwitchers(false);
-  } else {
-    throw "Bad filter slot switchers value"
   }
 
-  const filterUncommonRolesStr = parseUntil(",");
-  popOff(",");
-  if (filterUncommonRolesStr == "ur") {
+  if (filterStr.indexOf("o") >= 0) {
     setFilterUncommonRoles(true);
-  } else if (filterUncommonRolesStr == "") {
+  } else {
     setFilterUncommonRoles(false);
-  } else {
-    throw "Bad filter uncommon roles value"
   }
 
-  const filterUncommonShapesStr = parseUntil(",");
-  popOff(",");
-  if (filterUncommonShapesStr == "us") {
+  if (filterStr.indexOf("p") >= 0) {
     setFilterUncommonShapes(true);
-  } else if (filterUncommonShapesStr == "") {
-    setFilterUncommonShapes(false);
   } else {
-    throw "Bad filter uncommon shapes value"
+    setFilterUncommonShapes(false);
   }
 
-  const lockRotationStr = parseUntil(",");
+  const vizStr = parseUntil(",");
   popOff(",");
-  if (lockRotationStr == "l") {
+
+  if (vizStr.indexOf("l") > 0) {
     setLockRotation(true);
-  } else if (lockRotationStr == "") {
-    setLockRotation(false);
   } else {
-    throw "Bad lock rotation value"
+    setLockRotation(false);
   }
 
   let draw: Array<EngineeredRound | RoundError> = [];

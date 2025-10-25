@@ -16,12 +16,15 @@ const serialize = ({ compClass, variants, size, horizontal, lockRotation }: {
 }): string => {
 
   const compClassString = compClass;
-  const variantsString = { "oneVariant": "1", "variants": "v", "variantsAndAltSlots": "a" }[variants];
-  const sizeString = { "small": "s", "medium": "m", "large": "l" }[size];
-  const horizontalString = horizontal ? "h" : "";
-  const lockRotationString = lockRotation ? "l" : "";
 
-  return "v1," + compClassString + "," + variantsString + "," + sizeString + "," + horizontalString + "," + lockRotationString;
+  let flagsString = "";
+
+  flagsString += { "oneVariant": "", "variants": "v", "variantsAndAltSlots": "a" }[variants];
+  flagsString += { "small": "s", "medium": "", "large": "b" }[size];
+  if (horizontal) { flagsString += "h"; }
+  if (lockRotation) { flagsString += "l"; }
+
+  return "v1," + compClassString + "," + flagsString;
 };
 
 const deserialize = (
@@ -76,47 +79,34 @@ const deserialize = (
   }
   setCompClass(compClassString);
 
-  const variantsStr = parseUntil(",");
-  popOff(",");
-  if (variantsStr == "1") {
-    setVariants("oneVariant");
-  } else if (variantsStr == "v") {
+  const flagsStr = remainingStr;
+
+  if (flagsStr.indexOf("v") >= 0) {
     setVariants("variants");
-  } else if (variantsStr == "a") {
+  } else if (flagsStr.indexOf("a") >= 0) {
     setVariants("variantsAndAltSlots");
   } else {
-    throw "Bad variants value"
+    setVariants("oneVariant");
   }
 
-  const sizeStr = parseUntil(",");
-  popOff(",");
-  if (sizeStr == "s") {
+  if (flagsStr.indexOf("s") >= 0) {
     setSize("small");
-  } else if (sizeStr == "m") {
-    setSize("medium");
-  } else if (sizeStr == "l") {
+  } else if (flagsStr.indexOf("b") >= 0) {
     setSize("large");
   } else {
-    throw "Bad size value"
+    setSize("medium");
   }
 
-  const horizontalStr = parseUntil(",");
-  popOff(",");
-  if (horizontalStr == "h") {
+  if (flagsStr.indexOf("h") >= 0) {
     setHorizontal(true);
-  } else if (horizontalStr == "") {
-    setHorizontal(false);
   } else {
-    throw "Bad horizontal value"
+    setHorizontal(false);
   }
 
-  const lockRotationStr = remainingStr;
-  if (lockRotationStr == "l") {
+  if (flagsStr.indexOf("l") >= 0) {
     setLockRotation(true);
-  } else if (lockRotationStr == "") {
-    setLockRotation(false);
   } else {
-    throw "Bad lock rotation value"
+    setLockRotation(false);
   }
 };
 
