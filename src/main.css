@@ -39,6 +39,7 @@ body {
   transform-origin: center;
   object-fit: contain;
   width: 150px;
+  height: 150px;
   position: relative;
   pointer-events: none;
 }
@@ -80,6 +81,7 @@ body {
     transform-origin: center;
     object-fit: contain;
     width: 100px;
+    height: 100px;
   }
 }
 
@@ -359,6 +361,7 @@ body {
 
 .dive-pool.small .pic, .dive-pool.small .pic-start, .dive-pool.small .pic-inter, .dive-pool.small .pic-end {
   width: 90px;
+  height: 90px;
 }
 
 .dive-pool.small .pic-fname-overlay {
@@ -373,6 +376,7 @@ body {
 
 .dive-pool.medium .pic, .dive-pool.medium .pic-start, .dive-pool.medium .pic-inter, .dive-pool.medium .pic-end {
   width: 140px;
+  height: 140px;
 }
 
 .dive-pool.medium .pic-fname-overlay {
@@ -387,6 +391,7 @@ body {
 
 .dive-pool.large .pic, .dive-pool.large .pic-start, .dive-pool.large .pic-inter, .dive-pool.large .pic-end {
   width: 290px;
+  height: 290px;
 }
 
 .dive-pool.large .pic-fname-overlay {
