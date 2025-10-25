@@ -1,4 +1,3 @@
-import { SyntheticEvent } from 'react';
 import { CompClassId, FormationId, formations, EngineeringId, SlotSwitch } from './data.ts';
 import attentionIcon from './icons/attention.svg';
 import close from './icons/close.svg';
