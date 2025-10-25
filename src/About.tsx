@@ -113,7 +113,7 @@ const About = () => <>
 
   <h4>Changelog</h4>
   <h5>v2.0</h5>
-  <em>2025-XX-XX</em>
+  <em>2025-10-25</em>
   <ul>
     <li>Add piece-partner variant of block 10</li>
     <li>Rename piece partner variants of random Q</li>
