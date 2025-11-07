@@ -1214,7 +1214,7 @@ const App = () => {
     throw "Could not satisfy filters";
   };
 
-  const availablePoolFromDraw = (draw: Array<EngineeredRound | RoundError>): Array<FormationId> => {
+  const availablePoolFromDraw = (includedFormations: Array<FormationId>, draw: Array<EngineeredRound | RoundError>): Array<FormationId> => {
     // See how many times each formation has been used so far in the draw--
     // the "available" dive pool consists only of formations with the smallest usage count
     // (e.g. 0 uses until every formation has been used once)
@@ -1245,7 +1245,7 @@ const App = () => {
     filterUncommonShapes: boolean,
   ): EngineeredRound | RoundError => {
     const firstTry = rerunOne(() =>
-      randomRound(availablePoolFromDraw(draw), includedFormations, roundLength),
+      randomRound(availablePoolFromDraw(includedFormations, draw), includedFormations, roundLength),
       filterRest,
       filterSlotSwitchers,
       filterUncommonRoles,
@@ -1333,7 +1333,7 @@ const App = () => {
     setDraw(draw.map((engRound, i) => {
       if (i == roundNum) {
         const roundF = () =>
-          [...(engRound as EngineeredRound).round, ...randomRound(availablePoolFromDraw(draw), includedFormations, 1)];
+          [...(engRound as EngineeredRound).round, ...randomRound(availablePoolFromDraw(includedFormations, draw), includedFormations, 1)];
         // Passing a function into rerunOne will cause it to enforce filters
         const result = rerunOne(
           roundF,
@@ -1467,6 +1467,7 @@ const App = () => {
     filterUncommonRoles: boolean,
     filterUncommonShapes: boolean,
   ) => {
+
     const newDraw: Array<EngineeredRound | RoundError> = Array.from({ length: numRounds - draw.length }, () => ({ error: "Waiting to be generated..." }));
 
     for (let i = 0; i < numRounds; i++) {
