@@ -112,6 +112,11 @@ const About = () => <>
   </p>
 
   <h4>Changelog</h4>
+  <h5>v2.1</h5>
+  <em>2025-11-07</em>
+  <ul>
+    <li>Fix a bug where changing comp. class might generate a draw with moves from the previous comp. class</li>
+    <li>Change optimizer behavior slightly to better account for cross-body HD grips</li>
   <h5>v2.0</h5>
   <em>2025-10-25</em>
   <ul>
