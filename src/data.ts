@@ -269,22 +269,22 @@ const engineeringE: Record<string, RandomEngineering> = {
   v2: { start: ["HD", "HD2", "HD", "HD2"], priority: 2, pic: picEV2, commonShape: true, commonRoles: false },
 } as const;
 const engineeringF: Record<string, RandomEngineering> = {
-  v1: { start: ["HUO", "HUO", "HDO", "HDO"], priority: 1, pic: picFV1, commonShape: true, commonRoles: true },
-  v2: { start: ["HDO", "HDO", "HUO", "HUO"], priority: 2, pic: picFV2, commonShape: true, commonRoles: false },
+  v1: { start: ["HUO", "HUO", "HDC", "HDC"], priority: 1, pic: picFV1, commonShape: true, commonRoles: true },
+  v2: { start: ["HDC", "HDC", "HUO", "HUO"], priority: 2, pic: picFV2, commonShape: true, commonRoles: false },
 } as const;
 const engineeringG: Record<string, RandomEngineering> = {
   v1: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picGV1, commonShape: true, commonRoles: true },
   v2: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picGV2, commonShape: true, commonRoles: false },
 } as const;
 const engineeringH: Record<string, RandomEngineering> = {
-  p1: { start: ["HU", "HU", "HDO", "HDO"], priority: 1, pic: picHP1, commonShape: true, commonRoles: true },
+  p1: { start: ["HU", "HU", "HDC", "HDC"], priority: 1, pic: picHP1, commonShape: true, commonRoles: true },
   p2: { start: ["HUO", "HUO", "HD", "HD"], priority: 2, pic: picHP2, commonShape: true, commonRoles: false },
-  p3: { start: ["HDO", "HDO", "HU", "HU"], priority: 3, pic: picHP3, commonShape: true, commonRoles: false },
+  p3: { start: ["HDC", "HDC", "HU", "HU"], priority: 3, pic: picHP3, commonShape: true, commonRoles: false },
   p4: { start: ["HD", "HD", "HUO", "HUO"], priority: 4, pic: picHP4, commonShape: true, commonRoles: false },
-  x1: { start: ["HU", "HD", "HUO", "HD"], priority: 5, pic: picHX1, commonShape: false, commonRoles: true },
-  x2: { start: ["HUO", "HD", "HU", "HD"], priority: 6, pic: picHX2, commonShape: false, commonRoles: false },
-  x3: { start: ["HD", "HU", "HD", "HUO"], priority: 7, pic: picHX3, commonShape: false, commonRoles: false },
-  x4: { start: ["HD", "HUO", "HD", "HU"], priority: 8, pic: picHX4, commonShape: false, commonRoles: false },
+  x1: { start: ["HU", "HD", "HUO", "HDC"], priority: 5, pic: picHX1, commonShape: false, commonRoles: true },
+  x2: { start: ["HUO", "HDC", "HU", "HD"], priority: 6, pic: picHX2, commonShape: false, commonRoles: false },
+  x3: { start: ["HDC", "HU", "HD", "HUO"], priority: 7, pic: picHX3, commonShape: false, commonRoles: false },
+  x4: { start: ["HD", "HUO", "HDC", "HU"], priority: 8, pic: picHX4, commonShape: false, commonRoles: false },
 } as const;
 const engineeringJ: Record<string, RandomEngineering> = {
   v1: { start: ["HD2", "HD2", "HD", "HD"], priority: 1, pic: picJV1, commonShape: true, commonRoles: true },
@@ -329,10 +329,10 @@ const engineeringP: Record<string, RandomEngineering> = {
 const engineeringQ: Record<string, RandomEngineering> = {
   x1: { start: ["HU", "HD", "HU", "HD"], priority: 1, pic: picQX1, commonShape: true, commonRoles: true },
   x2: { start: ["HD", "HU", "HD", "HU"], priority: 2, pic: picQX2, commonShape: true, commonRoles: false },
-  p1: { start: ["HU", "HU", "HDO", "HD"], priority: 3, pic: picQP1, commonShape: false, commonRoles: true },
-  p2: { start: ["HU", "HU", "HD", "HDO"], priority: 4, pic: picQP2, commonShape: false, commonRoles: false },
-  p3: { start: ["HDO", "HD", "HU", "HU"], priority: 5, pic: picQP3, commonShape: false, commonRoles: false },
-  p4: { start: ["HD", "HDO", "HU", "HU"], priority: 6, pic: picQP4, commonShape: false, commonRoles: false },
+  p1: { start: ["HU", "HU", "HDC", "HD"], priority: 3, pic: picQP1, commonShape: false, commonRoles: true },
+  p2: { start: ["HU", "HU", "HD", "HDC"], priority: 4, pic: picQP2, commonShape: false, commonRoles: false },
+  p3: { start: ["HDC", "HD", "HU", "HU"], priority: 5, pic: picQP3, commonShape: false, commonRoles: false },
+  p4: { start: ["HD", "HDC", "HU", "HU"], priority: 6, pic: picQP4, commonShape: false, commonRoles: false },
 } as const;
 
 const engineering1: Record<string, BlockEngineering> = {
@@ -399,14 +399,14 @@ const engineering2: Record<string, BlockEngineering> = {
 
 const engineering3: Record<string, BlockEngineering> = {
   v1: {
-    start: ["HD2", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    start: ["HD2", "HD", "HD2", "HD"], end: ["HDC", "HD", "HDC", "HD"], priority: 1,
     startPic: pic3V1, interPic: pic3V1Inter, endPic: pic3V1,
     slotSwitch: "270",
     commonShape: true,
     commonRoles: true,
   },
   v2: {
-    start: ["HD", "HD2", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    start: ["HD", "HD2", "HD", "HD2"], end: ["HD", "HDC", "HD", "HDC"], priority: 2,
     startPic: pic3V2, interPic: pic3V2Inter, endPic: pic3V2,
     slotSwitch: "90",
     commonShape: true,
@@ -433,28 +433,28 @@ const engineering4: Record<string, BlockEngineering> = {
 
 const engineering5: Record<string, BlockEngineering> = {
   p1: {
-    start: ["HU", "HU", "HD", "HD"], end: ["HU", "HU", "HD", "HD"], priority: 1,
+    start: ["HU", "HU", "HDC", "HD"], end: ["HU", "HU", "HDC", "HD"], priority: 1,
     startPic: pic5P1, interPic: pic5P1Inter, endPic: pic5P1,
     slotSwitch: "90",
     commonShape: true,
     commonRoles: true,
   },
   p2: {
-    start: ["HU", "HU", "HD", "HD"], end: ["HU", "HU", "HD", "HD"], priority: 2,
+    start: ["HU", "HU", "HD", "HDC"], end: ["HU", "HU", "HD", "HDC"], priority: 2,
     startPic: pic5P2, interPic: pic5P2Inter, endPic: pic5P2,
     slotSwitch: "270",
     commonShape: true,
     commonRoles: false,
   },
   p3: {
-    start: ["HD", "HD", "HU", "HU"], end: ["HD", "HD", "HU", "HU"], priority: 3,
+    start: ["HD", "HDC", "HU", "HU"], end: ["HD", "HDC", "HU", "HU"], priority: 3,
     startPic: pic5P3, interPic: pic5P3Inter, endPic: pic5P3,
     slotSwitch: "270",
     commonShape: true,
     commonRoles: false,
   },
   p4: {
-    start: ["HD", "HD", "HU", "HU"], end: ["HD", "HD", "HU", "HU"], priority: 4,
+    start: ["HDC", "HD", "HU", "HU"], end: ["HDC", "HD", "HU", "HU"], priority: 4,
     startPic: pic5P4, interPic: pic5P4Inter, endPic: pic5P4,
     slotSwitch: "90",
     commonShape: true,
@@ -509,14 +509,14 @@ const engineering6: Record<string, BlockEngineering> = {
 
 const engineering7: Record<string, BlockEngineering> = {
   v1: {
-    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    start: ["HD2", "HD", "HD2", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
     startPic: pic7V1, interPic: pic7V1Inter, endPic: pic7V1,
     slotSwitch: "null",
     commonShape: true,
     commonRoles: true,
   },
   v2: {
-    start: ["HD", "HD", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    start: ["HD", "HD2", "HD", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 2,
     startPic: pic7V2, interPic: pic7V2Inter, endPic: pic7V2,
     slotSwitch: "null",
     commonShape: true,
@@ -859,14 +859,14 @@ const engineering20: Record<string, BlockEngineering> = {
 
 const engineering21: Record<string, BlockEngineering> = {
   v1: {
-    start: ["HD2", "HD2", "HD", "HD"], end: ["HD", "HD", "HD", "HD"], priority: 1,
+    start: ["HD2", "HD2", "HD", "HD"], end: ["HD", "HD", "HDC", "HDC"], priority: 1,
     startPic: pic21V1, interPic: pic21Inter, endPic: pic21V2,
     slotSwitch: "null",
     commonShape: true,
     commonRoles: true,
   },
   v2: {
-    start: ["HD", "HD", "HD2", "HD2"], end: ["HD", "HD", "HD", "HD"], priority: 2,
+    start: ["HD", "HD", "HD2", "HD2"], end: ["HDC", "HDC", "HD", "HD"], priority: 2,
     startPic: pic21V2, interPic: pic21Inter, endPic: pic21V1,
     slotSwitch: "null",
     commonShape: true,
@@ -937,11 +937,12 @@ export const formations: Record<string, Formation> = {
 export type FormationId = keyof typeof formations;
 
 export const costMatrix: Record<Position, Record<Position, number>> = {
-  "HU": { "HU": 0, "HD": 10, "HD2": 3, "HDO": 5, "HUO": 3 },
-  "HD": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 1, "HUO": 5 },
-  "HD2": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 1, "HUO": 5 },
-  "HDO": { "HU": 5, "HD": 1, "HD2": 0, "HDO": 0, "HUO": 10 },
-  "HUO": { "HU": 2, "HD": 5, "HD2": 3, "HDO": 10, "HUO": 0 },
+  "HU": { "HU": 0, "HD": 10, "HD2": 3, "HDO": 5, "HUO": 3,  "HDC": 7 },
+  "HD": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 2, "HUO": 5,  "HDC": 1 },
+  "HD2": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 2, "HUO": 5, "HDC": 1 },
+  "HDO": { "HU": 5, "HD": 2, "HD2": 0, "HDO": 0, "HUO": 10, "HDC": 1 },
+  "HUO": { "HU": 2, "HD": 5, "HD2": 3, "HDO": 10, "HUO": 0, "HDC": 7 },
+  "HDC": { "HU": 7, "HD": 1, "HD2": 0, "HDO": 1, "HUO": 7, "HDC": 0 },
 } as const;
 
 
