@@ -117,6 +117,7 @@ const About = () => <>
   <ul>
     <li>Fix a bug where changing comp. class might generate a draw with moves from the previous comp. class</li>
     <li>Change optimizer behavior slightly to better account for cross-body HD grips</li>
+  </ul>
   <h5>v2.0</h5>
   <em>2025-10-25</em>
   <ul>
