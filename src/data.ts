@@ -220,7 +220,8 @@ export type Position = "HU" // Head up
   | "HD" // Head down, first piece to build
   | "HD2" // Head down, second piece to build
   | "HDO" // Head down, outface
-  | "HUO"; // Head up, outface
+  | "HUO" // Head up, outface
+  | "HDC"; // Head down, cross-body grip
 
 export type SlotSwitch = "null" | "lr" | "ud" | "180" | "90" | "270" | "transpose" | "transverse";
 
