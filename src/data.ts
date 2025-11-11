@@ -937,15 +937,16 @@ export const formations: Record<string, Formation> = {
 
 export type FormationId = keyof typeof formations;
 
+// Make sure that any transition that's not worth making a multi-page dive over
+// has the same cost after rounding to the nearest integer.
 export const costMatrix: Record<Position, Record<Position, number>> = {
-  "HU": { "HU": 0, "HD": 10, "HD2": 3, "HDO": 5, "HUO": 3,  "HDC": 7 },
-  "HD": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 2, "HUO": 5,  "HDC": 1 },
-  "HD2": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 2, "HUO": 5, "HDC": 1 },
-  "HDO": { "HU": 5, "HD": 2, "HD2": 0, "HDO": 0, "HUO": 10, "HDC": 1 },
-  "HUO": { "HU": 2, "HD": 5, "HD2": 3, "HDO": 10, "HUO": 0, "HDC": 7 },
-  "HDC": { "HU": 7, "HD": 1, "HD2": 0, "HDO": 1, "HUO": 7, "HDC": 0 },
+  "HU": { "HU": 0, "HD": 10, "HD2": 3, "HDO": 5, "HUO": 3, "HDC": 9.8 },
+  "HD": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 2, "HUO": 5, "HDC": 0.1 },
+  "HD2": { "HU": 10, "HD": 0, "HD2": 0, "HDO": 2, "HUO": 5, "HDC": 0.1 },
+  "HDO": { "HU": 5, "HD": 2, "HD2": 0, "HDO": 0, "HUO": 10, "HDC": 1.9 },
+  "HUO": { "HU": 2, "HD": 5, "HD2": 3, "HDO": 10, "HUO": 0, "HDC": 5.4 },
+  "HDC": { "HU": 9.8, "HD": 0.1, "HD2": 0, "HDO": 1.9, "HUO": 5.4, "HDC": 0 },
 } as const;
-
 
 export type CompClass = {
   name: string;

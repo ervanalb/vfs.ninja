@@ -106,12 +106,19 @@ const About = () => <>
   <p>
     Each formation variant stores the orientation of each flier (e.g "head up", or "head down outface".)
     A cost matrix defines how expensive it is to make a given transition (e.g. "head down" to "head up" is more expensive than "head down outface" to "head down.")
-    Using the sum of the four transition costs, a greedy algorithm is used to pick the next formation variant.
-    These computed variants, along with whether fliers are in their regular or alternate slots, are iterated forward until a cycle is found.
-    Alternate slots are visualized by mirroring the picture.
+    We check all engineering options for the next move, and keep only the ones which achieve the lowest possible sum of the four transition costs.
+    We iterate this greedy algorithm until one or more min-cost cycles are found.
+    We then pick from these cycles based on additional metrics: minor transition costs (preferring flashing grips),
+    number of pages (preferring dive flows that aren't slot switchers), and commonality (preferring simple & ordinary engineering over more exotic options.)
   </p>
 
   <h4>Changelog</h4>
+  <h5>v2.2</h5>
+  <em>2025-11-11</em>
+  <ul>
+    <li>Change optimizer to return globally optimal result</li>
+    <li>Change optimizer weights to remove some unnecessary page-switchers that appeared in v2.1</li>
+  </ul>
   <h5>v2.1</h5>
   <em>2025-11-07</em>
   <ul>

@@ -15,11 +15,12 @@ type Round = Array<FormationId>;
 type Pattern = Array<EngineeringId>;
 
 type PatternAnalysis = {
-  speedCost: number, // How slow this pattern is
+  majorSpeedCost: number, // How slow this pattern is--optimizing this may trigger a multi-page dive
+  pageCost: number, // How many pages this pattern is--optimize this, but not at the cost of major speed
+  minorSpeedCost: number, // How slow this pattern is--optimize this, but don't make a multi-page dive about it
   shapeCost: number, // How unfamiliar the shapes in the pattern are
   rolesCost: number, // How unfamiliar the roles in the pattern are
   priority: number,
-  firstFormationPriority: number,
 };
 
 type EngineeredRound = {
@@ -42,11 +43,11 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
   else if (loop && pat.length < 1) { throw "Loop must contain at least 1 formation"; }
   const patToAnalyze = loop ? [...pat, pat[0]] : pat;
 
-  let totalSpeedCost = 0;
+  let totalMajorSpeedCost = 0;
+  let totalMinorSpeedCost = 0;
   let totalShapeCost = 0;
   let totalRolesCost = 0;
   let totalPriority = 0;
-  let firstFormationPriority: null | number = null;
   for (let i = 0; i < patToAnalyze.length - 1; i++) {
     const fromFormationId = round[i % round.length];
     const fromEngId = patToAnalyze[i];
@@ -72,14 +73,15 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
       rolesCost = !e.commonRoles ? 1 : 0;
     }
 
-    if (firstFormationPriority === null) {
-      firstFormationPriority = priority;
-    }
-
     const toEng = formations[toFormationId].engineeringStrategies[toEngId].start;
 
-    const speedCost = [0, 1, 2, 3].map((i) => costMatrix[fromEng[i]][toEng[i]]).reduce((acc, x) => acc + x);
-    totalSpeedCost += speedCost;
+    const minorSpeedCosts = [0, 1, 2, 3].map((i) => costMatrix[fromEng[i]][toEng[i]]);
+    const majorSpeedCosts = minorSpeedCosts.map(Math.round);
+    const majorSpeedCost = majorSpeedCosts.reduce((acc, x) => acc + x);
+    const minorSpeedCost = minorSpeedCosts.reduce((acc, x) => acc + x);
+
+    totalMajorSpeedCost += majorSpeedCost;
+    totalMinorSpeedCost += minorSpeedCost;
     totalShapeCost += shapeCost;
     totalRolesCost += rolesCost;
     totalPriority += priority;
@@ -91,13 +93,17 @@ const analyzePattern = (round: Round, pat: Pattern, loop: boolean): PatternAnaly
     totalPriority += formations[lastFormationId].engineeringStrategies[lastEngId].priority;
   }
 
+  // Round off, since we are accumulating floating point values
+  totalMinorSpeedCost = Math.round(totalMinorSpeedCost * 100) / 100;
+
   const pages = pat.length / round.length;
   return {
-    speedCost: totalSpeedCost / pages,
+    majorSpeedCost: totalMajorSpeedCost / pages,
+    pageCost: pages,
+    minorSpeedCost: totalMinorSpeedCost / pages,
     shapeCost: totalShapeCost / pages,
     rolesCost: totalRolesCost / pages,
     priority: totalPriority / pages,
-    firstFormationPriority: firstFormationPriority as number,
   };
 };
 
@@ -108,32 +114,38 @@ const slotSwitchesEquivalent = (a: SlotSwitch, b: SlotSwitch): boolean => resetR
 const argmin = (a: Array<PatternAnalysis>) => {
   if (a.length < 1) throw "Must contain at least 1 entry";
   return a.reduce((minIndex, _, index, arr) => {
-    let { speedCost: c, shapeCost: sc, rolesCost: rc, priority: p, firstFormationPriority: p1 } = arr[index];
-    let { speedCost: cMin, shapeCost: scMin, rolesCost: rcMin, priority: pMin, firstFormationPriority: p1Min } = arr[minIndex];
+    let { majorSpeedCost: c, pageCost: pc, minorSpeedCost: nc, shapeCost: sc, rolesCost: rc, priority: p } = arr[index];
+    let { majorSpeedCost: cMin, pageCost: pcMin, minorSpeedCost: ncMin, shapeCost: scMin, rolesCost: rcMin, priority: pMin } = arr[minIndex];
     if (c < cMin) {
       return index;
     } else if (c > cMin) {
       return minIndex;
     } else {
-      if (sc < scMin) {
+      if (pc < pcMin) {
         return index;
-      } else if (sc > scMin) {
+      } else if (pc > pcMin) {
         return minIndex;
       } else {
-        if (rc < rcMin) {
-          return index;
-        } else if (rc > rcMin) {
+        if (nc < ncMin) {
+          return index
+        } else if (nc > ncMin) {
           return minIndex;
         } else {
-          if (p < pMin) {
+          if (sc < scMin) {
             return index;
-          } else if (p > pMin) {
+          } else if (sc > scMin) {
             return minIndex;
           } else {
-            if (p1 < p1Min) {
+            if (rc < rcMin) {
               return index;
-            } else {
+            } else if (rc > rcMin) {
               return minIndex;
+            } else {
+              if (p < pMin) {
+                return index;
+              } else {
+                return minIndex;
+              }
             }
           }
         }
@@ -143,58 +155,74 @@ const argmin = (a: Array<PatternAnalysis>) => {
 };
 
 const optimizeEngineering = (round: Round): [Pattern, PatternAnalysis] => {
-  // A greedy algorithm should be sufficient here,
-  // with the caveat that we will test all engineering possibility of the first point.
-
   if (round.length < 1) { throw "Draw must contain at least 1 formation"; }
 
   const firstFormationId = round[0];
-  const firstFormationEngStrategies = formations[firstFormationId].engineeringStrategies;
-  const firstSlotSwitch = "null";
-  const patternOptions = Object.keys(firstFormationEngStrategies).map((firstFormationEngId: EngineeringId) => {
-    const pattern: Pattern = [firstFormationEngId];
-    const slotSwitches: Array<SlotSwitch> = [firstSlotSwitch];
+  const f = formations[firstFormationId];
+  let prevFormationId = firstFormationId;
+  let patternOptions: Array<[Pattern, Array<SlotSwitch>]> = Object.keys(f.engineeringStrategies).map((firstFormationEngId: EngineeringId) =>
+    [[firstFormationEngId], ["null"]]
+  );
+  let patternCycles: Array<Pattern> = [];
 
-    let prevFormationId = firstFormationId;
-    let prevFormationEngId = firstFormationEngId;
-    let prevSlotSwitch: SlotSwitch = firstSlotSwitch;
+  for (let i = 1; i < 1000; i++) {
+    let nextFormationId = round[i % round.length];
+    const f = formations[nextFormationId];
+    const formationEngIds = Object.keys(f.engineeringStrategies);
 
-    for (let i = 0; i < 1000; i++) {
-      let nextFormationId = round[pattern.length % round.length];
-      const f = formations[nextFormationId];
-      const strategyAnalyses = Object.keys(f.engineeringStrategies)
-        .map((nextFormationEngId) => analyzePattern([prevFormationId, nextFormationId], [prevFormationEngId, nextFormationEngId], false));
-      const nextFormationEngId = Object.keys(f.engineeringStrategies)[argmin(strategyAnalyses)];
+    const prevEngIds = [...new Set(patternOptions.map(([pattern]) => pattern[pattern.length - 1]))];
 
-      let nextSlotSwitch: SlotSwitch = prevSlotSwitch;
-      if (f.type === "block") {
-        nextSlotSwitch = slotSwitchCombine(prevSlotSwitch, f.engineeringStrategies[nextFormationEngId].slotSwitch);
-      }
+    // Find the optimal majorCost that we can achieve for this transition
+    const bestMajorCost = Math.min(...prevEngIds.map(
+      (prevEngId) => Math.min(...formationEngIds.map(
+        (nextEngId) => analyzePattern([prevFormationId, nextFormationId], [prevEngId, nextEngId], false).majorSpeedCost
+      ))
+    ));
 
-      // See if we're done--if we have a cycle
-      if (pattern.length > 0 && pattern.length % round.length == 0) {
-        for (let pages = 1; pages <= pattern.length / round.length; pages++) {
-          const start = pattern.length - pages * round.length;
-          // If we made a cycle, return it
-          if (slotSwitchesEquivalent(nextSlotSwitch, slotSwitches[start]) && nextFormationEngId == pattern[start]) {
-            return pattern.slice(start);
+    // Enumerate all patterns that achieve the optimal majorCost
+    // and add them to patternOptions
+    const newPatternOptions: Array<[Pattern, Array<SlotSwitch>]> = [];
+    for (let [pattern, slotSwitches] of patternOptions) {
+      const prevEngId = pattern[pattern.length - 1];
+      for (let nextEngId of formationEngIds) {
+        if (analyzePattern([prevFormationId, nextFormationId], [prevEngId, nextEngId], false).majorSpeedCost == bestMajorCost) {
+
+          let nextSlotSwitch: SlotSwitch = slotSwitches[slotSwitches.length - 1];
+          if (f.type == "block") {
+            nextSlotSwitch = slotSwitchCombine(nextSlotSwitch, f.engineeringStrategies[nextEngId].slotSwitch);
           }
+          newPatternOptions.push([[...pattern, nextEngId], [...slotSwitches, nextSlotSwitch]]);
         }
       }
-
-      pattern.push(nextFormationEngId);
-      slotSwitches.push(nextSlotSwitch);
-      prevFormationId = nextFormationId;
-      prevFormationEngId = nextFormationEngId;
-      prevSlotSwitch = nextSlotSwitch;
     }
-    throw "Failed to calculate engineering--no cycle found";
-  });
+    patternOptions = newPatternOptions;
 
-  const patternAnalyses = patternOptions.map((pattern) => analyzePattern(round, pattern, true));
+    if (i % round.length == 0) {
+      // We've completed a page--return all equivalent-major-cost cycles
+      // or keep going if we don't have any
+
+      for (let start = i - round.length; start >= 0; start -= round.length) {
+        patternCycles = patternOptions.filter(([pattern, slotSwitches]) =>
+          pattern[start] == pattern[pattern.length - 1] && slotSwitchesEquivalent(slotSwitches[start], slotSwitches[slotSwitches.length - 1])
+        ).map(([pattern]) => pattern.slice(start, -1));
+        if (patternCycles.length > 0) {
+          break;
+        }
+      }
+      if (patternCycles.length > 0) {
+        break;
+      }
+    }
+
+    prevFormationId = nextFormationId;
+  }
+
+  // Of the patternOptions with equivalent major cost,
+  // return the best one
+  const patternAnalyses = patternCycles.map((pattern) => analyzePattern(round, pattern, true));
   const bestI = argmin(patternAnalyses);
-  return [patternOptions[bestI], patternAnalyses[bestI]];
-};
+  return [patternCycles[bestI], patternAnalyses[bestI]];
+}
 
 (window as any).optimizeEngineering = optimizeEngineering;
 
@@ -227,11 +255,11 @@ const findAlternatives = (round: Round, pattern: Pattern): {
 
     const argsort = strategyAnalyses
       .map((value, index) => ({ value, index }))
-      .sort((a, b) => a.value.speedCost - b.value.speedCost)
+      .sort((a, b) => a.value.majorSpeedCost - b.value.majorSpeedCost)
       .map(({ index }) => index);
 
-    const minCost = strategyAnalyses[argsort[0]].speedCost;
-    return argsort.map((i) => [Object.keys(engStrategies)[i], strategyAnalyses[i].speedCost - minCost]);
+    const minCost = strategyAnalyses[argsort[0]].majorSpeedCost;
+    return argsort.map((i) => [Object.keys(engStrategies)[i], strategyAnalyses[i].majorSpeedCost - minCost]);
   });
 
   return {
